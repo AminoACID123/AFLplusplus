@@ -1,0 +1,68 @@
+{
+    "arguements": [
+        {
+            "name": "BD_ADDR", "type": "8[6]",
+            "domain": [
+                "{0xAA,0xAA,0xAA,0xAA,0xAA,0xAA}",
+                "{0xBB,0xBB,0xBB,0xBB,0xBB,0xBB}",
+                "{0xCC,0xCC,0xCC,0xCC,0xCC,0xCC}"
+            ]
+        },
+        {
+            "name": "BD_ADDR_TYPE", "type": "16",
+            "domain": ["", ""]
+        },
+        {
+            "name": "HCI_CONN_HANDLE", "type": "16",
+            "domain": ["0", "1", "2"]
+        }
+    ],
+    "operations": [
+        {
+            "name": "GAP_GET_LOACAL_BD_ADDR",
+            "inputs": [],
+            "outputs": ["BD_ADDR"]
+        },
+        {
+            "name": "GAP_CONNECT",
+            "inputs": ["BD_ADDR", "BD_ADDR_TYPE"],
+            "outputs": []
+        },
+        {
+            "name": "GAP_DISCONNECT",
+            "inputs": ["HCI_CONN_HANDLE"],
+            "outputs": []
+        },
+        {
+            "name": "GAP_ADVERTISEMENTS_SET_DATA",
+            "inputs": ["*"],
+            "outputs": []
+        }
+    ],
+    "harnesses": [
+        {
+            "name": "harness1",
+            "operation": "GAP_GET_LOACAL_BD_ADDR",
+            "headers": ["gap.h"],
+            "exec": ["gap_local_bd_addr($o0);"]
+        },
+        {
+            "name": "harness2",
+            "operation": "GAP_CONNECT",
+            "headers": ["gap.h"],
+            "exec": ["gap_connect($i0, $i1);"]
+        },
+        {
+            "name": "harness3",
+            "operation": "GAP_DISCONNECT",
+            "headers": ["gap.h"],
+            "exec": ["gap_disconnect($i0);"]
+        },
+        {
+            "name": "harness4",
+            "operation": "GAP_ADVERTISEMENTS_SET_DATA",
+            "headers": ["gap.h"],
+            "exec": ["gap_advertisements_set_data(sizeof($i0),$i0);"] 
+        }
+    ]
+}
