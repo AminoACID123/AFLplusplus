@@ -1,64 +1,74 @@
-#include "gap.h"
+
 #include <stdlib.h>
 
-#define MAX_INPUT
+#define NUM_PARAM 1
+#define MAX_INPUT 1
+#define MAX_OUTPUT 1
 
-static void** context;
+static char **arg_in;
+static char **arg_out;
+static char * context[1];
+static int    context_len[2];
 
-static void** argv;
-
-void fuzz_init(){
-    context = malloc(sizeof(void*)*MAX_INPUT);
-    for(int i=0;i<MAX_INPUT;i++){
-        context[i] = malloc(1);
-    }
-    argv = malloc(sizeof(void*)*MAX_INPUT);
+void fuzz_init() {
+  for (int i = 0; i < NUM_PARAM; i++)
+    context[i] = malloc(sizeof(char) * context_len[i]);
 }
 
-void harness1(int argc, void** argv){
-    void* _i0 = argv[0];
-    void* _i1 = argv[1];
-    gap_connect(_i0, _i1);
+void harness1(char **arg_in, char **arg_out) {
+  char *_i0 = arg_in[0];
+  char *_i1 = arg_in[1];
+  gap_connect(_i0, _i1);
 }
 
-typedef void (*fun_ptr)(char**);
+typedef void (*fun_ptr)(char **, char **);
 
 fun_ptr FUZZ_LIST[] = {
-    
+  &harness1
 };
 
 /*
 filed                   bytes
 ----------------------------------
 harness_id              4
-arg count               4
+arg_in_count            4
+arg1_idx                4
 arg1_len                4
-arg1_use_context        4
 arg1_data               --
-
+arg_out_count           4
+arg1_idx                4
 
 */
-void execute(char* test, int len){
-    int pos = 0;
 
-    while(1){
+void execute(char *test, int len) {
+  int pos = 0;
 
-        if(pos >= len)
-            return;
-
-        int id = *(int*)(test + (pos+=sizeof(int)));
-        fun_ptr fun = FUZZ_LIST[id];
-        int args = *(int*)(test + (pos+=sizeof(int)));
+  while (pos < len) {
+    int id = *(int *)(test + pos);
+    pos += sizeof(int);
+    fun_ptr fun = FUZZ_LIST[id];
+    int     args = *(int *)(test + pos);
+    pos += sizeof(int);
+    for (int i = 0; i < args; i++) {
+      int idx = *(int *)(test + pos);
+      pos += sizeof(int);
+      if (idx == -1) {
+        int len = *(int *)(test + pos);
         pos += sizeof(int);
-        for(int i=0;i<args;i++){
-            int len = *(int*)(test + (pos+=sizeof(int)));
-            int cxt = *(int*)(test + (pos+=sizeof(int)));
-            if(cxt != -1){
-                argv[i] = context[cxt];
-            }else{
-                argv[i] = test + (pos += len);
-            }
-        }
+        arg_in[i] = test + pos;
+        pos += len;
+      } else {
+        arg_in[i] = context[idx];
+      }
     }
-}
 
+    args = *(int *)(test + pos);
+    pos += sizeof(int);
+    for (int i = 0; i < args; i++) {
+      int idx = *(int *)(test + pos);
+      pos += sizeof(int);
+      arg_out[i] = context[idx];
+    }
+    fun(arg_in, arg_out);
+  }
+}

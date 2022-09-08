@@ -35,7 +35,7 @@
         },
         {
             "name": "GAP_ADVERTISEMENTS_SET_DATA",
-            "inputs": ["*"],
+            "inputs": ["DATA"],
             "outputs": []
         }
     ],

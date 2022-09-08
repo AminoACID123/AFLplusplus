@@ -1,36 +1,45 @@
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <vector>
+#include <string>
 
-typedef struct Parameter {
-  char *name;
-  int   bytes;
-  bool  discrete;
-  void **domain;
-  int domain_len;
-} Parameter;
+struct Parameter {
+  std::string                    name;
+  int                            bytes;
+  std::vector<std::vector<char>> domain;
+};
 
-typedef struct Operation {
-  char *        name;
-  Parameter**    inputs;
-  Parameter**    outputs;
-  int           num_in;
-  int           num_out;
-} Operation;
+struct Operation {
+  std::string            name;
+  std::vector<Parameter*> inputs;
+  std::vector<Parameter*> outputs;
+  void dump();
+};
 
-typedef struct Harness {
-  Operation *op;
-  char **    inputs;
-  char **    outputs;
-  int        num_in;
-  int        num_out;
-}Harness;
+struct Harness {
+  Operation *              op;
+  std::vector<std::string> headers;
+  std::vector<std::string> exec;
+  void dump();
+};
 
-Parameter* get_parameter(const char* name);
+class HarnessManager {
+  std::vector<Parameter> parameters;
+  std::vector<Operation*> operations;
+  std::vector<Harness*>   harnesses;
+  cJSON *load_from_file(const char *file);
+  void parse_operations(const char *file);
+  void parse_harnesses(const char *file);
+  void payload1(FILE *f);
+  void payload2(FILE *f);
+  void payload3(FILE *f);
 
-Operation* get_operation(const char* name);
 
-void parse_operations(const char *file);
+ public:
+  HarnessManager();
+  Parameter *get_parameter(std::string name);
+  Operation *get_operation(std::string name);
+  void parse(const char* file);
+  void generate(const char* file);
+  void dump();
+};
 
-void parse_harnesses(const char* file);
+void dump_operation(Operation *op);
