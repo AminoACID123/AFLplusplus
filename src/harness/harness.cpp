@@ -228,11 +228,16 @@ void HarnessManager::generate(const char *file) {
   payload3(f);
 }
 
-int main() {
-  HarnessManager hmgr;
-  hmgr.parse("btstack_ops.json");
-  hmgr.dump();
+int main(int argc, char** argv) {
 
+  if(argc != 2){
+    printf("Missing operation json file!\n");
+    exit(-1);
+  }
+
+  HarnessManager hmgr;
+  hmgr.parse(argv[1]);
+  hmgr.dump();
   hmgr.generate("tmp.c");
   return 0;
 }
