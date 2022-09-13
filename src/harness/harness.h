@@ -32,7 +32,6 @@ class HarnessManager {
   void payload2(FILE *f);
   void payload3(FILE *f);
 
-
  public:
   HarnessManager();
   Parameter *get_parameter(std::string name);

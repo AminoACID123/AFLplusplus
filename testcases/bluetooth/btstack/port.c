@@ -11,7 +11,8 @@
 #include <sys/uio.h>
 #include <sys/un.h>
 
-static void (*packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size);
+extern u_int8_t* __afl_area2_ptr;
+void (*fuzz_packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size);
 static uint8_t hci_packet_out[1 + HCI_OUTGOING_PACKET_BUFFER_SIZE]; // packet type + max(acl header + acl payload, cmd header   +   cmd data)
 static uint8_t hci_packet_in[1 + HCI_INCOMING_PACKET_BUFFER_SIZE]; // packet type + max(acl header + acl payload, event header + event data)
 static btstack_data_source_t* ds;
@@ -27,25 +28,14 @@ static int hci_transport_fuzz_can_send_now(uint8_t packet_type)
 }
 
 static int hci_transport_fuzz_send_packet(uint8_t packet_type, uint8_t * packet, int size){
-    printf("Sending packet\n");
-    if (ds == NULL) return -1;
 
     // preapare packet
-    hci_packet_out[0] = packet_type;
-    memcpy(&hci_packet_out[1], packet, size);
+    // hci_packet_out[0] = packet_type;
+    // memcpy(&hci_packet_out[1], packet, size);
 
-    // send
-    // int res = mtk_bt_write(hci_transport_h4->ds->source.fd, hci_packet_out, size + 1);
+    *__afl_area2_ptr = packet_type;
+    memcpy(&__afl_area2_ptr + 1, packet, size);
 
-	struct iovec iv[1];
-	iv[0].iov_base = hci_packet_out;
-	iv[0].iov_len = size + 1;
-    if( writev(ds->source.fd, iv, 1) <= 0){
-        perror("Failed to open send packet");
-		return -1;
-    }
-    printf("Sent\n");
-    
     static const uint8_t packet_sent_event[] = { HCI_EVENT_TRANSPORT_PACKET_SENT, 0};
     packet_handler(HCI_EVENT_PACKET, (uint8_t *) &packet_sent_event[0], sizeof(packet_sent_event));
     
@@ -53,6 +43,10 @@ static int hci_transport_fuzz_send_packet(uint8_t packet_type, uint8_t * packet,
 }
 
 static void hci_transport_fuzz_init(const void * transport_config){ }
+
+static inline uint16_t little_endian_read_16(const uint8_t * buffer, int position){
+    return (uint16_t)(((uint16_t) buffer[position]) | (((uint16_t)buffer[position+1]) << 8));
+}
 
 static void fuzz_process(btstack_data_source_t *_ds, btstack_data_source_callback_type_t callback_type) {
     if (ds->source.fd == 0) return;
@@ -71,6 +65,7 @@ static void fuzz_process(btstack_data_source_t *_ds, btstack_data_source_callbac
                 packet_len = hci_packet_in[pos+2] + 3;
                 break;
             case HCI_ACL_DATA_PACKET:
+            
                  packet_len = little_endian_read_16(hci_packet_in, pos + 3) + 5;
                  break;
             default:
@@ -80,57 +75,15 @@ static void fuzz_process(btstack_data_source_t *_ds, btstack_data_source_callbac
 
        // if(hci_packet_in[pos+4] == 0x01 && hci_packet_in[pos+5] == 0x13)
       //  {
-                    printf("%02x %02x\n", hci_packet_in[pos+4], hci_packet_in[pos+5]);
+            printf("%02x %02x\n", hci_packet_in[pos+4], hci_packet_in[pos+5]);
       //  }
         packet_handler(hci_packet_in[pos], &hci_packet_in[pos+1], packet_len-1);
         pos += packet_len;
     }
-    
 }
-
 
 static int hci_transport_fuzz_open(void)
 {
-    const char* unix_path = "/tmp/bt-server-bredr";
-	struct sockaddr_un addr;
-	size_t len;
-	int fd;
-
-	len = strlen(unix_path);
-	if (len > sizeof(addr.sun_path) - 1) {
-		fprintf(stderr, "Path too long\n");
-		return -1;
-	}
-
-	fd = socket(PF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
-	if (fd < 0) {
-		perror("Failed to open Unix server socket");
-		return -1;
-	}
-
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, unix_path, sizeof(addr.sun_path) - 1);
-	// if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-	// 	perror("Failed to bind Unix server socket");
-	// 	close(fd);
-	// 	return -1;
-	// }
-
-    if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-  		perror("Failed to connect");
-		close(fd);
-		return -1;      
-    }
-
-    // set up data_source
-    ds = (btstack_data_source_t*) malloc(sizeof(btstack_data_source_t));
-    if (!ds) return -1;
-    memset(ds, 0, sizeof(btstack_data_source_t));
-    btstack_run_loop_set_data_source_fd(ds, fd);
-    btstack_run_loop_set_data_source_handler(ds, &fuzz_process);
-    btstack_run_loop_enable_data_source_callbacks(ds, DATA_SOURCE_CALLBACK_READ);
-    btstack_run_loop_add_data_source(ds);
     return 0;
 }
 
@@ -142,15 +95,7 @@ static int hci_transport_fuzz_close(void)
 
 static void hci_transport_fuzz_register_packet_handler(void (*handler)(uint8_t packet_type, uint8_t *packet, uint16_t size))
 {
-    packet_handler = handler;
-}
-
-void recv_packet(arg_struct_t* arg)
-{
-    const uint8_t data1[] = {0x0E, 0x04, 0x01, 0x03, 0x0c, 0x00};
-    packet_handler(HCI_EVENT_PACKET, data1, sizeof(data1));
-    const uint8_t data2[] = {0x0E, 12, 1, 0x01, 0x10, 0, 10, 0, 0, 0, 0, 0 ,0, 0};
-    packet_handler(HCI_EVENT_PACKET, data2, sizeof(data2));
+    fuzz_packet_handler = handler;
 }
 
 static const hci_transport_t hci_transport_fuzz = {
@@ -169,4 +114,49 @@ static const hci_transport_t hci_transport_fuzz = {
 
 const hci_transport_t* hci_transport_fuzz_instance(){
     return &hci_transport_fuzz;
+}
+
+static void run_loop_posix_execute(void) {
+
+    struct timeval * timeout;
+    struct timeval tv;
+    uint32_t now_ms;
+
+    while (1) {
+
+        execute(__afl_area2_ptr);
+        // process timers
+        now_ms = btstack_run_loop_posix_get_time_ms();
+        btstack_run_loop_base_process_timers(now_ms);
+    }
+}
+
+void execute_hci(char* buf, int size){
+
+}
+
+void stack_init(){
+    
+    btstack_memory_init();
+    
+    btstack_run_loop_t* run_loop = btstack_run_loop_posix_get_instance();
+
+    run_loop->execute = &run_loop_posix_execute;
+
+    btstack_run_loop_init(btstack_run_loop_posix_get_instance());
+
+    hci_init(hci_transport_fuzz_instance(), NULL);
+
+    l2cap_init();
+
+    gatt_client_init();
+
+    sm_init();
+
+    // turn on!
+    hci_power_control(HCI_POWER_ON);
+}
+
+void stack_execute(){
+    btstack_run_loop_execute();
 }

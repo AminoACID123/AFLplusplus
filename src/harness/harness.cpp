@@ -172,10 +172,10 @@ Write Global Variables
 */
 void HarnessManager::payload2(FILE *f) {
   fprintf(f,
-          "static char *arg_in[MAX_INPUT];\n"
-          "static char *arg_out[MAX_OUTPUT];\n"
-          "static char *context[NUM_PARAM];\n"
-          "static int   context_len[NUM_PARAM] = { ");
+          "char *arg_in[MAX_INPUT];\n"
+          "char *arg_out[MAX_OUTPUT];\n"
+          "char *context[NUM_PARAM];\n"
+          "int   context_len[NUM_PARAM] = { ");
 
   for (int i=1,n=parameters.size();i!=n;i++) {
     fprintf(f, "%d", parameters[i].bytes);
@@ -226,6 +226,7 @@ void HarnessManager::generate(const char *file) {
   payload1(f);
   payload2(f);
   payload3(f);
+  fclose(f);
 }
 
 int main(int argc, char** argv) {

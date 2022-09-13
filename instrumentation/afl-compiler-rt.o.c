@@ -80,7 +80,7 @@
 #if MAP_SIZE <= 65536
   #define MAP_INITIAL_SIZE 2097152
 #else
-  #define MAP_INITIAL_SIZE MAP_SIZE
+  #define MAP_INITIAL_SIZE MAP_SIZEf
 #endif
 
 #if defined(__HAIKU__)
@@ -93,6 +93,7 @@ static u8 *__afl_area_ptr_dummy = __afl_area_initial;
 static u8 *__afl_area_ptr_backup = __afl_area_initial;
 
 u8        *__afl_area_ptr = __afl_area_initial;
+u8        *__afl_area2_ptr;
 u8        *__afl_dictionary;
 u8        *__afl_fuzz_ptr;
 static u32 __afl_fuzz_len_dummy;
