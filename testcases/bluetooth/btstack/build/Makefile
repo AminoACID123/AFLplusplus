@@ -142,6 +142,30 @@ bt/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/build
 .PHONY : bt/fast
 
+harness.o: harness.c.o
+.PHONY : harness.o
+
+# target to build an object file
+harness.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/harness.c.o
+.PHONY : harness.c.o
+
+harness.i: harness.c.i
+.PHONY : harness.i
+
+# target to preprocess a source file
+harness.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/harness.c.i
+.PHONY : harness.c.i
+
+harness.s: harness.c.s
+.PHONY : harness.s
+
+# target to generate assembly for a file
+harness.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/harness.c.s
+.PHONY : harness.c.s
+
 hci_transport_fuzz.o: hci_transport_fuzz.c.o
 .PHONY : hci_transport_fuzz.o
 
@@ -4438,6 +4462,54 @@ main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/main.c.s
 .PHONY : main.c.s
 
+port.o: port.c.o
+.PHONY : port.o
+
+# target to build an object file
+port.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/port.c.o
+.PHONY : port.c.o
+
+port.i: port.c.i
+.PHONY : port.i
+
+# target to preprocess a source file
+port.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/port.c.i
+.PHONY : port.c.i
+
+port.s: port.c.s
+.PHONY : port.s
+
+# target to generate assembly for a file
+port.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/port.c.s
+.PHONY : port.c.s
+
+run_loop_fuzz.o: run_loop_fuzz.c.o
+.PHONY : run_loop_fuzz.o
+
+# target to build an object file
+run_loop_fuzz.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/run_loop_fuzz.c.o
+.PHONY : run_loop_fuzz.c.o
+
+run_loop_fuzz.i: run_loop_fuzz.c.i
+.PHONY : run_loop_fuzz.i
+
+# target to preprocess a source file
+run_loop_fuzz.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/run_loop_fuzz.c.i
+.PHONY : run_loop_fuzz.c.i
+
+run_loop_fuzz.s: run_loop_fuzz.c.s
+.PHONY : run_loop_fuzz.s
+
+# target to generate assembly for a file
+run_loop_fuzz.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/bt.dir/build.make CMakeFiles/bt.dir/run_loop_fuzz.c.s
+.PHONY : run_loop_fuzz.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -4448,6 +4520,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... bt"
 	@echo "... btstack"
+	@echo "... harness.o"
+	@echo "... harness.i"
+	@echo "... harness.s"
 	@echo "... hci_transport_fuzz.o"
 	@echo "... hci_transport_fuzz.i"
 	@echo "... hci_transport_fuzz.s"
@@ -4985,6 +5060,12 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... port.o"
+	@echo "... port.i"
+	@echo "... port.s"
+	@echo "... run_loop_fuzz.o"
+	@echo "... run_loop_fuzz.i"
+	@echo "... run_loop_fuzz.s"
 .PHONY : help
 
 

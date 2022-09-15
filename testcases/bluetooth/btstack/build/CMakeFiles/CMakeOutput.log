@@ -28,10 +28,10 @@ The CXX compiler identification is Clang, found in "/home/xaz/Documents/AFLplusp
 Detecting C compiler ABI info compiled with the following output:
 Change Dir: /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_130e2/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_130e2.dir/build.make CMakeFiles/cmTC_130e2.dir/build
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_ffd59/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_ffd59.dir/build.make CMakeFiles/cmTC_ffd59.dir/build
 gmake[1]: Entering directory '/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o
-/usr/local/bin/afl-clang-lto   -v -MD -MT CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c
+Building C object CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o
+/usr/local/bin/afl-clang-lto   -v -MD -MT CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c
 clang version 12.0.0
 Target: x86_64-unknown-linux-gnu
 Thread model: posix
@@ -45,7 +45,7 @@ Candidate multilib: 32;@m32
 Candidate multilib: x32;@mx32
 Selected multilib: .;@m64
  (in-process)
- "/home/xaz/llvm/build/bin/clang-12" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -flto=full -flto-unit -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=none -fmath-errno -fno-rounding-math -mconstructor-aliases -munwind-tables -target-cpu x86-64 -tune-cpu generic -fno-split-dwarf-inlining -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -resource-dir /home/xaz/llvm/build/lib/clang/12.0.0 -dependency-file CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -sys-header-deps -D __AFL_HAVE_MANUAL_CONTROL=1 -D __AFL_COMPILER=1 -D FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1 -D "__AFL_FUZZ_INIT()=int __afl_sharedmem_fuzzing = 1;extern unsigned int *__afl_fuzz_len;extern unsigned char *__afl_fuzz_ptr;unsigned char __afl_fuzz_alt[1048576];unsigned char *__afl_fuzz_alt_ptr = __afl_fuzz_alt;" -D "__AFL_COVERAGE()=int __afl_selective_coverage = 1;void __afl_coverage_discard();void __afl_coverage_skip();void __afl_coverage_on();void __afl_coverage_off();" -D "__AFL_COVERAGE_START_OFF()=int __afl_selective_coverage_start_off = 1;" -D __AFL_COVERAGE_ON()=__afl_coverage_on() -D __AFL_COVERAGE_OFF()=__afl_coverage_off() -D __AFL_COVERAGE_DISCARD()=__afl_coverage_discard() -D __AFL_COVERAGE_SKIP()=__afl_coverage_skip() -D "__AFL_FUZZ_TESTCASE_BUF=(__afl_fuzz_ptr ? __afl_fuzz_ptr : __afl_fuzz_alt_ptr)" -D "__AFL_FUZZ_TESTCASE_LEN=(__afl_fuzz_ptr ? *__afl_fuzz_len : (*__afl_fuzz_len = read(0, __afl_fuzz_alt_ptr, 1048576)) == 0xffffffff ? 0 : *__afl_fuzz_len)" -D "__AFL_LOOP(_A)=({ static volatile char *_B __attribute__((used,unused));  _B = (char*)\"##SIG_AFL_PERSISTENT##\"; __attribute__((visibility(\"default\"))) int _L(unsigned int) __asm__(\"__afl_persistent_loop\"); _L(_A); })" -D "__AFL_INIT()=do { static volatile char *_A __attribute__((used,unused));  _A = (char*)\"##SIG_AFL_DEFER_FORKSRV##\"; __attribute__((visibility(\"default\"))) void _I(void) __asm__(\"__afl_manual_init\"); _I(); } while (0)" -internal-isystem /usr/local/include -internal-isystem /home/xaz/llvm/build/lib/clang/12.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O3 -Wno-unused-command-line-argument -Wno-unused-command-line-argument -fdebug-compilation-dir /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp -ferror-limit 19 -funroll-loops -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strcasecmp -fno-builtin-strncasecmp -fno-builtin-memcmp -fno-builtin-bcmp -fno-builtin-strstr -fno-builtin-strcasestr -fgnuc-version=4.2.1 -flegacy-pass-manager -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c
+ "/home/xaz/llvm/build/bin/clang-12" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -flto=full -flto-unit -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=none -fmath-errno -fno-rounding-math -mconstructor-aliases -munwind-tables -target-cpu x86-64 -tune-cpu generic -fno-split-dwarf-inlining -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -resource-dir /home/xaz/llvm/build/lib/clang/12.0.0 -dependency-file CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -sys-header-deps -D __AFL_HAVE_MANUAL_CONTROL=1 -D __AFL_COMPILER=1 -D FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1 -D "__AFL_FUZZ_INIT()=int __afl_sharedmem_fuzzing = 1;extern unsigned int *__afl_fuzz_len;extern unsigned char *__afl_fuzz_ptr;unsigned char __afl_fuzz_alt[1048576];unsigned char *__afl_fuzz_alt_ptr = __afl_fuzz_alt;" -D "__AFL_COVERAGE()=int __afl_selective_coverage = 1;void __afl_coverage_discard();void __afl_coverage_skip();void __afl_coverage_on();void __afl_coverage_off();" -D "__AFL_COVERAGE_START_OFF()=int __afl_selective_coverage_start_off = 1;" -D __AFL_COVERAGE_ON()=__afl_coverage_on() -D __AFL_COVERAGE_OFF()=__afl_coverage_off() -D __AFL_COVERAGE_DISCARD()=__afl_coverage_discard() -D __AFL_COVERAGE_SKIP()=__afl_coverage_skip() -D "__AFL_FUZZ_TESTCASE_BUF=(__afl_fuzz_ptr ? __afl_fuzz_ptr : __afl_fuzz_alt_ptr)" -D "__AFL_FUZZ_TESTCASE_LEN=(__afl_fuzz_ptr ? *__afl_fuzz_len : (*__afl_fuzz_len = read(0, __afl_fuzz_alt_ptr, 1048576)) == 0xffffffff ? 0 : *__afl_fuzz_len)" -D "__AFL_LOOP(_A)=({ static volatile char *_B __attribute__((used,unused));  _B = (char*)\"##SIG_AFL_PERSISTENT##\"; __attribute__((visibility(\"default\"))) int _L(unsigned int) __asm__(\"__afl_persistent_loop\"); _L(_A); })" -D "__AFL_INIT()=do { static volatile char *_A __attribute__((used,unused));  _A = (char*)\"##SIG_AFL_DEFER_FORKSRV##\"; __attribute__((visibility(\"default\"))) void _I(void) __asm__(\"__afl_manual_init\"); _I(); } while (0)" -internal-isystem /usr/local/include -internal-isystem /home/xaz/llvm/build/lib/clang/12.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O3 -Wno-unused-command-line-argument -Wno-unused-command-line-argument -fdebug-compilation-dir /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp -ferror-limit 19 -funroll-loops -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strcasecmp -fno-builtin-strncasecmp -fno-builtin-memcmp -fno-builtin-bcmp -fno-builtin-strstr -fno-builtin-strcasestr -fgnuc-version=4.2.1 -flegacy-pass-manager -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c
 clang -cc1 version 12.0.0 based upon LLVM 12.0.0 default target x86_64-unknown-linux-gnu
 ignoring nonexistent directory "/include"
 #include "..." search starts here:
@@ -55,9 +55,9 @@ ignoring nonexistent directory "/include"
  /usr/include/x86_64-linux-gnu
  /usr/include
 End of search list.
-Linking C executable cmTC_130e2
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_130e2.dir/link.txt --verbose=1
-/usr/local/bin/afl-clang-lto  -v CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -o cmTC_130e2 
+Linking C executable cmTC_ffd59
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ffd59.dir/link.txt --verbose=1
+/usr/local/bin/afl-clang-lto  -v CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -o cmTC_ffd59 
 clang version 12.0.0
 Target: x86_64-unknown-linux-gnu
 Thread model: posix
@@ -70,7 +70,7 @@ Candidate multilib: .;@m64
 Candidate multilib: 32;@m32
 Candidate multilib: x32;@mx32
 Selected multilib: .;@m64
- "/home/xaz/llvm/build/bin/ld.lld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_130e2 /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/home/xaz/llvm/build/bin/../lib -L/lib -L/usr/lib -plugin-opt=mcpu=x86-64 -plugin-opt=O3 -plugin-opt=legacy-pass-manager --allow-multiple-definition -mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o /usr/local/bin/../lib/afl/afl-compiler-rt.o /usr/local/bin/../lib/afl/afl-llvm-rt-lto.o --dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/11/crtend.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o
+ "/home/xaz/llvm/build/bin/ld.lld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_ffd59 /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/home/xaz/llvm/build/bin/../lib -L/lib -L/usr/lib -plugin-opt=mcpu=x86-64 -plugin-opt=O3 -plugin-opt=legacy-pass-manager --allow-multiple-definition -mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o /usr/local/bin/../lib/afl/afl-compiler-rt.o /usr/local/bin/../lib/afl/afl-llvm-rt-lto.o --dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/11/crtend.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o
 gmake[1]: Leaving directory '/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp'
 
 
@@ -94,10 +94,10 @@ Parsed C implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld\.lld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_130e2/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_130e2.dir/build.make CMakeFiles/cmTC_130e2.dir/build]
+  ignore line: [Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_ffd59/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_ffd59.dir/build.make CMakeFiles/cmTC_ffd59.dir/build]
   ignore line: [gmake[1]: Entering directory '/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building C object CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o]
-  ignore line: [/usr/local/bin/afl-clang-lto   -v -MD -MT CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c]
+  ignore line: [Building C object CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/local/bin/afl-clang-lto   -v -MD -MT CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c]
   ignore line: [clang version 12.0.0]
   ignore line: [Target: x86_64-unknown-linux-gnu]
   ignore line: [Thread model: posix]
@@ -115,7 +115,7 @@ Parsed C implicit link information from above output:
   ignore line: [Selected multilib: .]
   ignore line: [@m64]
   ignore line: [ (in-process)]
-  ignore line: [ "/home/xaz/llvm/build/bin/clang-12" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -flto=full -flto-unit -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=none -fmath-errno -fno-rounding-math -mconstructor-aliases -munwind-tables -target-cpu x86-64 -tune-cpu generic -fno-split-dwarf-inlining -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -resource-dir /home/xaz/llvm/build/lib/clang/12.0.0 -dependency-file CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -sys-header-deps -D __AFL_HAVE_MANUAL_CONTROL=1 -D __AFL_COMPILER=1 -D FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1 -D "__AFL_FUZZ_INIT()=int __afl_sharedmem_fuzzing = 1]
+  ignore line: [ "/home/xaz/llvm/build/bin/clang-12" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -flto=full -flto-unit -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=none -fmath-errno -fno-rounding-math -mconstructor-aliases -munwind-tables -target-cpu x86-64 -tune-cpu generic -fno-split-dwarf-inlining -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -resource-dir /home/xaz/llvm/build/lib/clang/12.0.0 -dependency-file CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -sys-header-deps -D __AFL_HAVE_MANUAL_CONTROL=1 -D __AFL_COMPILER=1 -D FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1 -D "__AFL_FUZZ_INIT()=int __afl_sharedmem_fuzzing = 1]
   ignore line: [extern unsigned int *__afl_fuzz_len]
   ignore line: [extern unsigned char *__afl_fuzz_ptr]
   ignore line: [unsigned char __afl_fuzz_alt[1048576]]
@@ -134,7 +134,7 @@ Parsed C implicit link information from above output:
   ignore line: [  _A = (char*)\"##SIG_AFL_DEFER_FORKSRV##\"]
   ignore line: [ __attribute__((visibility(\"default\"))) void _I(void) __asm__(\"__afl_manual_init\")]
   ignore line: [ _I()]
-  ignore line: [ } while (0)" -internal-isystem /usr/local/include -internal-isystem /home/xaz/llvm/build/lib/clang/12.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O3 -Wno-unused-command-line-argument -Wno-unused-command-line-argument -fdebug-compilation-dir /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp -ferror-limit 19 -funroll-loops -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strcasecmp -fno-builtin-strncasecmp -fno-builtin-memcmp -fno-builtin-bcmp -fno-builtin-strstr -fno-builtin-strcasestr -fgnuc-version=4.2.1 -flegacy-pass-manager -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c]
+  ignore line: [ } while (0)" -internal-isystem /usr/local/include -internal-isystem /home/xaz/llvm/build/lib/clang/12.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O3 -Wno-unused-command-line-argument -Wno-unused-command-line-argument -fdebug-compilation-dir /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp -ferror-limit 19 -funroll-loops -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strcasecmp -fno-builtin-strncasecmp -fno-builtin-memcmp -fno-builtin-bcmp -fno-builtin-strstr -fno-builtin-strcasestr -fgnuc-version=4.2.1 -flegacy-pass-manager -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c]
   ignore line: [clang -cc1 version 12.0.0 based upon LLVM 12.0.0 default target x86_64-unknown-linux-gnu]
   ignore line: [ignoring nonexistent directory "/include"]
   ignore line: [#include "..." search starts here:]
@@ -144,9 +144,9 @@ Parsed C implicit link information from above output:
   ignore line: [ /usr/include/x86_64-linux-gnu]
   ignore line: [ /usr/include]
   ignore line: [End of search list.]
-  ignore line: [Linking C executable cmTC_130e2]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_130e2.dir/link.txt --verbose=1]
-  ignore line: [/usr/local/bin/afl-clang-lto  -v CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o -o cmTC_130e2 ]
+  ignore line: [Linking C executable cmTC_ffd59]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ffd59.dir/link.txt --verbose=1]
+  ignore line: [/usr/local/bin/afl-clang-lto  -v CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o -o cmTC_ffd59 ]
   ignore line: [clang version 12.0.0]
   ignore line: [Target: x86_64-unknown-linux-gnu]
   ignore line: [Thread model: posix]
@@ -163,7 +163,7 @@ Parsed C implicit link information from above output:
   ignore line: [@mx32]
   ignore line: [Selected multilib: .]
   ignore line: [@m64]
-  link line: [ "/home/xaz/llvm/build/bin/ld.lld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_130e2 /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/home/xaz/llvm/build/bin/../lib -L/lib -L/usr/lib -plugin-opt=mcpu=x86-64 -plugin-opt=O3 -plugin-opt=legacy-pass-manager --allow-multiple-definition -mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o /usr/local/bin/../lib/afl/afl-compiler-rt.o /usr/local/bin/../lib/afl/afl-llvm-rt-lto.o --dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/11/crtend.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o]
+  link line: [ "/home/xaz/llvm/build/bin/ld.lld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_ffd59 /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/home/xaz/llvm/build/bin/../lib -L/lib -L/usr/lib -plugin-opt=mcpu=x86-64 -plugin-opt=O3 -plugin-opt=legacy-pass-manager --allow-multiple-definition -mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o /usr/local/bin/../lib/afl/afl-compiler-rt.o /usr/local/bin/../lib/afl/afl-llvm-rt-lto.o --dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/11/crtend.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o]
     arg [/home/xaz/llvm/build/bin/ld.lld] ==> ignore
     arg [--eh-frame-hdr] ==> ignore
     arg [-m] ==> ignore
@@ -171,7 +171,7 @@ Parsed C implicit link information from above output:
     arg [-dynamic-linker] ==> ignore
     arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_130e2] ==> ignore
+    arg [cmTC_ffd59] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o]
@@ -192,7 +192,7 @@ Parsed C implicit link information from above output:
     arg [-plugin-opt=legacy-pass-manager] ==> ignore
     arg [--allow-multiple-definition] ==> ignore
     arg [-mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so] ==> ignore
-    arg [CMakeFiles/cmTC_130e2.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [CMakeFiles/cmTC_ffd59.dir/CMakeCCompilerABI.c.o] ==> ignore
     arg [/usr/local/bin/../lib/afl/afl-compiler-rt.o] ==> obj [/usr/local/bin/../lib/afl/afl-compiler-rt.o]
     arg [/usr/local/bin/../lib/afl/afl-llvm-rt-lto.o] ==> obj [/usr/local/bin/../lib/afl/afl-llvm-rt-lto.o]
     arg [--dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt] ==> ignore
@@ -233,10 +233,10 @@ Parsed C implicit link information from above output:
 Detecting CXX compiler ABI info compiled with the following output:
 Change Dir: /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_0ff6c/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_0ff6c.dir/build.make CMakeFiles/cmTC_0ff6c.dir/build
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_35865/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_35865.dir/build.make CMakeFiles/cmTC_35865.dir/build
 gmake[1]: Entering directory '/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o
-/usr/local/bin/afl-clang-lto++   -v -MD -MT CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp
+Building CXX object CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o
+/usr/local/bin/afl-clang-lto++   -v -MD -MT CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp
 clang version 12.0.0
 Target: x86_64-unknown-linux-gnu
 Thread model: posix
@@ -250,7 +250,7 @@ Candidate multilib: 32;@m32
 Candidate multilib: x32;@mx32
 Selected multilib: .;@m64
  (in-process)
- "/home/xaz/llvm/build/bin/clang-12" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -flto=full -flto-unit -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=none -fmath-errno -fno-rounding-math -mconstructor-aliases -munwind-tables -target-cpu x86-64 -tune-cpu generic -fno-split-dwarf-inlining -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -resource-dir /home/xaz/llvm/build/lib/clang/12.0.0 -dependency-file CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D __AFL_HAVE_MANUAL_CONTROL=1 -D __AFL_COMPILER=1 -D FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1 -D "__AFL_FUZZ_INIT()=int __afl_sharedmem_fuzzing = 1;extern unsigned int *__afl_fuzz_len;extern unsigned char *__afl_fuzz_ptr;unsigned char __afl_fuzz_alt[1048576];unsigned char *__afl_fuzz_alt_ptr = __afl_fuzz_alt;" -D "__AFL_COVERAGE()=int __afl_selective_coverage = 1;extern \"C\" void __afl_coverage_discard();extern \"C\" void __afl_coverage_skip();extern \"C\" void __afl_coverage_on();extern \"C\" void __afl_coverage_off();" -D "__AFL_COVERAGE_START_OFF()=int __afl_selective_coverage_start_off = 1;" -D __AFL_COVERAGE_ON()=__afl_coverage_on() -D __AFL_COVERAGE_OFF()=__afl_coverage_off() -D __AFL_COVERAGE_DISCARD()=__afl_coverage_discard() -D __AFL_COVERAGE_SKIP()=__afl_coverage_skip() -D "__AFL_FUZZ_TESTCASE_BUF=(__afl_fuzz_ptr ? __afl_fuzz_ptr : __afl_fuzz_alt_ptr)" -D "__AFL_FUZZ_TESTCASE_LEN=(__afl_fuzz_ptr ? *__afl_fuzz_len : (*__afl_fuzz_len = read(0, __afl_fuzz_alt_ptr, 1048576)) == 0xffffffff ? 0 : *__afl_fuzz_len)" -D "__AFL_LOOP(_A)=({ static volatile char *_B __attribute__((used,unused));  _B = (char*)\"##SIG_AFL_PERSISTENT##\"; __attribute__((visibility(\"default\"))) int _L(unsigned int) __asm__(\"__afl_persistent_loop\"); _L(_A); })" -D "__AFL_INIT()=do { static volatile char *_A __attribute__((used,unused));  _A = (char*)\"##SIG_AFL_DEFER_FORKSRV##\"; __attribute__((visibility(\"default\"))) void _I(void) __asm__(\"__afl_manual_init\"); _I(); } while (0)" -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/backward -internal-isystem /usr/local/include -internal-isystem /home/xaz/llvm/build/lib/clang/12.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O3 -Wno-unused-command-line-argument -Wno-unused-command-line-argument -fdeprecated-macro -fdebug-compilation-dir /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp -ferror-limit 19 -funroll-loops -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strcasecmp -fno-builtin-strncasecmp -fno-builtin-memcmp -fno-builtin-bcmp -fno-builtin-strstr -fno-builtin-strcasestr -fgnuc-version=4.2.1 -flegacy-pass-manager -fcxx-exceptions -fexceptions -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp
+ "/home/xaz/llvm/build/bin/clang-12" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -flto=full -flto-unit -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=none -fmath-errno -fno-rounding-math -mconstructor-aliases -munwind-tables -target-cpu x86-64 -tune-cpu generic -fno-split-dwarf-inlining -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -resource-dir /home/xaz/llvm/build/lib/clang/12.0.0 -dependency-file CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D __AFL_HAVE_MANUAL_CONTROL=1 -D __AFL_COMPILER=1 -D FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1 -D "__AFL_FUZZ_INIT()=int __afl_sharedmem_fuzzing = 1;extern unsigned int *__afl_fuzz_len;extern unsigned char *__afl_fuzz_ptr;unsigned char __afl_fuzz_alt[1048576];unsigned char *__afl_fuzz_alt_ptr = __afl_fuzz_alt;" -D "__AFL_COVERAGE()=int __afl_selective_coverage = 1;extern \"C\" void __afl_coverage_discard();extern \"C\" void __afl_coverage_skip();extern \"C\" void __afl_coverage_on();extern \"C\" void __afl_coverage_off();" -D "__AFL_COVERAGE_START_OFF()=int __afl_selective_coverage_start_off = 1;" -D __AFL_COVERAGE_ON()=__afl_coverage_on() -D __AFL_COVERAGE_OFF()=__afl_coverage_off() -D __AFL_COVERAGE_DISCARD()=__afl_coverage_discard() -D __AFL_COVERAGE_SKIP()=__afl_coverage_skip() -D "__AFL_FUZZ_TESTCASE_BUF=(__afl_fuzz_ptr ? __afl_fuzz_ptr : __afl_fuzz_alt_ptr)" -D "__AFL_FUZZ_TESTCASE_LEN=(__afl_fuzz_ptr ? *__afl_fuzz_len : (*__afl_fuzz_len = read(0, __afl_fuzz_alt_ptr, 1048576)) == 0xffffffff ? 0 : *__afl_fuzz_len)" -D "__AFL_LOOP(_A)=({ static volatile char *_B __attribute__((used,unused));  _B = (char*)\"##SIG_AFL_PERSISTENT##\"; __attribute__((visibility(\"default\"))) int _L(unsigned int) __asm__(\"__afl_persistent_loop\"); _L(_A); })" -D "__AFL_INIT()=do { static volatile char *_A __attribute__((used,unused));  _A = (char*)\"##SIG_AFL_DEFER_FORKSRV##\"; __attribute__((visibility(\"default\"))) void _I(void) __asm__(\"__afl_manual_init\"); _I(); } while (0)" -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/backward -internal-isystem /usr/local/include -internal-isystem /home/xaz/llvm/build/lib/clang/12.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O3 -Wno-unused-command-line-argument -Wno-unused-command-line-argument -fdeprecated-macro -fdebug-compilation-dir /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp -ferror-limit 19 -funroll-loops -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strcasecmp -fno-builtin-strncasecmp -fno-builtin-memcmp -fno-builtin-bcmp -fno-builtin-strstr -fno-builtin-strcasestr -fgnuc-version=4.2.1 -flegacy-pass-manager -fcxx-exceptions -fexceptions -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp
 clang -cc1 version 12.0.0 based upon LLVM 12.0.0 default target x86_64-unknown-linux-gnu
 ignoring nonexistent directory "/include"
 ignoring duplicate directory "/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11"
@@ -264,9 +264,9 @@ ignoring duplicate directory "/usr/lib/gcc/x86_64-linux-gnu/11/../../../../inclu
  /usr/include/x86_64-linux-gnu
  /usr/include
 End of search list.
-Linking CXX executable cmTC_0ff6c
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0ff6c.dir/link.txt --verbose=1
-/usr/local/bin/afl-clang-lto++  -v CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_0ff6c 
+Linking CXX executable cmTC_35865
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_35865.dir/link.txt --verbose=1
+/usr/local/bin/afl-clang-lto++  -v CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_35865 
 clang version 12.0.0
 Target: x86_64-unknown-linux-gnu
 Thread model: posix
@@ -279,7 +279,7 @@ Candidate multilib: .;@m64
 Candidate multilib: 32;@m32
 Candidate multilib: x32;@mx32
 Selected multilib: .;@m64
- "/home/xaz/llvm/build/bin/ld.lld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_0ff6c /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/home/xaz/llvm/build/bin/../lib -L/lib -L/usr/lib -plugin-opt=mcpu=x86-64 -plugin-opt=O3 -plugin-opt=legacy-pass-manager --allow-multiple-definition -mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -rpath /home/xaz/llvm/build/lib /usr/local/bin/../lib/afl/afl-compiler-rt.o /usr/local/bin/../lib/afl/afl-llvm-rt-lto.o --dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/11/crtend.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o
+ "/home/xaz/llvm/build/bin/ld.lld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_35865 /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/home/xaz/llvm/build/bin/../lib -L/lib -L/usr/lib -plugin-opt=mcpu=x86-64 -plugin-opt=O3 -plugin-opt=legacy-pass-manager --allow-multiple-definition -mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -rpath /home/xaz/llvm/build/lib /usr/local/bin/../lib/afl/afl-compiler-rt.o /usr/local/bin/../lib/afl/afl-llvm-rt-lto.o --dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/11/crtend.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o
 gmake[1]: Leaving directory '/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp'
 
 
@@ -309,10 +309,10 @@ Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld\.lld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_0ff6c/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_0ff6c.dir/build.make CMakeFiles/cmTC_0ff6c.dir/build]
+  ignore line: [Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_35865/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_35865.dir/build.make CMakeFiles/cmTC_35865.dir/build]
   ignore line: [gmake[1]: Entering directory '/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building CXX object CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o]
-  ignore line: [/usr/local/bin/afl-clang-lto++   -v -MD -MT CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Building CXX object CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/local/bin/afl-clang-lto++   -v -MD -MT CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp]
   ignore line: [clang version 12.0.0]
   ignore line: [Target: x86_64-unknown-linux-gnu]
   ignore line: [Thread model: posix]
@@ -330,7 +330,7 @@ Parsed CXX implicit link information from above output:
   ignore line: [Selected multilib: .]
   ignore line: [@m64]
   ignore line: [ (in-process)]
-  ignore line: [ "/home/xaz/llvm/build/bin/clang-12" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -flto=full -flto-unit -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=none -fmath-errno -fno-rounding-math -mconstructor-aliases -munwind-tables -target-cpu x86-64 -tune-cpu generic -fno-split-dwarf-inlining -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -resource-dir /home/xaz/llvm/build/lib/clang/12.0.0 -dependency-file CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D __AFL_HAVE_MANUAL_CONTROL=1 -D __AFL_COMPILER=1 -D FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1 -D "__AFL_FUZZ_INIT()=int __afl_sharedmem_fuzzing = 1]
+  ignore line: [ "/home/xaz/llvm/build/bin/clang-12" -cc1 -triple x86_64-unknown-linux-gnu -emit-llvm-bc -flto=full -flto-unit -disable-free -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -fhalf-no-semantic-interposition -mframe-pointer=none -fmath-errno -fno-rounding-math -mconstructor-aliases -munwind-tables -target-cpu x86-64 -tune-cpu generic -fno-split-dwarf-inlining -debug-info-kind=limited -dwarf-version=4 -debugger-tuning=gdb -v -resource-dir /home/xaz/llvm/build/lib/clang/12.0.0 -dependency-file CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D __AFL_HAVE_MANUAL_CONTROL=1 -D __AFL_COMPILER=1 -D FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1 -D "__AFL_FUZZ_INIT()=int __afl_sharedmem_fuzzing = 1]
   ignore line: [extern unsigned int *__afl_fuzz_len]
   ignore line: [extern unsigned char *__afl_fuzz_ptr]
   ignore line: [unsigned char __afl_fuzz_alt[1048576]]
@@ -349,7 +349,7 @@ Parsed CXX implicit link information from above output:
   ignore line: [  _A = (char*)\"##SIG_AFL_DEFER_FORKSRV##\"]
   ignore line: [ __attribute__((visibility(\"default\"))) void _I(void) __asm__(\"__afl_manual_init\")]
   ignore line: [ _I()]
-  ignore line: [ } while (0)" -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/backward -internal-isystem /usr/local/include -internal-isystem /home/xaz/llvm/build/lib/clang/12.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O3 -Wno-unused-command-line-argument -Wno-unused-command-line-argument -fdeprecated-macro -fdebug-compilation-dir /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp -ferror-limit 19 -funroll-loops -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strcasecmp -fno-builtin-strncasecmp -fno-builtin-memcmp -fno-builtin-bcmp -fno-builtin-strstr -fno-builtin-strcasestr -fgnuc-version=4.2.1 -flegacy-pass-manager -fcxx-exceptions -fexceptions -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [ } while (0)" -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11 -internal-isystem /usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/c++/11/backward -internal-isystem /usr/local/include -internal-isystem /home/xaz/llvm/build/lib/clang/12.0.0/include -internal-externc-isystem /usr/include/x86_64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -O3 -Wno-unused-command-line-argument -Wno-unused-command-line-argument -fdeprecated-macro -fdebug-compilation-dir /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles/CMakeTmp -ferror-limit 19 -funroll-loops -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strcasecmp -fno-builtin-strncasecmp -fno-builtin-memcmp -fno-builtin-bcmp -fno-builtin-strstr -fno-builtin-strcasestr -fgnuc-version=4.2.1 -flegacy-pass-manager -fcxx-exceptions -fexceptions -vectorize-loops -vectorize-slp -faddrsig -o CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp]
   ignore line: [clang -cc1 version 12.0.0 based upon LLVM 12.0.0 default target x86_64-unknown-linux-gnu]
   ignore line: [ignoring nonexistent directory "/include"]
   ignore line: [ignoring duplicate directory "/usr/lib/gcc/x86_64-linux-gnu/11/../../../../include/x86_64-linux-gnu/c++/11"]
@@ -363,9 +363,9 @@ Parsed CXX implicit link information from above output:
   ignore line: [ /usr/include/x86_64-linux-gnu]
   ignore line: [ /usr/include]
   ignore line: [End of search list.]
-  ignore line: [Linking CXX executable cmTC_0ff6c]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0ff6c.dir/link.txt --verbose=1]
-  ignore line: [/usr/local/bin/afl-clang-lto++  -v CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_0ff6c ]
+  ignore line: [Linking CXX executable cmTC_35865]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_35865.dir/link.txt --verbose=1]
+  ignore line: [/usr/local/bin/afl-clang-lto++  -v CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_35865 ]
   ignore line: [clang version 12.0.0]
   ignore line: [Target: x86_64-unknown-linux-gnu]
   ignore line: [Thread model: posix]
@@ -382,7 +382,7 @@ Parsed CXX implicit link information from above output:
   ignore line: [@mx32]
   ignore line: [Selected multilib: .]
   ignore line: [@m64]
-  link line: [ "/home/xaz/llvm/build/bin/ld.lld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_0ff6c /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/home/xaz/llvm/build/bin/../lib -L/lib -L/usr/lib -plugin-opt=mcpu=x86-64 -plugin-opt=O3 -plugin-opt=legacy-pass-manager --allow-multiple-definition -mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o -rpath /home/xaz/llvm/build/lib /usr/local/bin/../lib/afl/afl-compiler-rt.o /usr/local/bin/../lib/afl/afl-llvm-rt-lto.o --dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/11/crtend.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o]
+  link line: [ "/home/xaz/llvm/build/bin/ld.lld" --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_35865 /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib64 -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -L/usr/lib/x86_64-linux-gnu/../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. -L/home/xaz/llvm/build/bin/../lib -L/lib -L/usr/lib -plugin-opt=mcpu=x86-64 -plugin-opt=O3 -plugin-opt=legacy-pass-manager --allow-multiple-definition -mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o -rpath /home/xaz/llvm/build/lib /usr/local/bin/../lib/afl/afl-compiler-rt.o /usr/local/bin/../lib/afl/afl-llvm-rt-lto.o --dynamic-list=/usr/local/bin/../lib/afl/dynamic_list.txt -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/11/crtend.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o]
     arg [/home/xaz/llvm/build/bin/ld.lld] ==> ignore
     arg [--eh-frame-hdr] ==> ignore
     arg [-m] ==> ignore
@@ -390,7 +390,7 @@ Parsed CXX implicit link information from above output:
     arg [-dynamic-linker] ==> ignore
     arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_0ff6c] ==> ignore
+    arg [cmTC_35865] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crt1.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/crtbegin.o]
@@ -411,7 +411,7 @@ Parsed CXX implicit link information from above output:
     arg [-plugin-opt=legacy-pass-manager] ==> ignore
     arg [--allow-multiple-definition] ==> ignore
     arg [-mllvm=-load=/usr/local/bin/../lib/afl/SanitizerCoverageLTO.so] ==> ignore
-    arg [CMakeFiles/cmTC_0ff6c.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_35865.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
     arg [-rpath] ==> ignore
     arg [/home/xaz/llvm/build/lib] ==> ignore
     arg [/usr/local/bin/../lib/afl/afl-compiler-rt.o] ==> obj [/usr/local/bin/../lib/afl/afl-compiler-rt.o]

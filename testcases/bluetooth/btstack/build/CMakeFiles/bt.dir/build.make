@@ -97,20 +97,68 @@ CMakeFiles/bt.dir/hci_transport_fuzz.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/bt.dir/hci_transport_fuzz.c.s"
 	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/hci_transport_fuzz.c -o CMakeFiles/bt.dir/hci_transport_fuzz.c.s
 
+CMakeFiles/bt.dir/run_loop_fuzz.c.o: CMakeFiles/bt.dir/flags.make
+CMakeFiles/bt.dir/run_loop_fuzz.c.o: ../run_loop_fuzz.c
+CMakeFiles/bt.dir/run_loop_fuzz.c.o: CMakeFiles/bt.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/bt.dir/run_loop_fuzz.c.o"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bt.dir/run_loop_fuzz.c.o -MF CMakeFiles/bt.dir/run_loop_fuzz.c.o.d -o CMakeFiles/bt.dir/run_loop_fuzz.c.o -c /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/run_loop_fuzz.c
+
+CMakeFiles/bt.dir/run_loop_fuzz.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/bt.dir/run_loop_fuzz.c.i"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/run_loop_fuzz.c > CMakeFiles/bt.dir/run_loop_fuzz.c.i
+
+CMakeFiles/bt.dir/run_loop_fuzz.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/bt.dir/run_loop_fuzz.c.s"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/run_loop_fuzz.c -o CMakeFiles/bt.dir/run_loop_fuzz.c.s
+
+CMakeFiles/bt.dir/port.c.o: CMakeFiles/bt.dir/flags.make
+CMakeFiles/bt.dir/port.c.o: ../port.c
+CMakeFiles/bt.dir/port.c.o: CMakeFiles/bt.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/bt.dir/port.c.o"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bt.dir/port.c.o -MF CMakeFiles/bt.dir/port.c.o.d -o CMakeFiles/bt.dir/port.c.o -c /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/port.c
+
+CMakeFiles/bt.dir/port.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/bt.dir/port.c.i"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/port.c > CMakeFiles/bt.dir/port.c.i
+
+CMakeFiles/bt.dir/port.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/bt.dir/port.c.s"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/port.c -o CMakeFiles/bt.dir/port.c.s
+
+CMakeFiles/bt.dir/harness.c.o: CMakeFiles/bt.dir/flags.make
+CMakeFiles/bt.dir/harness.c.o: ../harness.c
+CMakeFiles/bt.dir/harness.c.o: CMakeFiles/bt.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/bt.dir/harness.c.o"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bt.dir/harness.c.o -MF CMakeFiles/bt.dir/harness.c.o.d -o CMakeFiles/bt.dir/harness.c.o -c /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/harness.c
+
+CMakeFiles/bt.dir/harness.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/bt.dir/harness.c.i"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/harness.c > CMakeFiles/bt.dir/harness.c.i
+
+CMakeFiles/bt.dir/harness.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/bt.dir/harness.c.s"
+	/usr/local/bin/afl-clang-lto $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/harness.c -o CMakeFiles/bt.dir/harness.c.s
+
 # Object files for target bt
 bt_OBJECTS = \
 "CMakeFiles/bt.dir/main.c.o" \
-"CMakeFiles/bt.dir/hci_transport_fuzz.c.o"
+"CMakeFiles/bt.dir/hci_transport_fuzz.c.o" \
+"CMakeFiles/bt.dir/run_loop_fuzz.c.o" \
+"CMakeFiles/bt.dir/port.c.o" \
+"CMakeFiles/bt.dir/harness.c.o"
 
 # External object files for target bt
 bt_EXTERNAL_OBJECTS =
 
 bt: CMakeFiles/bt.dir/main.c.o
 bt: CMakeFiles/bt.dir/hci_transport_fuzz.c.o
+bt: CMakeFiles/bt.dir/run_loop_fuzz.c.o
+bt: CMakeFiles/bt.dir/port.c.o
+bt: CMakeFiles/bt.dir/harness.c.o
 bt: CMakeFiles/bt.dir/build.make
 bt: libbtstack.a
 bt: CMakeFiles/bt.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking C executable bt"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking C executable bt"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/bt.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

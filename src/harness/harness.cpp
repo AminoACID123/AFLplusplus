@@ -189,7 +189,7 @@ Write Fuzz Targets
 */
 void HarnessManager::payload3(FILE *f) {
   fprintf(f,
-          "void fuzz_init() {\n"
+          "void harness_init() {\n"
           "  for (int i = 0; i < NUM_PARAM; i++)\n"
           "    context[i] = malloc(sizeof(char) * context_len[i]);\n}\n");
   for(int i=0,n=harnesses.size();i!=n;i++){
@@ -214,7 +214,7 @@ void HarnessManager::payload3(FILE *f) {
           "typedef void (*fun_ptr)(char **, char **);\n"
           "fun_ptr FUZZ_LIST[] = {\n");
   for(int i=0,n=harnesses.size();i!=n;i++){
-    fprintf(f, "  harness%d", i);
+    fprintf(f, "  &harness%d", i);
     if (i != n - 1) fprintf(f, ",");
     fprintf(f, "\n");
   }
@@ -231,14 +231,14 @@ void HarnessManager::generate(const char *file) {
 
 int main(int argc, char** argv) {
 
-  if(argc != 2){
-    printf("Missing operation json file!\n");
+  if(argc != 3){
+    printf("Usage: afl-gen <input> <output>\n");
     exit(-1);
   }
 
   HarnessManager hmgr;
   hmgr.parse(argv[1]);
   hmgr.dump();
-  hmgr.generate("tmp.c");
+  hmgr.generate(argv[2]);
   return 0;
 }

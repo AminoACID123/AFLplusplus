@@ -109,6 +109,6 @@ add_compile_options( -g)
 # create static lib
 add_library(btstack STATIC ${SOURCES})
 
-add_executable(bt main.c hci_transport_fuzz.c)
+add_executable(bt main.c hci_transport_fuzz.c run_loop_fuzz.c port.c harness.c)
 
 target_link_libraries( bt btstack )

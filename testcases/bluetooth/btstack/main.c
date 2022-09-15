@@ -7,25 +7,25 @@
 
 __AFL_FUZZ_INIT();
 
+void harness_init();
+
 void stack_init();
 
 void stack_execute(char*, int);
 
 int main(int argc, const char * argv[]){
 
+    harness_init();
+
     stack_init();
 
     __AFL_INIT();
 
-    buf = __AFL_FUZZ_TESTCASE_BUF;
+    char* buf = __AFL_FUZZ_TESTCASE_BUF;
 
-    while (__AFL_LOOP(1000)) {
+    int len = __AFL_FUZZ_TESTCASE_LEN; 
 
-        len = __AFL_FUZZ_TESTCASE_LEN; 
-
-        stack_execute(buf, len);
-
-    }
+    stack_execute(buf, len);
 
     return 0;
 }
