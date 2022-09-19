@@ -43,12 +43,10 @@ typedef struct sharedmem {
 /* ========================================= */
 #else
   s32 shm_id;                          /* ID of the SHM region              */
-  s32 shm2_id;
   s32 cmplog_shm_id;
 #endif
 
   u8 *map;                                          /* shared memory region */
-  u8 *map2;
   size_t map_size;                                 /* actual allocated size */
 
   int             cmplog_mode;

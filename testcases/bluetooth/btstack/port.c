@@ -52,7 +52,7 @@ void execute_api(char *buf, int size) {
 
   *(int*)(__afl_area2_ptr + log_ptr) = 1;
   log_ptr += 4;
-  __afl_area2_ptr[log_ptr++] = API;
+  __afl_area2_ptr[log_ptr++] = F_API;
 
   int arg_in_count, arg_out_count;
 
@@ -110,7 +110,7 @@ bool execute_one(){
 
     int size = *(int*)(BUF + POS);
     POS += 4;
-    if(BUF[POS] == API)
+    if(BUF[POS] == F_API)
         execute_api(BUF + POS, size);
     else
         execute_hci(BUF + POS, size); 

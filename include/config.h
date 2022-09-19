@@ -383,7 +383,7 @@
 
 #define SHM_ENV_VAR "__AFL_SHM_ID"
 
-#define SHM2_ENV_VAR "_AFL_SHM2_ID"
+#define SHM2_ENV_VAR "__AFL_SHM2_ID"
 
 /* Environment variable used to pass SHM FUZZ ID to the called program. */
 
