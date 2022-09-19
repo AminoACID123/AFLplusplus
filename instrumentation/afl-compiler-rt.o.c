@@ -93,7 +93,7 @@ static u8 *__afl_area_ptr_dummy = __afl_area_initial;
 static u8 *__afl_area_ptr_backup = __afl_area_initial;
 
 u8        *__afl_area_ptr = __afl_area_initial;
-u8        *__afl_area2_ptr;
+u8        *__afl_area2_ptr = __afl_area_initial;
 u8        *__afl_dictionary;
 u8        *__afl_fuzz_ptr;
 static u32 __afl_fuzz_len_dummy;
@@ -281,9 +281,14 @@ static void __afl_map_shm(void) {
   __afl_already_initialized_shm = 1;
 
   // if we are not running in afl ensure the map exists
-  if (!__afl_area_ptr) { __afl_area_ptr = __afl_area_ptr_dummy; }
+  if (!__afl_area_ptr) {
+    __afl_area_ptr = __afl_area_ptr_dummy;
+    __afl_area2_ptr = __afl_area_ptr_dummy;
+  }
 
   char *id_str = getenv(SHM_ENV_VAR);
+
+  char *id_str2 = getenv(SHM2_ENV_VAR);
 
   if (__afl_final_loc) {
 
@@ -464,6 +469,7 @@ static void __afl_map_shm(void) {
     __afl_area_ptr = shm_base;
 #else
     u32 shm_id = atoi(id_str);
+    u32 shm2_id = atoi(id_str2);
 
     if (__afl_map_size && __afl_map_size > MAP_SIZE) {
 
@@ -478,6 +484,7 @@ static void __afl_map_shm(void) {
     }
 
     __afl_area_ptr = (u8 *)shmat(shm_id, (void *)__afl_map_addr, 0);
+    __afl_area2_ptr = (u8 *)shmat(shm2_id, NULL, 0);
 
     /* Whooooops. */
 

@@ -10,6 +10,7 @@
 #include <sys/uio.h>
 #include <sys/un.h>
 
+#include "../../../include/config.h"
 #include "btstack_run_loop.h"
 #include "hci_cmd.h"
 #include "hci_transport.h"
@@ -23,12 +24,7 @@ static char* BUF;
 static int SIZE;
 static int POS;
 
-#define API                     0xFF
-#define HCI_COMMAND_DATA_PACKET 0x01
-#define HCI_ACL_DATA_PACKET     0x02
-#define HCI_SCO_DATA_PACKET     0x03
-#define HCI_EVENT_PACKET        0x04
-#define HCI_ISO_DATA_PACKET     0x05
+
 
 extern char arg_in[];
 extern char arg_out[];

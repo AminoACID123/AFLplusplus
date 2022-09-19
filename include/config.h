@@ -383,6 +383,8 @@
 
 #define SHM_ENV_VAR "__AFL_SHM_ID"
 
+#define SHM2_ENV_VAR "_AFL_SHM2_ID"
+
 /* Environment variable used to pass SHM FUZZ ID to the called program. */
 
 #define SHM_FUZZ_ENV_VAR "__AFL_SHM_FUZZ_ID"
@@ -506,6 +508,14 @@
 /* Maximum mutations on a string */
 
 #define AFL_TXT_STRING_MAX_MUTATIONS 6
+
+/* Bluetooth related Macros */
+#define F_API                   0xFF
+#define HCI_COMMAND_DATA_PACKET 0x01
+#define HCI_ACL_DATA_PACKET     0x02
+#define HCI_SCO_DATA_PACKET     0x03
+#define HCI_EVENT_PACKET        0x04
+#define HCI_ISO_DATA_PACKET     0x05
 
 #endif                                                  /* ! _HAVE_CONFIG_H */
 

@@ -17,9 +17,9 @@ int main(int argc, const char * argv[]){
 
     harness_init();
 
-    stack_init();
-
     __AFL_INIT();
+
+    stack_init();
 
     char* buf = __AFL_FUZZ_TESTCASE_BUF;
 

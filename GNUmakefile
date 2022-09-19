@@ -307,7 +307,7 @@ ifdef TEST_MMAP
 endif
 
 .PHONY: all
-all:	test_x86 test_shm test_python ready $(PROGS) afl-as llvm gcc_plugin test_build all_done afl-gen
+all:	test_x86 test_shm test_python ready $(PROGS) afl-as afl-gen llvm gcc_plugin test_build all_done
 	-$(MAKE) -C utils/aflpp_driver
 	@echo
 	@echo
@@ -464,7 +464,7 @@ afl-gotcpu: src/afl-gotcpu.c src/afl-common.o $(COMM_HDR) | test_x86
 	$(CC) $(CFLAGS) $(COMPILE_STATIC) $(CFLAGS_FLTO) src/$@.c src/afl-common.o -o $@ $(LDFLAGS)
 
 afl-gen: src/harness/harness.cpp src/harness/cJSON.c
-	$(CXX) src/harness/harness.cpp src/harness/cJSON.c -o $@
+	$(CXX) -g src/harness/harness.cpp src/harness/cJSON.c -o $@
 
 .PHONY: document
 document:	afl-fuzz-document

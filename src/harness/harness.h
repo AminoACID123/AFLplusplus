@@ -32,12 +32,27 @@ class HarnessManager {
   void payload2(FILE *f);
   void payload3(FILE *f);
 
+  inline int get_operation_idx(Operation* op) {
+    for(int i=0,n=operations.size();i<n;i++){
+      if(operations[i] == op) return i;
+    }
+    return -1;
+  }
+
+  inline int get_parameter_idx(Parameter* param) {
+    for(int i=0,n=parameters.size();i<n;i++) {
+      if(&parameters[i] == param) return i;
+    }
+    return -1;
+  }
+
  public:
   HarnessManager();
   Parameter *get_parameter(std::string name);
   Operation *get_operation(std::string name);
   void parse(const char* file);
-  void generate(const char* file);
+  void generate_harness(const char* file);
+  void generate_seeds(const char* dir);
   void dump();
 };
 

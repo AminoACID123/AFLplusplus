@@ -157,12 +157,12 @@ static uint32_t btstack_run_loop_posix_get_time_ms(void){
 bool execute_one();
 
 static void btstack_run_loop_posix_execute(void) {
-    fd_set descriptors_read;
-    fd_set descriptors_write;
+    // fd_set descriptors_read;
+    // fd_set descriptors_write;
     
-    btstack_linked_list_iterator_t it;
-    struct timeval * timeout;
-    struct timeval tv;
+    // btstack_linked_list_iterator_t it;
+    // struct timeval * timeout;
+    // struct timeval tv;
     uint32_t now_ms;
 
     while (execute_one()) {

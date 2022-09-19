@@ -2,6 +2,7 @@
 #include "hci_cmd.h"
 #include "hci_transport.h"
 #include "stdlib.h"
+#include "../../../include/config.h"
 
 extern char* __afl_area2_ptr;
 int log_ptr;
@@ -17,11 +18,29 @@ static int hci_transport_fuzz_can_send_now(uint8_t packet_type)
     return 1;
 }
 
+static void print_packet(uint8_t packet_type, uint8_t* packet, int size){
+    char* packet_type_str;
+    switch (packet_type)
+    {
+    case HCI_COMMAND_DATA_PACKET: packet_type_str = "HCI_COMMAND"; break;
+    case HCI_EVENT_PACKET: packet_type_str = "HCI_EVENT"; break;
+    case HCI_ACL_DATA_PACKET: packet_type_str = "HCI_ACL"; break;
+    default:
+        packet_type_str = "UNKNOWN_PACKET"; break;  
+    }
+    printf("%s: ", packet_type_str);
+    for(int i=0;i<size;i++)
+        printf("%02x ", packet[i]);
+    printf("\n");
+}
+
 static int hci_transport_fuzz_send_packet(uint8_t packet_type, uint8_t * packet, int size){
 
     // preapare packet
     // hci_packet_out[0] = packet_type;
     // memcpy(&hci_packet_out[1], packet, size);
+
+    print_packet(packet_type, packet, size);
 
     *(int*)(__afl_area2_ptr + log_ptr) = size + 1;
     log_ptr += 4;
