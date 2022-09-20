@@ -442,6 +442,11 @@ u8 calibrate_case(afl_state_t *afl, struct queue_entry *q, u8 *use_mem,
 
     fault = fuzz_run_target(afl, &afl->fsrv, use_tmout);
 
+    char* hci_trace = alloc_printf("%s_trace", q->fname);
+    FILE* f = fopen(hci_trace, "w");
+    fwrite(afl->fsrv.trace_bits2, 1, MAP_SIZE, f);
+    fclose(f);
+
     /* afl->stop_soon is set by the handler for Ctrl+C. When it's pressed,
        we want to bail out quickly. */
 

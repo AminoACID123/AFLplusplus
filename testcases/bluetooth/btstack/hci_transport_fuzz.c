@@ -1,7 +1,8 @@
 #include "btstack_run_loop.h"
 #include "hci_cmd.h"
 #include "hci_transport.h"
-#include "stdlib.h"
+#include <stdlib.h>
+#include <string.h>
 #include "../../../include/config.h"
 
 extern char* __afl_area2_ptr;
@@ -45,7 +46,7 @@ static int hci_transport_fuzz_send_packet(uint8_t packet_type, uint8_t * packet,
     *(int*)(__afl_area2_ptr + log_ptr) = size + 1;
     log_ptr += 4;
     __afl_area2_ptr[log_ptr++] = packet_type;
-    memcpy(&__afl_area2_ptr + log_ptr, packet, size);
+    memcpy(__afl_area2_ptr + log_ptr, packet, size);
     log_ptr += size;
 
     static const uint8_t packet_sent_event[] = { HCI_EVENT_TRANSPORT_PACKET_SENT, 0};
@@ -92,4 +93,26 @@ static const hci_transport_t hci_transport_fuzz = {
 
 const hci_transport_t* hci_transport_fuzz_instance(){
     return &hci_transport_fuzz;
+}
+
+void send_initial_packets(){
+    char packet1[] =    {0x0E, 0x04, 0x01, 0x03, 0x0c, 0x00}; 
+    char packet2[] =    {0x0E, 0x0C, 0x01, 0x01, 0x10, 0x00, 0x0C, 0xFF, 0xFF, 0x0C, 0xFF, 0xFF, 0xFF, 0xFF};
+    char packet3[254] = {0x0E, 0xFC, 0x01, 0x14, 0x0c, 0x00, 'F', 'U', 'Z', 'Z'};
+    char packet4[70] =  {0x0E, 0x44, 0x01, 0x02, 0x10, 0x00};
+    memset(packet4 + 7, 0xFF, 64);
+    char packet5[] =    {0x0E, 0x0a, 0x01, 0x09, 0x10, 0x00, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
+    char packet6[] =    {0x0E, 0x0B, 0x01, 0x05, 0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    char packet7[] =    {0x0E, 0x0c, 0x01, 0x03, 0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    char packet8[] =    {0x0E, 0x04, 0x01, 0x01, 0x0c, 0x00};
+    char packet9[] =    {0x0E, 0x04, 0x01, 0x63, 0x0c, 0x00};
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet1, sizeof(packet1));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet2, sizeof(packet2));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet3, sizeof(packet3));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet4, sizeof(packet4));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet5, sizeof(packet5));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet6, sizeof(packet6));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet7, sizeof(packet7));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet8, sizeof(packet8));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet9, sizeof(packet9));
 }

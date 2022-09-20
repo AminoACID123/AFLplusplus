@@ -101,6 +101,7 @@ void execute_hci(char* hci_packet_in, int size){
     log_ptr += 4;
     memcpy(__afl_area2_ptr + log_ptr, hci_packet_in, size);
     log_ptr += 4;
+
     fuzz_packet_handler(hci_packet_in[0], &hci_packet_in[1], packet_len-1);
 }
 
@@ -134,6 +135,8 @@ void stack_init(){
 
     // turn on!
     hci_power_control(HCI_POWER_ON);
+
+    send_initial_packets();
 }
 
 void stack_execute(char* buf, int size){
