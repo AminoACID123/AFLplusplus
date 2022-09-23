@@ -1,5 +1,4 @@
 #include "gap.h"
-#include <stdlib.h>
 #define NUM_PARAM 3
 #define MAX_INPUT 2
 #define MAX_OUTPUT 1
@@ -20,7 +19,7 @@ void harness0(char **arg_in, char **arg_out) {
 void harness1(char **arg_in, char **arg_out) {
   char* _i0 = arg_in[0];
   char* _i1 = arg_in[1];
-  gap_connect(_i0, (bd_addr_type_t)_i1);
+  gap_connect(_i0, _i1);
 }
 
 void harness2(char **arg_in, char **arg_out) {

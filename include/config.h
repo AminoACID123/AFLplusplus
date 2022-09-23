@@ -510,7 +510,7 @@
 #define AFL_TXT_STRING_MAX_MUTATIONS 6
 
 /* Bluetooth related Macros */
-#define F_API                   0xFF
+#define F_API                   0x06
 #define HCI_COMMAND_DATA_PACKET 0x01
 #define HCI_ACL_DATA_PACKET     0x02
 #define HCI_SCO_DATA_PACKET     0x03

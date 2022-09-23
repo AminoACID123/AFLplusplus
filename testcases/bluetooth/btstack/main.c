@@ -19,9 +19,14 @@ int main(int argc, const char * argv[]){
 
     stack_init();
 
-    char* buf = __AFL_FUZZ_TESTCASE_BUF;
+  //  char* buf = __AFL_FUZZ_TESTCASE_BUF;
 
-    int len = __AFL_FUZZ_TESTCASE_LEN; 
+   // int len = __AFL_FUZZ_TESTCASE_LEN; 
+
+   char* buf[2048];
+
+   FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/in/1","r");
+    int len = fread(buf, 1, 2048, f);
 
     stack_execute(buf, len);
 
