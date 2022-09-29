@@ -240,6 +240,7 @@ void HarnessManager::generate_seeds(const char *dir) {
   for (int i = 0, n = harnesses.size(); i < n; i++) {
     Harness *hn = harnesses[i];
     char     file[512];
+    char to_continue = 0;
     int len = 0;
     char flag = F_API;
     int harness_idx = i;
@@ -250,6 +251,7 @@ void HarnessManager::generate_seeds(const char *dir) {
 
     FILE *F = fopen((string(dir) + "/" + file).c_str(), "w");
 
+    fwrite(&to_continue, 1, 1, F);
     fwrite(&len, 4, 1, F);
     fwrite(&flag, 1, 1, F);
     fwrite(&harness_idx, 4, 1, F);
@@ -295,11 +297,12 @@ int main(int argc, char **argv) {
     exit(-1);
   }
 
-  HarnessManager hmgr;
-  hmgr.parse(argv[1]);
-  hmgr.dump();
-  hmgr.generate_harness(argv[2]);
-  hmgr.generate_seeds(argv[3]);
+  HarnessManager* hmgr = HarnessManager::get();
+  hmgr->parse(argv[1]);
+  hmgr->dump();
+  hmgr->generate_harness(argv[2]);
+  hmgr->generate_seeds(argv[3]);
 
   return 0;
 }
+

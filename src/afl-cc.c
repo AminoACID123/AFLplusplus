@@ -1143,7 +1143,7 @@ static void edit_params(u32 argc, char **argv, char **envp) {
       "int _L(unsigned int) __asm__(\"___afl_persistent_loop\"); "
 #else
       "__attribute__((visibility(\"default\"))) "
-      "int _L(unsigned int) __asm__(\"__afl_persistent_loop\"); "
+      "int _L(unsigned int*) __asm__(\"__afl_persistent_loop\"); "
 #endif                                                        /* ^__APPLE__ */
       "_L(_A); })";
 

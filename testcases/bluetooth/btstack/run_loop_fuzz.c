@@ -30,7 +30,7 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * Please inquire about commercial licensing options at 
+ * Please inquire about commercial licensing options at
  * contact@bluekitchen-gmbh.com
  *
  */
@@ -45,19 +45,28 @@
 #define _POSIX_C_SOURCE 200809
 
 #include "btstack_run_loop_posix.h"
-
+#include "btstack_debug.h"
+#include "btstack_linked_list.h"
 #include "btstack_run_loop.h"
 #include "btstack_util.h"
-#include "btstack_linked_list.h"
-#include "btstack_debug.h"
+#include "ble/le_device_db_tlv.h"
+#include "btstack_config.h"
+#include "btstack_event.h"
+#include "btstack_run_loop.h"
+#include "btstack_tlv_posix.h"
+#include "classic/btstack_link_key_db_tlv.h"
+#include "hci_cmd.h"
+#include "hci_transport.h"
 
+#include "../../../include/config.h"
+
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <pthread.h>
 
 // the run loop
 static int btstack_run_loop_posix_data_sources_modified;
@@ -65,7 +74,8 @@ static int btstack_run_loop_posix_data_sources_modified;
 static bool btstack_run_loop_posix_exit_requested;
 
 // to trigger process callbacks other thread
-static pthread_mutex_t       btstack_run_loop_posix_callbacks_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t btstack_run_loop_posix_callbacks_mutex =
+    PTHREAD_MUTEX_INITIALIZER;
 static int                   btstack_run_loop_posix_process_callbacks_fd;
 static btstack_data_source_t btstack_run_loop_posix_process_callbacks_ds;
 
@@ -85,192 +95,209 @@ static struct timeval init_tv;
 /**
  * Add data_source to run_loop
  */
-static void btstack_run_loop_posix_add_data_source(btstack_data_source_t *ds){
-    btstack_run_loop_posix_data_sources_modified = 1;
-    btstack_run_loop_base_add_data_source(ds);
+static void btstack_run_loop_posix_add_data_source(btstack_data_source_t *ds) {
+  btstack_run_loop_posix_data_sources_modified = 1;
+  btstack_run_loop_base_add_data_source(ds);
 }
 
 /**
  * Remove data_source from run loop
  */
-static bool btstack_run_loop_posix_remove_data_source(btstack_data_source_t *ds){
-    btstack_run_loop_posix_data_sources_modified = 1;
-    return btstack_run_loop_base_remove_data_source(ds);
+static bool btstack_run_loop_posix_remove_data_source(
+    btstack_data_source_t *ds) {
+  btstack_run_loop_posix_data_sources_modified = 1;
+  return btstack_run_loop_base_remove_data_source(ds);
 }
 
 #ifdef _POSIX_MONOTONIC_CLOCK
 /**
- * @brief Returns the timespec which represents the time(stop - start). It might be negative
+ * @brief Returns the timespec which represents the time(stop - start). It might
+ * be negative
  */
-static void timespec_diff(struct timespec *start, struct timespec *stop, struct timespec *result){
+static void timespec_diff(struct timespec *start, struct timespec *stop,
+                          struct timespec *result) {
+  result->tv_sec = stop->tv_sec - start->tv_sec;
+  if ((stop->tv_nsec - start->tv_nsec) < 0) {
+    result->tv_sec = stop->tv_sec - start->tv_sec - 1;
+    result->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000;
+  } else {
     result->tv_sec = stop->tv_sec - start->tv_sec;
-    if ((stop->tv_nsec - start->tv_nsec) < 0) {
-        result->tv_sec = stop->tv_sec - start->tv_sec - 1;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000;
-    } else {
-        result->tv_sec = stop->tv_sec - start->tv_sec;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec;
-    }
+    result->tv_nsec = stop->tv_nsec - start->tv_nsec;
+  }
 }
 
 /**
  * @brief Convert timespec to miliseconds, might overflow
  */
-static uint64_t timespec_to_milliseconds(struct timespec *a){
-    uint64_t ret = 0;
-    uint64_t sec_val = (uint64_t)(a->tv_sec);
-    uint64_t nsec_val = (uint64_t)(a->tv_nsec);
-    ret = (sec_val*1000) + (nsec_val/1000000);
-    return ret;
+static uint64_t timespec_to_milliseconds(struct timespec *a) {
+  uint64_t ret = 0;
+  uint64_t sec_val = (uint64_t)(a->tv_sec);
+  uint64_t nsec_val = (uint64_t)(a->tv_nsec);
+  ret = (sec_val * 1000) + (nsec_val / 1000000);
+  return ret;
 }
 
 /**
  * @brief Returns the milisecond value of (stop - start). Might overflow
  */
-static uint64_t timespec_diff_milis(struct timespec* start, struct timespec* stop){
-    struct timespec diff_ts;
-    timespec_diff(start, stop, &diff_ts);
-    return timespec_to_milliseconds(&diff_ts);
+static uint64_t timespec_diff_milis(struct timespec *start,
+                                    struct timespec *stop) {
+  struct timespec diff_ts;
+  timespec_diff(start, stop, &diff_ts);
+  return timespec_to_milliseconds(&diff_ts);
 }
 #endif
 
 /**
  * @brief Queries the current time in ms since start
  */
-static uint32_t btstack_run_loop_posix_get_time_ms(void){
-    uint32_t time_ms;
+static uint32_t btstack_run_loop_posix_get_time_ms(void) {
+  uint32_t time_ms;
 #ifdef _POSIX_MONOTONIC_CLOCK
-    struct timespec now_ts;
-    clock_gettime(CLOCK_MONOTONIC, &now_ts);
-    time_ms = (uint32_t) timespec_diff_milis(&init_ts, &now_ts);
+  struct timespec now_ts;
+  clock_gettime(CLOCK_MONOTONIC, &now_ts);
+  time_ms = (uint32_t)timespec_diff_milis(&init_ts, &now_ts);
 #else
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    time_ms = (uint32_t) ((tv.tv_sec  - init_tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  time_ms =
+      (uint32_t)((tv.tv_sec - init_tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
 #endif
-    return time_ms;
+  return time_ms;
 }
 
-/**
- * Execute run_loop
- */
-bool execute_one();
 
 static void btstack_run_loop_posix_execute(void) {
-    // fd_set descriptors_read;
-    // fd_set descriptors_write;
-    
-    // btstack_linked_list_iterator_t it;
-    // struct timeval * timeout;
-    // struct timeval tv;
-    uint32_t now_ms;
+  // fd_set descriptors_read;
+  // fd_set descriptors_write;
 
-    while (execute_one()) {
-        // process timers
-        now_ms = btstack_run_loop_posix_get_time_ms();
-        btstack_run_loop_base_process_timers(now_ms);
-    }
+  // btstack_linked_list_iterator_t it;
+  // struct timeval * timeout;
+  // struct timeval tv;
+//   uint32_t now_ms;
+
+//   while (execute_one()) {
+//     // process timers
+//     now_ms = btstack_run_loop_posix_get_time_ms();
+//     btstack_run_loop_base_process_timers(now_ms);
+//   }
 }
 
-static void btstack_run_loop_posix_trigger_exit(void){
-    btstack_run_loop_posix_exit_requested = true;
+static void btstack_run_loop_posix_trigger_exit(void) {
+  btstack_run_loop_posix_exit_requested = true;
 }
 
 // set timer
-static void btstack_run_loop_posix_set_timer(btstack_timer_source_t *a, uint32_t timeout_in_ms){
-    uint32_t time_ms = btstack_run_loop_posix_get_time_ms();
-    a->timeout = time_ms + timeout_in_ms;
-    log_debug("btstack_run_loop_posix_set_timer to %u ms (now %u, timeout %u)", a->timeout, time_ms, timeout_in_ms);
+static void btstack_run_loop_posix_set_timer(btstack_timer_source_t *a,
+                                             uint32_t timeout_in_ms) {
+  uint32_t time_ms = btstack_run_loop_posix_get_time_ms();
+  a->timeout = time_ms + timeout_in_ms;
+  log_debug("btstack_run_loop_posix_set_timer to %u ms (now %u, timeout %u)",
+            a->timeout, time_ms, timeout_in_ms);
 }
 
 // trigger pipe
-static void btstack_run_loop_posix_trigger_pipe(int fd){
-    if (fd < 0) return;
-    const uint8_t x = (uint8_t) 'x';
-    ssize_t bytes_written = write(fd, &x, 1);
-    UNUSED(bytes_written);
+static void btstack_run_loop_posix_trigger_pipe(int fd) {
+  if (fd < 0) return;
+  const uint8_t x = (uint8_t)'x';
+  ssize_t       bytes_written = write(fd, &x, 1);
+  UNUSED(bytes_written);
 }
 
 // poll data sources from irq
 
-static void btstack_run_loop_posix_poll_data_sources_handler(btstack_data_source_t * ds, btstack_data_source_callback_type_t callback_type){
-    UNUSED(callback_type);
-    uint8_t buffer[1];
-    ssize_t bytes_read = read(ds->source.fd, buffer, 1);
-    UNUSED(bytes_read);
-    // poll data sources
-    btstack_run_loop_base_poll_data_sources();
+static void btstack_run_loop_posix_poll_data_sources_handler(
+    btstack_data_source_t *             ds,
+    btstack_data_source_callback_type_t callback_type) {
+  UNUSED(callback_type);
+  uint8_t buffer[1];
+  ssize_t bytes_read = read(ds->source.fd, buffer, 1);
+  UNUSED(bytes_read);
+  // poll data sources
+  btstack_run_loop_base_poll_data_sources();
 }
 
-static void btstack_run_loop_posix_poll_data_sources_from_irq(void){
-    // trigger run loop
-    btstack_run_loop_posix_trigger_pipe(btstack_run_loop_posix_poll_data_sources_fd);
+static void btstack_run_loop_posix_poll_data_sources_from_irq(void) {
+  // trigger run loop
+  btstack_run_loop_posix_trigger_pipe(
+      btstack_run_loop_posix_poll_data_sources_fd);
 }
 
 // execute on main thread from same or different thread
 
-static void btstack_run_loop_posix_process_callbacks_handler(btstack_data_source_t * ds, btstack_data_source_callback_type_t callback_type){
-    UNUSED(callback_type);
-    uint8_t buffer[1];
-    ssize_t bytes_read = read(ds->source.fd, buffer, 1);
-    UNUSED(bytes_read);
-    // execute callbacks - protect list with mutex
-    while (1){
-        pthread_mutex_lock(&btstack_run_loop_posix_callbacks_mutex);
-        btstack_context_callback_registration_t * callback_registration = (btstack_context_callback_registration_t *) btstack_linked_list_pop(&btstack_run_loop_base_callbacks);
-        pthread_mutex_unlock(&btstack_run_loop_posix_callbacks_mutex);
-        if (callback_registration == NULL){
-            break;
-        }
-        (*callback_registration->callback)(callback_registration->context);
-    }
-}
-
-static void btstack_run_loop_posix_execute_on_main_thread(btstack_context_callback_registration_t * callback_registration){
-    // protect list with mutex
+static void btstack_run_loop_posix_process_callbacks_handler(
+    btstack_data_source_t *             ds,
+    btstack_data_source_callback_type_t callback_type) {
+  UNUSED(callback_type);
+  uint8_t buffer[1];
+  ssize_t bytes_read = read(ds->source.fd, buffer, 1);
+  UNUSED(bytes_read);
+  // execute callbacks - protect list with mutex
+  while (1) {
     pthread_mutex_lock(&btstack_run_loop_posix_callbacks_mutex);
-    btstack_run_loop_base_add_callback(callback_registration);
+    btstack_context_callback_registration_t *callback_registration =
+        (btstack_context_callback_registration_t *)btstack_linked_list_pop(
+            &btstack_run_loop_base_callbacks);
     pthread_mutex_unlock(&btstack_run_loop_posix_callbacks_mutex);
-    // trigger run loop
-    btstack_run_loop_posix_trigger_pipe(btstack_run_loop_posix_process_callbacks_fd);
+    if (callback_registration == NULL) { break; }
+    (*callback_registration->callback)(callback_registration->context);
+  }
 }
 
-//init
+static void btstack_run_loop_posix_execute_on_main_thread(
+    btstack_context_callback_registration_t *callback_registration) {
+  // protect list with mutex
+  pthread_mutex_lock(&btstack_run_loop_posix_callbacks_mutex);
+  btstack_run_loop_base_add_callback(callback_registration);
+  pthread_mutex_unlock(&btstack_run_loop_posix_callbacks_mutex);
+  // trigger run loop
+  btstack_run_loop_posix_trigger_pipe(
+      btstack_run_loop_posix_process_callbacks_fd);
+}
+
+// init
 
 // @return fd >= 0 on success
-static int btstack_run_loop_posix_register_pipe_datasource(btstack_data_source_t * data_source){
-    int fildes[2]; // 0 = read,  1 = write
-    int status = pipe(fildes);
-    if (status != 0){
-        log_error("pipe() failed");
-        return -1;
-    }
-    data_source->source.fd = fildes[0];
-    data_source->flags = DATA_SOURCE_CALLBACK_READ;
-    btstack_run_loop_base_add_data_source(data_source);
-    log_info("Pipe: in %u, out %u", fildes[1], fildes[0]);
-    return fildes[1];
+static int btstack_run_loop_posix_register_pipe_datasource(
+    btstack_data_source_t *data_source) {
+  int fildes[2];  // 0 = read,  1 = write
+  int status = pipe(fildes);
+  if (status != 0) {
+    log_error("pipe() failed");
+    return -1;
+  }
+  data_source->source.fd = fildes[0];
+  data_source->flags = DATA_SOURCE_CALLBACK_READ;
+  btstack_run_loop_base_add_data_source(data_source);
+  log_info("Pipe: in %u, out %u", fildes[1], fildes[0]);
+  return fildes[1];
 }
 
-static void btstack_run_loop_posix_init(void){
-    btstack_run_loop_base_init();
-    
+static void btstack_run_loop_posix_init(void) {
+  btstack_run_loop_base_init();
+
 #ifdef _POSIX_MONOTONIC_CLOCK
-    clock_gettime(CLOCK_MONOTONIC, &init_ts);
-    init_ts.tv_nsec = 0;
+  clock_gettime(CLOCK_MONOTONIC, &init_ts);
+  init_ts.tv_nsec = 0;
 #else
-    // just assume that we started at tv_usec == 0
-    gettimeofday(&init_tv, NULL);
-    init_tv.tv_usec = 0;
+  // just assume that we started at tv_usec == 0
+  gettimeofday(&init_tv, NULL);
+  init_tv.tv_usec = 0;
 #endif
 
-    // setup pipe to trigger process callbacks
-    btstack_run_loop_posix_process_callbacks_ds.process = &btstack_run_loop_posix_process_callbacks_handler;
-    btstack_run_loop_posix_process_callbacks_fd = btstack_run_loop_posix_register_pipe_datasource(&btstack_run_loop_posix_process_callbacks_ds);
+  // setup pipe to trigger process callbacks
+  btstack_run_loop_posix_process_callbacks_ds.process =
+      &btstack_run_loop_posix_process_callbacks_handler;
+  btstack_run_loop_posix_process_callbacks_fd =
+      btstack_run_loop_posix_register_pipe_datasource(
+          &btstack_run_loop_posix_process_callbacks_ds);
 
-    // setup pipe to poll data sources
-    btstack_run_loop_posix_poll_data_sources_ds.process = &btstack_run_loop_posix_poll_data_sources_handler;
-    btstack_run_loop_posix_poll_data_sources_fd = btstack_run_loop_posix_register_pipe_datasource(&btstack_run_loop_posix_poll_data_sources_ds);
+  // setup pipe to poll data sources
+  btstack_run_loop_posix_poll_data_sources_ds.process =
+      &btstack_run_loop_posix_poll_data_sources_handler;
+  btstack_run_loop_posix_poll_data_sources_fd =
+      btstack_run_loop_posix_register_pipe_datasource(
+          &btstack_run_loop_posix_poll_data_sources_ds);
 }
 
 static const btstack_run_loop_t btstack_run_loop_fuzz = {
@@ -293,7 +320,73 @@ static const btstack_run_loop_t btstack_run_loop_fuzz = {
 /**
  * Provide btstack_run_loop_posix instance
  */
-const btstack_run_loop_t * btstack_run_loop_fuzz_get_instance(void){
-    return &btstack_run_loop_fuzz;
+const btstack_run_loop_t *btstack_run_loop_fuzz_get_instance(void) {
+  return &btstack_run_loop_fuzz;
 }
 
+#define TLV_DB_PATH_PREFIX "/tmp/btstack_"
+#define TLV_DB_PATH_POSTFIX ".tlv"
+static char                                   tlv_db_path[100];
+static const btstack_tlv_t *                  tlv_impl;
+static btstack_tlv_posix_t                    tlv_context;
+static bd_addr_t                              local_addr;
+static btstack_packet_callback_registration_t hci_event_callback_registration;
+static void packet_handler(uint8_t packet_type, uint16_t channel,
+                           uint8_t *packet, uint16_t size) {
+  if (packet_type != HCI_EVENT_PACKET) return;
+  switch (hci_event_packet_get_type(packet)) {
+    case BTSTACK_EVENT_STATE:
+      switch (btstack_event_state_get_state(packet)) {
+        case HCI_STATE_WORKING:
+          gap_local_bd_addr(local_addr);
+          printf("BTstack up and running on %s.\n", bd_addr_to_str(local_addr));
+          btstack_strcpy(tlv_db_path, sizeof(tlv_db_path), TLV_DB_PATH_PREFIX);
+          btstack_strcat(tlv_db_path, sizeof(tlv_db_path),
+                         bd_addr_to_str_with_delimiter(local_addr, '-'));
+          btstack_strcat(tlv_db_path, sizeof(tlv_db_path), TLV_DB_PATH_POSTFIX);
+          tlv_impl = btstack_tlv_posix_init_instance(&tlv_context, tlv_db_path);
+          btstack_tlv_set_instance(tlv_impl, &tlv_context);
+#ifdef ENABLE_CLASSIC
+          hci_set_link_key_db(
+              btstack_link_key_db_tlv_get_instance(tlv_impl, &tlv_context));
+#endif
+#ifdef ENABLE_BLE
+          le_device_db_tlv_configure(tlv_impl, &tlv_context);
+#endif
+      }
+  }
+}
+
+void stack_init() {
+  btstack_memory_init();
+
+  btstack_run_loop_init(btstack_run_loop_fuzz_get_instance());
+
+  hci_init(hci_transport_fuzz_instance(), NULL);
+
+  hci_event_callback_registration.callback = &packet_handler;
+  hci_add_event_handler(&hci_event_callback_registration);
+
+  l2cap_init();
+
+  gatt_client_init();
+
+  sm_init();
+
+  // turn on!
+  hci_power_control(HCI_POWER_ON);
+
+  send_initial_packets();
+}
+
+void execute_one(char* buf, int len){
+  int size = *(int*)buf;
+  if(buf[4] == F_API)
+      execute_api(buf + 4, size);
+  else
+      execute_hci(buf + 4, size);
+  
+  uint32_t now_ms;
+  now_ms = btstack_run_loop_posix_get_time_ms();
+  btstack_run_loop_base_process_timers(now_ms);
+}

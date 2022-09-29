@@ -15,13 +15,16 @@ struct Operation {
 };
 
 struct Harness {
-  Operation *              op;
-  std::vector<std::string> headers;
-  std::vector<std::string> exec;
+  Operation *                         op;
+  std::vector<std::vector<char>>      iValues;
+  std::vector<std::string>            headers;
+  std::vector<std::string>            exec;
   void dump();
 };
 
 class HarnessManager {
+  static HarnessManager* manager;
+  HarnessManager() {}
   std::vector<Parameter> parameters;
   std::vector<Operation*> operations;
   std::vector<Harness*>   harnesses;
@@ -47,7 +50,11 @@ class HarnessManager {
   }
 
  public:
-  HarnessManager();
+  static HarnessManager* get(){
+    if(!manager)
+      return new HarnessManager();
+    return manager;
+  }
   Parameter *get_parameter(std::string name);
   Operation *get_operation(std::string name);
   void parse(const char* file);

@@ -1233,7 +1233,7 @@ static void __afl_start_forkserver(void) {
 /* A simplified persistent mode handler, used as explained in
  * README.llvm.md. */
 
-int __afl_persistent_loop(unsigned int max_cnt) {
+int __afl_persistent_loop(unsigned int* to_continue) {
 
   static u8  first_pass = 1;
   static u32 cycle_cnt;
@@ -1253,7 +1253,7 @@ int __afl_persistent_loop(unsigned int max_cnt) {
 
     }
 
-    cycle_cnt = max_cnt;
+    /* cycle_cnt = max_cnt; */
     first_pass = 0;
     __afl_selective_coverage_temp = 1;
 
@@ -1263,7 +1263,7 @@ int __afl_persistent_loop(unsigned int max_cnt) {
 
   if (is_persistent) {
 
-    if (--cycle_cnt) {
+    if (*to_continue == 1) {
 
       raise(SIGSTOP);
 
