@@ -1,0 +1,9 @@
+CXXFLAGS = -I$(shell llvm-config --includedir)			\
+		   -I$(shell llvm-config --obj-root)/include 	\
+		   -L$(shell llvm-config --libdir)/include		\
+		   $(shell llvm-config --link-shared --libs)	\
+		   -O0 -g
+
+
+./hci-tool: ./src/bluetooth/hci.cpp
+	clang++  $(CXXFLAGS) -fPIC $< -o $@

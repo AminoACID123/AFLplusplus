@@ -62,6 +62,7 @@ afl-lto
 afl-lto++
 afl-lto++.8
 afl-lto.8
+afl-gen
 qemu_mode/libcompcov/compcovtest
 qemu_mode/qemu-*
 qemu_mode/qemuafl

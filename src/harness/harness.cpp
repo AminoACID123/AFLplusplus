@@ -49,7 +49,9 @@ void Harness::dump() {
     printf("    Exec: %s\n", e.c_str());
 }
 
-HarnessManager::HarnessManager() {
+HarnessManager* HarnessManager::manager = nullptr;
+
+void HarnessManager::parse_parameters() {
   int n = sizeof(param_list) / sizeof(Parameter);
   for (int i = 0; i < n; i++)
     parameters.push_back(param_list[i]);
@@ -132,6 +134,7 @@ void HarnessManager::parse_harnesses(const char *file) {
 }
 
 void HarnessManager::parse(const char *file) {
+  parse_parameters();
   parse_operations(file);
   parse_harnesses(file);
 }
@@ -159,7 +162,7 @@ void HarnessManager::payload1(FILE *f) {
   for (const string &header : headers)
     fprintf(f, "#include \"%s\"\n", header.c_str());
 
-  fprintf(f, "#define NUM_PARAM %d\n", parameters.size() - 1);
+  fprintf(f, "#define NUM_PARAM %ld\n", parameters.size() - 1);
   for (Operation *op : operations) {
     if (op->inputs.size() > max_in) max_in = op->inputs.size();
     if (op->outputs.size() > max_out) max_out = op->outputs.size();

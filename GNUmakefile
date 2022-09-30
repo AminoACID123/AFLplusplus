@@ -320,6 +320,7 @@ ifneq "$(SYS)" "Darwin"
 	@test -e afl-gcc-pass.so && echo "[+] gcc_mode successfully built" || echo "[-] gcc_mode could not be built, it is optional, install gcc-VERSION-plugin-dev to enable this"
 endif
 	@echo
+	$(MAKE) -f GNUmakefile.bluetooth
 
 .PHONY: llvm
 llvm:

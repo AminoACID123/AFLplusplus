@@ -23,12 +23,16 @@ struct Harness {
 };
 
 class HarnessManager {
+private:
   static HarnessManager* manager;
-  HarnessManager() {}
+
+  HarnessManager(){}
+
   std::vector<Parameter> parameters;
   std::vector<Operation*> operations;
   std::vector<Harness*>   harnesses;
   cJSON *load_from_file(const char *file);
+  void parse_parameters();
   void parse_operations(const char *file);
   void parse_harnesses(const char *file);
   void payload1(FILE *f);
@@ -51,7 +55,7 @@ class HarnessManager {
 
  public:
   static HarnessManager* get(){
-    if(!manager)
+    if(manager == nullptr)
       return new HarnessManager();
     return manager;
   }
