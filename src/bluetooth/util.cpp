@@ -418,7 +418,9 @@ const char* get_cmd_str(uint16_t opcode){
 }
 
 const char* get_evt_str(uint8_t opcode){
-    if(opcode == BT_HCI_EVT_LE_META_EVENT)
-        return hci_le_evts[opcode].c_str();
     return hci_evts[opcode].c_str();
+}
+
+const char* get_le_evt_str(uint16_t opcode){
+    return hci_le_evts[opcode].c_str();
 }
