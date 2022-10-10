@@ -23,27 +23,28 @@ int main(int argc, const char * argv[]){
 
     stack_init();
 
-    char* buf = __AFL_FUZZ_TESTCASE_BUF;
-
-    int to_continue = 1;
-
     __afl_coverage_on();
 
-    while(__AFL_LOOP(&to_continue)){
-        
-        int len = __AFL_FUZZ_TESTCASE_LEN; 
-        
-        to_continue = buf[0];
+    __afl_init();
 
-        execute_one(buf + 1, len - 1);
-    }
+    // while(__AFL_LOOP(&to_continue)){
+        
+    //     int len = __AFL_FUZZ_TESTCASE_LEN; 
+        
+    //     to_continue = buf[0];
+
+    //     execute_one(buf + 1, len - 1);
+    // }
+
+    char* buf = __AFL_FUZZ_TESTCASE_BUF;
+    int len = __AFL_FUZZ_TESTCASE_LEN;
 
     //char* buf[2048];
 
     //FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/in/1","r");
     // int len = fread(buf, 1, 2048, f);
 
-    // stack_execute(buf, len);
+    stack_execute(buf, len);
 
     return 0;
 }

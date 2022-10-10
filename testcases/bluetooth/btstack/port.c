@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include <stdbool.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -19,6 +20,10 @@ extern int log_ptr;
 extern char* arg_in[];
 extern char* arg_out[];
 extern char* context[];
+
+static char* BUF;
+static int SIZE;
+static int POS;
 
 typedef void (*fun_ptr)(char **, char **);
 extern fun_ptr FUZZ_LIST[];
@@ -93,4 +98,25 @@ void execute_hci(char* hci_packet_in, int size){
     log_ptr += size;
 
     fuzz_packet_handler(hci_packet_in[0], &hci_packet_in[1], packet_len-1);
+}
+
+bool execute_one(){
+  if(POS >= SIZE)
+    return false;
+
+  int size = *(int*)(BUF + POS);
+  POS += 4;
+  if(BUF[POS] == F_API)
+    execute_api(BUF + POS, size);
+  else 
+    execute_hci(BUF + POS, size);
+  POS += size;
+  return true;
+}
+
+void stack_execute(char* buf, int size){
+  BUF = buf;
+  SIZE = size;
+  POS = 0;
+  btstack_run_loop_execute();
 }

@@ -12,13 +12,11 @@
 #ifndef HCI_H
 #define HCI_H
 
-#include <set>
-#include <stdint.h>
-
-struct api_serialize {
-  char flag;
-
-} __attribute__((packed));
+typedef char int8_t;
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
 
 #define BT_HCI_CMD_BIT(_byte, _bit) ((8 * _byte) + _bit)
 
@@ -4094,6 +4092,5 @@ struct bt_sdp_hdr {
   uint16_t tid;
   uint16_t plen;
 } __attribute__((packed));
-
 
 #endif

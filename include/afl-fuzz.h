@@ -769,6 +769,14 @@ typedef struct afl_state {
 
 } afl_state_t;
 
+struct hci_packet_t {
+  u8 opcode;
+  u32 base_size;
+  u32 var_size;
+  enum {STATUS, HANDLE,PHY_HANDLE} KEY_PARAM;
+  u8 key_params[3];
+}hci_packet_t;
+
 struct custom_mutator {
 
   const char *name;

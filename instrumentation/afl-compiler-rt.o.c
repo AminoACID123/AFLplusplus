@@ -1233,7 +1233,7 @@ static void __afl_start_forkserver(void) {
 /* A simplified persistent mode handler, used as explained in
  * README.llvm.md. */
 
-int __afl_persistent_loop(unsigned int* to_continue) {
+int __afl_persistent_loop(unsigned int max_cnt) {
 
   static u8  first_pass = 1;
   static u32 cycle_cnt;
@@ -1253,7 +1253,7 @@ int __afl_persistent_loop(unsigned int* to_continue) {
 
     }
 
-    /* cycle_cnt = max_cnt; */
+    cycle_cnt = max_cnt; 
     first_pass = 0;
     __afl_selective_coverage_temp = 1;
 
@@ -1263,7 +1263,7 @@ int __afl_persistent_loop(unsigned int* to_continue) {
 
   if (is_persistent) {
 
-    if (*to_continue == 1) {
+    if (--cycle_cnt) {
 
       raise(SIGSTOP);
 
@@ -2325,6 +2325,7 @@ void __afl_coverage_off() {
   if (likely(__afl_selective_coverage)) {
 
     __afl_area_ptr = __afl_area_ptr_dummy;
+    __afl_area2_ptr = __afl_area_ptr_dummy;
     __afl_cmp_map = NULL;
 
   }
@@ -2337,6 +2338,7 @@ void __afl_coverage_on() {
   if (likely(__afl_selective_coverage && __afl_selective_coverage_temp)) {
 
     __afl_area_ptr = __afl_area_ptr_backup;
+    __afl_area2_ptr = __afl_area_ptr_backup;
     if (__afl_cmp_map_backup) { __afl_cmp_map = __afl_cmp_map_backup; }
 
   }

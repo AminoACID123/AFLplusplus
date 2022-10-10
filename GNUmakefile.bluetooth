@@ -1,9 +1,48 @@
+LLVM_CONFIG ?= llvm-config
+LLVM_SRC = $(shell $(LLVM_CONFIG) --src-root)
+LLVM_BUILD = $(shell $(LLVM_CONFIG) --obj-root)
+
+ifneq ($(wildcard $(LLVM_SRC)/tools/clang),)
+	CLANG_SRC = $(LLVM_SRC)/tools/clang
+else
+	CLANG_SRC = $(LLVM_SRC)/../clang
+endif
+
 CXXFLAGS = -I$(shell llvm-config --includedir)			\
 		   -I$(shell llvm-config --obj-root)/include 	\
-		   -L$(shell llvm-config --libdir)/include		\
-		   $(shell llvm-config --link-shared --libs)	\
-		   -O0 -g
+		   -I$(CLANG_SRC)/include						\
+		   -I$(LLVM_BUILD)/tools/clang/include			\
+
+CXXFLAGS += -L$(shell llvm-config --libdir)
+CXXFLAGS += -O0 -g -Wno-error
+
+LD_FLAGS = -static										\
+		   -lclangTooling								\
+  		   -lclangToolingCore							\
+  		   -lclangFrontendTool							\
+  		   -lclangFrontend								\
+  		   -lclangDriver								\
+  		   -lclangSerialization							\
+  		   -lclangCodeGen								\
+  		   -lclangParse									\
+  		   -lclangSema									\
+  		   -lclangStaticAnalyzerFrontend				\
+  		   -lclangStaticAnalyzerCheckers				\
+  		   -lclangStaticAnalyzerCore					\
+  		   -lclangAnalysis								\
+  		   -lclangARCMigrate							\
+  		   -lclangRewriteFrontend						\
+  		   -lclangRewrite								\
+  		   -lclangEdit									\
+  		   -lclangAST									\
+  		   -lclangASTMatchers							\
+		   -lclangLex 									\
+  		   -lclangBasic									\
+		   $(shell llvm-config --link-static --libs)	\
+		   -lpthread -lz -ldl -lcurses -ltinfo
 
 
-hci-tool: ./src/bluetooth/hci.cpp ./src/bluetooth/util.cpp
-	clang++  $(CXXFLAGS) -fPIC ./src/bluetooth/hci.cpp ./src/bluetooth/util.cpp -o $@
+
+hci-tool: ./src/bluetooth/hci_analyze.cpp 
+	@echo $(CLANG_SRC)
+	clang++  $(CXXFLAGS) $^ -o $@ $(LD_FLAGS)

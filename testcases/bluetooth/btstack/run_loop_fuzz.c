@@ -174,13 +174,13 @@ static void btstack_run_loop_posix_execute(void) {
   // btstack_linked_list_iterator_t it;
   // struct timeval * timeout;
   // struct timeval tv;
-//   uint32_t now_ms;
+  uint32_t now_ms;
 
-//   while (execute_one()) {
-//     // process timers
-//     now_ms = btstack_run_loop_posix_get_time_ms();
-//     btstack_run_loop_base_process_timers(now_ms);
-//   }
+  while (execute_one()) {
+    // process timers
+    now_ms = btstack_run_loop_posix_get_time_ms();
+    btstack_run_loop_base_process_timers(now_ms);
+  }
 }
 
 static void btstack_run_loop_posix_trigger_exit(void) {
@@ -379,14 +379,14 @@ void stack_init() {
   send_initial_packets();
 }
 
-void execute_one(char* buf, int len){
-  int size = *(int*)buf;
-  if(buf[4] == F_API)
-      execute_api(buf + 4, size);
-  else
-      execute_hci(buf + 4, size);
+// void execute_one(char* buf, int len){
+//   int size = *(int*)buf;
+//   if(buf[4] == F_API)
+//       execute_api(buf + 4, size);
+//   else
+//       execute_hci(buf + 4, size);
   
-  uint32_t now_ms;
-  now_ms = btstack_run_loop_posix_get_time_ms();
-  btstack_run_loop_base_process_timers(now_ms);
-}
+//   uint32_t now_ms;
+//   now_ms = btstack_run_loop_posix_get_time_ms();
+//   btstack_run_loop_base_process_timers(now_ms);
+// }
