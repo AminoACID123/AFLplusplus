@@ -10,6 +10,7 @@
 #include <map>
 #include <sstream>
 #include <stdint.h>
+#include <stdio.h>
 #include <string>
 #include <vector>
 

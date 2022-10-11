@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+enum {STATUS, HCI_HANDLE, PHY_HANDLE, }
+
 struct hci_info {
   std::string name;
   uint16_t opcode;
