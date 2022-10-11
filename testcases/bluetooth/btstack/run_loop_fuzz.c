@@ -67,6 +67,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 // the run loop
 static int btstack_run_loop_posix_data_sources_modified;
@@ -166,6 +167,7 @@ static uint32_t btstack_run_loop_posix_get_time_ms(void) {
   return time_ms;
 }
 
+bool execute_one();
 
 static void btstack_run_loop_posix_execute(void) {
   // fd_set descriptors_read;

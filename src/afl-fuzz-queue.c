@@ -1132,10 +1132,10 @@ inline void queue_testcase_retake_mem(afl_state_t *afl, struct queue_entry *q,
 
     }
 
-    if (unlikely(!is_same)) { memcpy(q->testcase_buf, in, len); }
+    if (unlikely(!is_same)) { memcpy(q->testcase_buf, in,len); }
 
   }
-
+ 
 }
 
 /* Returns the testcase buf from the file behind this queue entry.

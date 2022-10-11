@@ -775,7 +775,7 @@ struct hci_packet_t {
   u32 var_size;
   enum {STATUS, HANDLE,PHY_HANDLE} KEY_PARAM;
   u8 key_params[3];
-}hci_packet_t;
+};
 
 struct custom_mutator {
 
