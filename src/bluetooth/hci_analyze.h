@@ -16,14 +16,13 @@
 #include <string>
 #include <vector>
 
-enum {STATUS, HCI_HANDLE, PHY_HANDLE, }
+enum {STATUS, HCI_HANDLE, PHY_HANDLE, BD_ADDR} KEY;
 
 struct hci_info {
   std::string name;
   uint16_t opcode;
   uint32_t size;
-  std::map<int, int> fields;
-  std::map<int, int> rsp;
+  uint32_t  rsp_size;
 };
 
 class HCIVisitor : public clang::RecursiveASTVisitor<HCIVisitor> {
@@ -34,8 +33,7 @@ private:
   clang::ASTContext *Context;
   clang::RecordDecl *current_record;
   std::map<std::string, clang::CXXRecordDecl*> DeclMap;
-  void parse_fields(std::map<uint32_t,uint16_t>& fields, clang::CXXRecordDecl* decl);
-  void parse_field(std::map<uint32_t, uint16_t>& fileds, clang::FieldDecl* decl);
+  int get_size(clang::CXXRecordDecl* decl);
 };
 
 class ExtractHCIConsumer : public clang::ASTConsumer {

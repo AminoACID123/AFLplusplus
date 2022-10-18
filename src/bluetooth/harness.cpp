@@ -11,7 +11,7 @@
 
 using namespace std;
 
-Parameter param_list[] = {
+Parameter parameter_list[] = {
     {.name = "DATA"},
     {.name = "BD_ADDR",
      .bytes = 6,
@@ -42,16 +42,10 @@ void Harness::dump()
         printf("    Exec: %s\n", e.c_str());
 }
 
-HarnessManager *HarnessManager::manager = nullptr;
+vector<Operation*> operation_list;
+vector<Harness*> harness_list;
 
-void HarnessManager::parse_parameters()
-{
-    int n = sizeof(param_list) / sizeof(Parameter);
-    for (int i = 0; i < n; i++)
-        parameters.push_back(param_list[i]);
-}
-
-cJSON *HarnessManager::load_from_file(const char *file)
+cJSON* load_from_file(const char *file)
 {
     int len;
     char *data;
@@ -73,9 +67,9 @@ cJSON *HarnessManager::load_from_file(const char *file)
     return root;
 }
 
-Parameter *HarnessManager::get_parameter(string name)
+Parameter* get_parameter(string name)
 {
-    for (Parameter &param : parameters)
+    for (Parameter &param : parameter_list)
         if (name == param.name)
         {
             return &param;
@@ -83,9 +77,9 @@ Parameter *HarnessManager::get_parameter(string name)
     return NULL;
 }
 
-Operation *HarnessManager::get_operation(string name)
+Operation *get_operation(string name)
 {
-    for (Operation *op : operations)
+    for (Operation *op : operation_list)
         if (name == op->name)
         {
             return op;
@@ -93,7 +87,7 @@ Operation *HarnessManager::get_operation(string name)
     return NULL;
 }
 
-void HarnessManager::parse_operations(const char *file)
+void parse_operations(const char *file)
 {
     cJSON *op;
     cJSON *root = cJSON_GetObjectItem(load_from_file(file), "operations");
@@ -114,11 +108,11 @@ void HarnessManager::parse_operations(const char *file)
         {
             operation->outputs.push_back(get_parameter(output->valuestring));
         }
-        operations.push_back(operation);
+        operation_list.push_back(operation);
     }
 }
 
-void HarnessManager::parse_harnesses(const char *file)
+void parse_harnesses(const char *file)
 {
     cJSON *hn;
     cJSON *root = cJSON_GetObjectItem(load_from_file(file), "harnesses");
@@ -140,36 +134,35 @@ void HarnessManager::parse_harnesses(const char *file)
         {
             harness->exec.push_back(exec->valuestring);
         }
-        harnesses.push_back(harness);
+        harness_list.push_back(harness);
     }
 }
 
-void HarnessManager::parse(const char *file)
+void parse(const char *file)
 {
-    parse_parameters();
     parse_operations(file);
     parse_harnesses(file);
 }
 
-void HarnessManager::dump()
+void dump()
 {
-    for (Operation *op : operations)
+    for (Operation *op : operation_list)
         op->dump();
-    for (Harness *hn : harnesses)
+    for (Harness *hn : harness_list)
         hn->dump();
 }
 
 /**
 Write Headers and Macros
 */
-void HarnessManager::payload1(FILE *f)
+void payload1(FILE *f)
 {
     // fprintf(f, "#include \"%s\"", )
     int max_in = 0;
     int max_out = 0;
     set<string> headers;
 
-    for (Harness *hn : harnesses)
+    for (Harness *hn : harness_list)
     {
         for (string &header : hn->headers)
             headers.insert(header);
@@ -177,8 +170,8 @@ void HarnessManager::payload1(FILE *f)
     for (const string &header : headers)
         fprintf(f, "#include \"%s\"\n", header.c_str());
 
-    fprintf(f, "#define NUM_PARAM %ld\n", parameters.size() - 1);
-    for (Operation *op : operations)
+    fprintf(f, "#define NUM_PARAM %ld\n", sizeof(parameter_list)/sizeof(Parameter) - 1);
+    for (Operation *op : operation_list)
     {
         if (op->inputs.size() > max_in)
             max_in = op->inputs.size();
@@ -192,16 +185,16 @@ void HarnessManager::payload1(FILE *f)
 /**
 Write Global Variables
 */
-void HarnessManager::payload2(FILE *f)
+void payload2(FILE *f)
 {
     fprintf(f, "char *arg_in[MAX_INPUT];\n"
                "char *arg_out[MAX_OUTPUT];\n"
                "char *context[NUM_PARAM];\n"
                "int   context_len[NUM_PARAM] = { ");
 
-    for (int i = 1, n = parameters.size(); i != n; i++)
+    for (int i = 1, n = sizeof(parameter_list)/sizeof(Parameter); i != n; i++)
     {
-        fprintf(f, "%d", parameters[i].bytes);
+        fprintf(f, "%d", parameter_list[i].bytes);
         if (i != n - 1)
             fprintf(f, ",");
     }
@@ -211,14 +204,14 @@ void HarnessManager::payload2(FILE *f)
 /**
 Write Fuzz Targets
 */
-void HarnessManager::payload3(FILE *f)
+void payload3(FILE *f)
 {
     fprintf(f, "void harness_init() {\n"
                "  for (int i = 0; i < NUM_PARAM; i++)\n"
                "    context[i] = malloc(sizeof(char) * context_len[i]);\n}\n");
-    for (int i = 0, n = harnesses.size(); i != n; i++)
+    for (int i = 0, n = harness_list.size(); i != n; i++)
     {
-        Harness *hn = harnesses[i];
+        Harness *hn = harness_list[i];
         fprintf(f, "void harness%d(char **arg_in, char **arg_out) {\n", i);
         for (int j = 0; j < hn->op->inputs.size(); j++)
         {
@@ -226,7 +219,8 @@ void HarnessManager::payload3(FILE *f)
         }
         for (int j = 0; j < hn->op->outputs.size(); j++)
         {
-            fprintf(f, "  char* _o%d = arg_out[%d];\n", j, j);
+            int idx = get_parameter_idx(hn->op->outputs[j]);
+            fprintf(f, "  char* _o%d = context[%d];\n", j, idx - 1);
         }
         for (string &e : hn->exec)
         {
@@ -242,7 +236,7 @@ void HarnessManager::payload3(FILE *f)
 
     fprintf(f, "typedef void (*fun_ptr)(char **, char **);\n"
                "fun_ptr FUZZ_LIST[] = {\n");
-    for (int i = 0, n = harnesses.size(); i != n; i++)
+    for (int i = 0, n = harness_list.size(); i != n; i++)
     {
         fprintf(f, "  &harness%d", i);
         if (i != n - 1)
@@ -252,7 +246,28 @@ void HarnessManager::payload3(FILE *f)
     fprintf(f, "};\n\n");
 }
 
-void HarnessManager::generate_harness(const char *file)
+int get_operation_idx(Operation *op)
+{
+    for (int i = 0, n = operation_list.size(); i < n; i++)
+    {
+        if (operation_list[i] == op)
+            return i;
+    }
+    return -1;
+}
+
+int get_parameter_idx(Parameter *param)
+{
+    for (int i = 0, n = sizeof(parameter_list)/sizeof(Parameter); i < n; i++)
+    {
+        if (&parameter_list[i] == param)
+            return i;
+    }
+    return -1;
+}
+
+
+void generate_harness(const char *file)
 {
     FILE *f = fopen(file, "w");
     payload1(f);
@@ -261,7 +276,7 @@ void HarnessManager::generate_harness(const char *file)
     fclose(f);
 }
 
-void HarnessManager::generate_seeds(const char *dir)
+void generate_seeds(const char *dir)
 {
     struct stat sb;
 
@@ -270,9 +285,9 @@ void HarnessManager::generate_seeds(const char *dir)
         mkdir(dir, S_IRUSR | S_IWUSR);
     }
 
-    for (int i = 0, n = harnesses.size(); i < n; i++)
+    for (int i = 0, n = harness_list.size(); i < n; i++)
     {
-        Harness *hn = harnesses[i];
+        Harness *hn = harness_list[i];
         char file[512];
         int len = 0;
         char flag = F_API;
@@ -334,11 +349,10 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
-    HarnessManager *hmgr = HarnessManager::get();
-    hmgr->parse(argv[1]);
-    hmgr->dump();
-    hmgr->generate_harness(argv[2]);
-    hmgr->generate_seeds(argv[3]);
+    parse(argv[1]);
+    dump();
+    generate_harness(argv[2]);
+    generate_seeds(argv[3]);
 
     return 0;
 }

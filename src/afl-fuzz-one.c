@@ -28,6 +28,8 @@
 #include <limits.h>
 #include "cmplog.h"
 
+int flag = 0;
+bool save = true;
 /* MOpt */
 
 static int select_algorithm(afl_state_t *afl, u32 max_algorithm) {
@@ -2071,6 +2073,8 @@ havoc_stage:
                       ? MUTATE_ASCII_DICT
                       : 4)
                : 0);
+  
+  r_max += 4;
 
   if (unlikely(afl->expand_havoc && afl->ready_for_splicing_count > 1)) {
 
@@ -2138,7 +2142,7 @@ havoc_stage:
 
       }
 
-      switch ((r = rand_below(afl, r_max))) {
+      switch ((flag = r = rand_below(afl, r_max))) {
 
         case 0 ... 3: {
 
@@ -2148,7 +2152,8 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " FLIP_BIT1");
           strcat(afl->mutation, afl->m_tmp);
 #endif
-          FLIP_BIT(out_buf, rand_below(afl, temp_len << 3));
+          /*FLIP_BIT(out_buf, rand_below(afl, temp_len << 3));*/
+          /*TODO*/
           break;
 
         }
@@ -2161,8 +2166,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING8");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           out_buf[rand_below(afl, temp_len)] =
-              interesting_8[rand_below(afl, sizeof(interesting_8))];
+              interesting_8[rand_below(afl, sizeof(interesting_8))];*/
+          /*TODO*/
           break;
 
         }
@@ -2177,9 +2184,11 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING16");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u16 *)(out_buf + rand_below(afl, temp_len - 1)) =
               interesting_16[rand_below(afl, sizeof(interesting_16) >> 1)];
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2194,9 +2203,11 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING16BE");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u16 *)(out_buf + rand_below(afl, temp_len - 1)) = SWAP16(
               interesting_16[rand_below(afl, sizeof(interesting_16) >> 1)]);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2211,9 +2222,11 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING32");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u32 *)(out_buf + rand_below(afl, temp_len - 3)) =
               interesting_32[rand_below(afl, sizeof(interesting_32) >> 2)];
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2228,9 +2241,11 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING32BE");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u32 *)(out_buf + rand_below(afl, temp_len - 3)) = SWAP32(
               interesting_32[rand_below(afl, sizeof(interesting_32) >> 2)]);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2243,7 +2258,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH8_");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           out_buf[rand_below(afl, temp_len)] -= 1 + rand_below(afl, ARITH_MAX);
+          */
+          /*TODO*/
           break;
 
         }
@@ -2256,7 +2274,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH8+");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           out_buf[rand_below(afl, temp_len)] += 1 + rand_below(afl, ARITH_MAX);
+          */
+          /*TODO*/
           break;
 
         }
@@ -2273,8 +2294,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH16_-%u", pos);
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u16 *)(out_buf + pos) -= 1 + rand_below(afl, ARITH_MAX);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2293,9 +2316,11 @@ havoc_stage:
                    num);
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u16 *)(out_buf + pos) =
               SWAP16(SWAP16(*(u16 *)(out_buf + pos)) - num);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2312,8 +2337,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH16+-%u", pos);
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u16 *)(out_buf + pos) += 1 + rand_below(afl, ARITH_MAX);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2332,9 +2359,11 @@ havoc_stage:
                    num);
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u16 *)(out_buf + pos) =
               SWAP16(SWAP16(*(u16 *)(out_buf + pos)) + num);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2351,8 +2380,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH32_-%u", pos);
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u32 *)(out_buf + pos) -= 1 + rand_below(afl, ARITH_MAX);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2371,9 +2402,11 @@ havoc_stage:
                    num);
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u32 *)(out_buf + pos) =
               SWAP32(SWAP32(*(u32 *)(out_buf + pos)) - num);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2390,8 +2423,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH32+-%u", pos);
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u32 *)(out_buf + pos) += 1 + rand_below(afl, ARITH_MAX);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2410,9 +2445,11 @@ havoc_stage:
                    num);
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           *(u32 *)(out_buf + pos) =
               SWAP32(SWAP32(*(u32 *)(out_buf + pos)) + num);
-
+          */
+          /*TODO*/
           break;
 
         }
@@ -2427,13 +2464,17 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " RAND8");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           out_buf[rand_below(afl, temp_len)] ^= 1 + rand_below(afl, 255);
+          */
+          /*TODO*/
           break;
 
         }
 
         case 44 ... 46: {
-
+          break;
+          /*TODO*/
           if (temp_len + HAVOC_BLK_XL < MAX_FILE) {
 
             /* Clone bytes. */
@@ -2474,7 +2515,8 @@ havoc_stage:
         }
 
         case 47: {
-
+          break;
+          /*TODO*/
           if (temp_len + HAVOC_BLK_XL < MAX_FILE) {
 
             /* Insert a block of constant bytes (25%). */
@@ -2521,7 +2563,8 @@ havoc_stage:
           /* Overwrite bytes with a randomly selected chunk bytes. */
 
           if (temp_len < 2) { break; }
-
+          break;
+          /*TODO*/
           u32 copy_len = choose_block_len(afl, temp_len - 1);
           u32 copy_from = rand_below(afl, temp_len - copy_len + 1);
           u32 copy_to = rand_below(afl, temp_len - copy_len + 1);
@@ -2546,7 +2589,8 @@ havoc_stage:
           /* Overwrite bytes with fixed bytes. */
 
           if (temp_len < 2) { break; }
-
+          break;
+          /*TODO*/
           u32 copy_len = choose_block_len(afl, temp_len - 1);
           u32 copy_to = rand_below(afl, temp_len - copy_len + 1);
 
@@ -2572,7 +2616,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ADDBYTE_");
           strcat(afl->mutation, afl->m_tmp);
 #endif
-          out_buf[rand_below(afl, temp_len)]++;
+          
+          /*out_buf[rand_below(afl, temp_len)]++;*/
+          
+          /*TODO*/
           break;
 
         }
@@ -2585,7 +2632,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " SUBBYTE_");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           out_buf[rand_below(afl, temp_len)]--;
+          */
+          /*TODO*/
           break;
 
         }
@@ -2598,7 +2648,10 @@ havoc_stage:
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " FLIP8_");
           strcat(afl->mutation, afl->m_tmp);
 #endif
+          /*
           out_buf[rand_below(afl, temp_len)] ^= 0xff;
+          */
+          /*TODO*/
           break;
 
         }
@@ -2606,6 +2659,8 @@ havoc_stage:
         case 55 ... 56: {
 
           if (temp_len < 4) { break; }
+          break;
+          /*TODO*/
 
           /* Switch bytes. */
 
@@ -2661,6 +2716,8 @@ havoc_stage:
           /* Delete bytes. */
 
           if (temp_len < 2) { break; }
+          break;
+          /*TODO*/
 
           /* Don't delete too much. */
 
@@ -2682,7 +2739,7 @@ havoc_stage:
         }
 
         default:
-
+          break;
           r -= (MAX_HAVOC_ENTRY + 1);
 
           if (afl->extras_cnt) {
@@ -2843,7 +2900,10 @@ havoc_stage:
                      copy_len, target->fname);
             strcat(afl->mutation, afl->m_tmp);
 #endif
+            /*
             memmove(out_buf + copy_to, new_buf + copy_from, copy_len);
+            */
+           /*TODO*/
 
           } else {
 
@@ -2892,7 +2952,10 @@ havoc_stage:
     }
 
     if (common_fuzz_stuff(afl, out_buf, temp_len)) { goto abandon_entry; }
-
+    if(afl->total_crashes == 1 && save){
+      fprintf(fopen("a.txt", "w"), "%d", flag); save = false;
+    }
+goto abandon_entry;
     /* out_buf might have been mangled a bit, so let's restore it to its
        original size and shape. */
 

@@ -1,9 +1,21 @@
 #include "../../include/config.h"
+#include "harness.h"
 #include <map>
 #include <stdbool.h>
 #include <stdio.h>
+#include <vector>
 
 std::map<int, bool> mutable_map;
+std::vector<int, int> mutable_vec;
+
+#define FLIP_BIT(_ar, _b)                   \
+  do {                                      \
+                                            \
+    u8 *_arf = (u8 *)(_ar);                 \
+    u32 _bf = (_b);                         \
+    _arf[(_bf) >> 3] ^= (128 >> ((_bf)&7)); \
+                                            \
+  } while (0)
 
 void init_mutable_map(char *buf, int len)
 {
@@ -42,6 +54,10 @@ void init_mutable_map(char *buf, int len)
 bool can_mutate( int i)
 {
     return mutable_map[i];
+}
+
+void bt_mutate_data_flip_bit(char* buf) {
+
 }
 
 /*
