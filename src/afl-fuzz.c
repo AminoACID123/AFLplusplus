@@ -2126,7 +2126,7 @@ int main(int argc, char **argv_orig, char **envp) {
     OKF("Cmplog forkserver successfully started");
 
   }
-
+afl->disable_trim = 1; 
   load_auto(afl);
 
   if (extras_dir_cnt) {
