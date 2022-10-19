@@ -56,9 +56,65 @@ bool can_mutate( int i)
     return mutable_map[i];
 }
 
-void bt_mutate_data_flip_bit(char* buf) {
+int get_data_param_len(char *buf, int len)
+{
+    int i = 0;
+    int ret = 0;
+    while (i < len)
+    {
+        int size = *(int *)(buf + i);
+        char flag = buf[i + 4];
+
+        if (flag == HCI_EVENT_PACKET)
+        {
+            for (int j = i + 7; j < i + size; j++)
+                ret++;
+        }
+        else if (flag == F_API)
+        {
+            int j = i + 13;
+            int arg_in_cnt = *(int *)(buf + i + 9);
+            for (int k = 0; k < arg_in_cnt; k++)
+            {
+                int arg_len = *(int *)(buf + j + 4);
+                for (int n = j + 8; n < j + 8 + arg_len; n++)
+                    ret++;
+                j += (8 + arg_len);
+            }
+        }
+        i += (4 + size);
+    }
+    return ret;
+}
+
+void bt_mutate_data_flipbit(char* buf, int len, int pos) 
+{
+    
+}
+
+void bt_mutate_data_interesting8(char* buf, int len, uint32_t rand)
+{
 
 }
+
+void bt_mutate_data_interesting16(char* buf, int len, uint32_t rand) 
+{
+
+}
+
+void bt_mutate_data_interesting32(char* buf, int len, uint32_t rand)
+{
+
+}
+
+void bt_mutate_parameter(char* buf, int len, uint32_t rand)
+{
+
+}
+
+
+
+void bt_mutate
 
 /*
 bool mutate(char *buf, int pos)

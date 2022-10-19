@@ -12,7 +12,7 @@ void harness_init() {
     context[i] = malloc(sizeof(char) * context_len[i]);
 }
 void harness0(char **arg_in, char **arg_out) {
-  char* _o0 = context[1];
+  char* _o0 = context[0];
   gap_local_bd_addr(_o0);
 }
 

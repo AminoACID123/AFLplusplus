@@ -365,6 +365,222 @@ static void locate_diffs(u8 *ptr1, u8 *ptr2, u32 len, s32 *first, s32 *last) {
 
 #endif                                                     /* !IGNORE_FINDS */
 
+
+#define FLIP_BIT(_ar, _b)                   \
+  do {                                      \
+                                            \
+    u8 *_arf = (u8 *)(_ar);                 \
+    u32 _bf = (_b);                         \
+    _arf[(_bf) >> 3] ^= (128 >> ((_bf)&7)); \
+                                            \
+  } while (0)
+
+typedef void (*bt_mutator)(afl_state_t*, char*, int);
+
+void bt_mutator_flip_bit(afl_state_t* afl, char* buf, int len){
+  FLIP_BIT(buf, rand_below(afl, len << 3));
+}
+
+void bt_mutator_interesting8(afl_state_t* afl, char* buf, int len) {
+  buf[rand_below(afl, len)] =
+              interesting_8[rand_below(afl, sizeof(interesting_8))];
+}
+
+void bt_mutator_interesting16_le(afl_state_t* afl, char* buf, int len){
+  if(len < 2) return;
+  *(u16 *)(buf + rand_below(afl, len - 1)) =
+              interesting_16[rand_below(afl, sizeof(interesting_16) >> 1)];
+}
+
+void bt_mutator_interesting16_be(afl_state_t* afl, char* buf, int len) {
+  if(len < 2) return;
+  *(u16 *)(buf + rand_below(afl, len - 1)) = SWAP16(
+              interesting_16[rand_below(afl, sizeof(interesting_16) >> 1)]);
+}
+
+void bt_mutator_interesting32_le(afl_state_t* afl, char* buf, int len) {
+  if (len < 4) return;
+          *(u32 *)(buf + rand_below(afl, len - 3)) =
+              interesting_32[rand_below(afl, sizeof(interesting_32) >> 2)];
+}
+
+void bt_mutator_interesting32_be(afl_state_t* afl, char* buf, int len) {
+  if (len < 4) return;
+  *(u32 *)(buf + rand_below(afl, len - 3)) = SWAP32(
+              interesting_32[rand_below(afl, sizeof(interesting_32) >> 2)]);
+}
+
+void bt_mutator_subtract8(afl_state_t* afl, char* buf, int len) {
+  buf[rand_below(afl, len)] -= 1 + rand_below(afl, ARITH_MAX);
+}
+
+void bt_mutator_add8(afl_state_t* afl, char* buf, int len) {
+  buf[rand_below(afl, len)] += 1 + rand_below(afl, ARITH_MAX);
+}
+
+void bt_mutator_subtract16_le(afl_state_t* afl, char* buf, int len) {
+  if (len < 2) return;
+          u32 pos = rand_below(afl, len - 1);
+  *(u16 *)(buf + pos) -= 1 + rand_below(afl, ARITH_MAX);
+          
+}
+
+void bt_mutator_subtract16_be(afl_state_t* afl, char* buf, int len) {
+  if (len < 2) return;
+          u32 pos = rand_below(afl, len - 1);
+          u16 num = 1 + rand_below(afl, ARITH_MAX);
+
+          *(u16 *)(buf + pos) =
+              SWAP16(SWAP16(*(u16 *)(buf + pos)) - num);
+
+}
+
+void bt_mutator_add16_le(afl_state_t* afl, char* buf, int len) {
+          if (len < 2) return;
+          u32 pos = rand_below(afl, len - 1);
+          *(u16 *)(buf + pos) += 1 + rand_below(afl, ARITH_MAX);
+}
+
+void bt_mutator_add16_be(afl_state_t* afl, char* buf, int len) {
+    if (len < 2) return;
+          u32 pos = rand_below(afl, len - 1);
+          u16 num = 1 + rand_below(afl, ARITH_MAX);
+          *(u16 *)(buf + pos) =
+              SWAP16(SWAP16(*(u16 *)(buf + pos)) + num);
+}
+
+void bt_mutator_subtract32_le(afl_state_t* afl, char* buf, int len) {
+    if (len < 4) return;
+          u32 pos = rand_below(afl, len - 3);
+          *(u32 *)(buf + pos) -= 1 + rand_below(afl, ARITH_MAX);
+}
+
+void bt_mutator_subtract32_be(afl_state_t* afl, char* buf, int len) {
+          if (len < 4) return;
+
+          u32 pos = rand_below(afl, len - 3);
+          u32 num = 1 + rand_below(afl, ARITH_MAX);
+
+          *(u32 *)(buf + pos) =
+              SWAP32(SWAP32(*(u32 *)(buf + pos)) - num);
+
+}
+
+void bt_mutator_add32_le(afl_state_t* afl, char* buf, int len) {
+
+}
+
+void bt_mutator_add32_be(afl_state_t* afl, char* buf, int len) {
+
+}
+
+void bt_mutator_random8(afl_state_t* afl, char* buf, int len) {
+
+}
+
+#undef FLIP_BIT
+
+void mutate_parameter(afl_state_t* afl, char* buf, int len, bt_mutator mutator){
+  int param = rand_below(afl, get_parameter_num(buf, len));
+
+  int i = 0;
+  int cnt = 0;
+  while (i < len)
+  {
+      int size = *(int *)(buf + i);
+      char flag = buf[i + 4];
+
+      if (flag == HCI_EVENT_PACKET)
+      {
+        if(cnt == param){
+          mutator(afl, buf + i + 5, 255);
+          return;
+        }
+        cnt++;
+      }
+      else if (flag == F_API)
+      {
+          int j = i + 13;
+          int arg_in_cnt = *(int *)(buf + i + 9);
+          for (int k = 0; k < arg_in_cnt; k++)
+          {
+              int arg_len = *(int *)(buf + j + 4);
+              if(cnt == param){
+                  mutator(afl, buf+j+8, arg_len);
+                  return;
+              }
+              cnt++;
+              j += (8 + arg_len);
+          }
+      }
+      i += (4 + size);
+  }
+
+}
+
+int get_parameter_num(char* buf, int len)
+{
+    int i = 0;
+    int ret = 0;
+    while (i < len)
+    {
+        int size = *(int *)(buf + i);
+        char flag = buf[i + 4];
+
+        if (flag == HCI_EVENT_PACKET)
+        {
+          ret++;
+        }
+        else if (flag == F_API)
+        {
+            int j = i + 13;
+            int arg_in_cnt = *(int *)(buf + i + 9);
+            for (int k = 0; k < arg_in_cnt; k++)
+            {
+                int arg_len = *(int *)(buf + j + 4);
+                ret++;
+                j += (8 + arg_len);
+            }
+        }
+        i += (4 + size);
+    }
+    return ret;
+}
+
+int get_harness_num(char* buf, int len){
+    int i = 0;
+    int ret = 0;
+    while (i < len)
+    {
+        int size = *(int *)(buf + i);
+        char flag = buf[i + 4];
+        if (flag == F_API)
+        {
+            ret++;
+        }
+        i += (4 + size);
+    }
+    return ret;
+}
+
+int get_hci_num(char* buf, int len) {
+    int i = 0;
+    int ret = 0;
+    while (i < len)
+    {
+        int size = *(int *)(buf + i);
+        char flag = buf[i + 4];
+        if (flag == HCI_EVENT_PACKET)
+        {
+            ret++;
+        }
+        i += (4 + size);
+    }
+    return ret;
+}
+
+
+
 /* Take the current entry from the queue, fuzz it for a while. This
    function is a tad too long... returns 0 if fuzzed successfully, 1 if
    skipped or bailed out. */
@@ -2094,6 +2310,7 @@ havoc_stage:
 
   }
 
+  char* original_buf = out_buf;
   for (afl->stage_cur = 0; afl->stage_cur < afl->stage_max; ++afl->stage_cur) {
 
     u32 use_stacking = 1 << (1 + rand_below(afl, afl->havoc_stack_pow2));
@@ -2141,12 +2358,11 @@ havoc_stage:
         });
 
       }
-
+      
       switch ((flag = r = rand_below(afl, r_max))) {
 
+        /* Flip a single bit somewhere. Spooky! */
         case 0 ... 3: {
-
-          /* Flip a single bit somewhere. Spooky! */
 
 #ifdef INTROSPECTION
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " FLIP_BIT1");
@@ -2157,10 +2373,9 @@ havoc_stage:
           break;
 
         }
-
+        
+        /* Set byte to interesting value. */
         case 4 ... 7: {
-
-          /* Set byte to interesting value. */
 
 #ifdef INTROSPECTION
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING8");
@@ -2174,9 +2389,8 @@ havoc_stage:
 
         }
 
+        /* Set word to interesting value, little endian. */
         case 8 ... 9: {
-
-          /* Set word to interesting value, little endian. */
 
           if (temp_len < 2) { break; }
 
@@ -2193,9 +2407,8 @@ havoc_stage:
 
         }
 
+        /* Set word to interesting value, big endian. */
         case 10 ... 11: {
-
-          /* Set word to interesting value, big endian. */
 
           if (temp_len < 2) { break; }
 
@@ -2212,9 +2425,8 @@ havoc_stage:
 
         }
 
+        /* Set dword to interesting value, little endian. */
         case 12 ... 13: {
-
-          /* Set dword to interesting value, little endian. */
 
           if (temp_len < 4) { break; }
 
@@ -2231,9 +2443,8 @@ havoc_stage:
 
         }
 
+        /* Set dword to interesting value, big endian. */
         case 14 ... 15: {
-
-          /* Set dword to interesting value, big endian. */
 
           if (temp_len < 4) { break; }
 
@@ -2250,9 +2461,8 @@ havoc_stage:
 
         }
 
+        /* Randomly subtract from byte. */
         case 16 ... 19: {
-
-          /* Randomly subtract from byte. */
 
 #ifdef INTROSPECTION
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH8_");
@@ -2266,9 +2476,8 @@ havoc_stage:
 
         }
 
+        /* Randomly add to byte. */
         case 20 ... 23: {
-
-          /* Randomly add to byte. */
 
 #ifdef INTROSPECTION
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH8+");
@@ -2282,9 +2491,8 @@ havoc_stage:
 
         }
 
+        /* Randomly subtract from word, little endian. */
         case 24 ... 25: {
-
-          /* Randomly subtract from word, little endian. */
 
           if (temp_len < 2) { break; }
 
@@ -2302,9 +2510,8 @@ havoc_stage:
 
         }
 
+        /* Randomly subtract from word, big endian. */
         case 26 ... 27: {
-
-          /* Randomly subtract from word, big endian. */
 
           if (temp_len < 2) { break; }
 
@@ -2325,9 +2532,8 @@ havoc_stage:
 
         }
 
+        /* Randomly add to word, little endian. */
         case 28 ... 29: {
-
-          /* Randomly add to word, little endian. */
 
           if (temp_len < 2) { break; }
 
@@ -2345,9 +2551,8 @@ havoc_stage:
 
         }
 
+        /* Randomly add to word, big endian. */
         case 30 ... 31: {
-
-          /* Randomly add to word, big endian. */
 
           if (temp_len < 2) { break; }
 
@@ -2368,9 +2573,8 @@ havoc_stage:
 
         }
 
+        /* Randomly subtract from dword, little endian. */
         case 32 ... 33: {
-
-          /* Randomly subtract from dword, little endian. */
 
           if (temp_len < 4) { break; }
 
@@ -2388,9 +2592,8 @@ havoc_stage:
 
         }
 
+        /* Randomly subtract from dword, big endian. */
         case 34 ... 35: {
-
-          /* Randomly subtract from dword, big endian. */
 
           if (temp_len < 4) { break; }
 
@@ -2411,9 +2614,8 @@ havoc_stage:
 
         }
 
+        /* Randomly add to dword, little endian. */
         case 36 ... 37: {
-
-          /* Randomly add to dword, little endian. */
 
           if (temp_len < 4) { break; }
 
@@ -2431,9 +2633,8 @@ havoc_stage:
 
         }
 
+        /* Randomly add to dword, big endian. */
         case 38 ... 39: {
-
-          /* Randomly add to dword, big endian. */
 
           if (temp_len < 4) { break; }
 
@@ -2454,11 +2655,8 @@ havoc_stage:
 
         }
 
+        /* Just set a random byte to a random value. */
         case 40 ... 43: {
-
-          /* Just set a random byte to a random value. Because,
-             why not. We use XOR with 1-255 to eliminate the
-             possibility of a no-op. */
 
 #ifdef INTROSPECTION
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " RAND8");
@@ -2558,9 +2756,8 @@ havoc_stage:
 
         }
 
+        /* Overwrite bytes with a randomly selected chunk bytes. */
         case 48 ... 50: {
-
-          /* Overwrite bytes with a randomly selected chunk bytes. */
 
           if (temp_len < 2) { break; }
           break;
@@ -2584,9 +2781,8 @@ havoc_stage:
 
         }
 
+        /* Overwrite bytes with fixed bytes. */
         case 51: {
-
-          /* Overwrite bytes with fixed bytes. */
 
           if (temp_len < 2) { break; }
           break;
@@ -2608,9 +2804,8 @@ havoc_stage:
 
         }
 
+        /* Increase byte by 1. */
         case 52: {
-
-          /* Increase byte by 1. */
 
 #ifdef INTROSPECTION
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ADDBYTE_");
@@ -2624,9 +2819,8 @@ havoc_stage:
 
         }
 
+        /* Decrease byte by 1. */
         case 53: {
-
-          /* Decrease byte by 1. */
 
 #ifdef INTROSPECTION
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " SUBBYTE_");
@@ -2640,9 +2834,8 @@ havoc_stage:
 
         }
 
+        /* Flip byte. */
         case 54: {
-
-          /* Flip byte. */
 
 #ifdef INTROSPECTION
           snprintf(afl->m_tmp, sizeof(afl->m_tmp), " FLIP8_");

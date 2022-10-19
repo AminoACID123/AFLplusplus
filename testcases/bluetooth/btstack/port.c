@@ -58,13 +58,13 @@ void execute_api(char *buf, int size) {
   for(int i=0;i<arg_in_count;i++){
     int arg_idx = *(int*)(buf + pos);
     pos += 4;
-    if (arg_idx != -1) {
+    if (arg_idx >= 0) {
       int len = *(int *)(buf + pos);
       pos += sizeof(int);
       arg_in[i] = (char*)(buf + pos);
       pos += len;
     } else {
-      arg_in[i] = context[arg_idx];
+      arg_in[i] = context[-arg_idx];
     }
   }
 
