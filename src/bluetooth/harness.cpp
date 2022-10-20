@@ -1,4 +1,5 @@
 #include "harness.h"
+#include "bluetooth.h"
 #include "cJSON.h"
 #include <set>
 #include <stdio.h>
@@ -44,6 +45,7 @@ void Harness::dump()
 
 vector<Operation*> operation_list;
 vector<Harness*> harness_list;
+
 
 cJSON* load_from_file(const char *file)
 {
@@ -212,7 +214,7 @@ void payload3(FILE *f)
     for (int i = 0, n = harness_list.size(); i != n; i++)
     {
         Harness *hn = harness_list[i];
-        fprintf(f, "void harness%d(char **arg_in, char **arg_out) {\n", i);
+        fprintf(f, "void harness%d(char **arg_in) {\n", i);
         for (int j = 0; j < hn->op->inputs.size(); j++)
         {
             fprintf(f, "  char* _i%d = arg_in[%d];\n", j, j);
@@ -246,7 +248,7 @@ void payload3(FILE *f)
     fprintf(f, "};\n\n");
 }
 
-int get_operation_idx(Operation *op)
+u32 get_operation_idx(Operation *op)
 {
     for (int i = 0, n = operation_list.size(); i < n; i++)
     {
@@ -256,7 +258,7 @@ int get_operation_idx(Operation *op)
     return -1;
 }
 
-int get_parameter_idx(Parameter *param)
+u32 get_parameter_idx(Parameter *param)
 {
     for (int i = 0, n = sizeof(parameter_list)/sizeof(Parameter); i < n; i++)
     {
@@ -340,6 +342,60 @@ void generate_seeds(const char *dir)
     }
 }
 
+extern "C" void generate_random_harness(u32 idx, u32 seed, u8* out_buf) {
+    Harness* hn = harness_list[idx];
+    int arg_in_cnt = hn->op->inputs.size();
+
+    struct harness_header{
+        int size;
+        char flag;
+        int harness_idx;
+        int arg_in_cnt;
+    }__attribute__((packed));
+
+    struct parameter_header {
+        int arg_idx;
+        int arg_len;
+    }__attribute__((packed));
+
+    harness_header* hdr = (harness_header*)out_buf;
+    hdr->flag = F_API;
+    hdr->harness_idx = idx;
+    hdr->arg_in_cnt = arg_in_cnt;
+
+    int i = sizeof(harness_header);
+    for(Parameter* param : harness_list[idx]->op->inputs) {
+        if(param->name == "DATA"){
+
+        }
+        else{
+            int j = seed % param->domain.size();
+            parameter_header* param_hdr = (parameter_header*)(out_buf + i);
+            param_hdr->arg_idx = get_parameter_idx(param);
+            param_hdr->arg_len = param->domain[j].size();
+            memcpy(out_buf + i + sizeof(parameter_header), param->domain[j].data(), param->domain[j].size());
+            i += (sizeof(parameter_header) + param->domain[j].size());
+        }
+    }
+    hdr->size = i - sizeof(harness_header);
+}
+
+extern "C" u32 get_total_harness() {
+    return harness_list.size();    
+}
+
+extern "C" void parse_harness(const char* in_file, const char* out_file) {
+    parse_operations(in_file);
+    parse_harnesses(out_file);
+
+    FILE *f = fopen(out_file, "w");
+    payload1(f);
+    payload2(f);
+    payload3(f);
+    fclose(f);
+}
+
+/*
 int main(int argc, char **argv)
 {
     if (argc != 4)
@@ -356,3 +412,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+*/

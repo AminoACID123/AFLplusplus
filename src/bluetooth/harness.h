@@ -2,6 +2,10 @@
 #include <string>
 #include <vector>
 
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+
 struct Parameter
 {
     std::string name;
@@ -37,8 +41,8 @@ void payload1(FILE *f);
 void payload2(FILE *f);
 void payload3(FILE *f);
 
-int get_operation_idx(Operation *op);
-int get_parameter_idx(Parameter *param);
+u32 get_operation_idx(Operation *op);
+u32 get_parameter_idx(Parameter *param);
 
 Parameter *get_parameter(std::string name);
 Operation *get_operation(std::string name);
