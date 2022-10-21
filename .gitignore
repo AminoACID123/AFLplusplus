@@ -98,8 +98,8 @@ utils/persistent_mode/persistent_demo_new
 utils/persistent_mode/test-instr
 !coresight_mode
 **/a.out
-testcases/bluetooht/btstack/wllvm_build
-testcases/bluetooht/btstack/afl_build
+testcases/bluetooth/btstack/wllvm_build
+testcases/bluetooth/btstack/afl_build
 !coresight_mode/coresight-trace
 vuln_prog
 testcases/bluetooth/btstack/build
