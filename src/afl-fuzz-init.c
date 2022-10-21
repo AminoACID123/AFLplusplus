@@ -24,6 +24,7 @@
  */
 
 #include "afl-fuzz.h"
+#include "bluetooth.h"
 #include <limits.h>
 #include "cmplog.h"
 
@@ -714,7 +715,7 @@ void read_testcases(afl_state_t *afl, u8 *directory) {
 
   }
 
-  if (nl_cnt) {
+  if (nl_cnt > 2) {
 
     i = nl_cnt;
     do {
@@ -813,7 +814,19 @@ void read_testcases(afl_state_t *afl, u8 *directory) {
     } while (i > 0);
 
   }
-
+  else{
+    u32 n = get_total_harness();
+    for(u32 i = 0;i<n;i++) {
+      char file[64];
+      sprintf(file, "%s/%d",afl->in_dir, i);
+      FILE* f = fopen(file, "w");
+      u8 buf[BT_MAX_BUFFER_SIZE];
+      generate_random_harness(i, rand_below(afl, RAND_MAX), buf);
+      fwrite(buf, 1, (*(int*)buf) + 4, f);
+      fclose(f);
+    }
+    read_testcases(afl, afl->in_dir);
+  }
   free(nl);                                                  /* not tracked */
 
   if (!afl->queued_items && directory == NULL) {

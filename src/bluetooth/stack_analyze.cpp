@@ -44,8 +44,10 @@ extern "C" u32 get_total_hci_le() {
     return stack_le_evts.size();
 }
 
-extern "C" void generate_random_hci() {
-
+extern "C" void generate_random_hci(u32 seed, u8* evt, u8* le_evt) {
+   *evt =  stack_evts[(seed >> 16) % stack_evts.size()];
+   if(*evt == BT_HCI_EVT_LE_META_EVENT)
+    *le_evt = stack_le_evts[seed % stack_le_evts.size()];
 }
 
 static void parse_status_evt_handler_btstack(Module *m)
@@ -168,6 +170,7 @@ extern "C" bool status_reply(u16 cmd)
     return _stack_status_cmds.find(cmd) != _stack_status_cmds.end();
 }
 
+
 extern "C" void init_stack_hci(const char *bc)
 {
     SMDiagnostic Err;
@@ -175,6 +178,10 @@ extern "C" void init_stack_hci(const char *bc)
     unique_ptr<Module> M = parseIRFile(bc, Err, *cxt);
     parse_event_handler_btstack(M.get());
 
+    std::copy(_stack_evts.begin(), _stack_evts.end(), std::back_inserter(stack_evts));
+    std::copy(_stack_le_evts.begin(), _stack_le_evts.end(), std::back_inserter(stack_le_evts));
+    std::copy(_stack_status_cmds.begin(), _stack_status_cmds.end(), std::back_inserter(stack_status_cmds)); 
+    std::copy(_stack_complete_cmds.begin(), _stack_complete_cmds.end(), std::back_inserter(stack_status_cmds));  
 }
 
 /*

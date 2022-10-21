@@ -36,12 +36,12 @@ int main(int argc, const char * argv[]){
     //     execute_one(buf + 1, len - 1);
     // }
 
-    char* buf = __AFL_FUZZ_TESTCASE_BUF;
+   char* buf = __AFL_FUZZ_TESTCASE_BUF;
     int len = __AFL_FUZZ_TESTCASE_LEN;
 
-    // char buf[2048];
+  //   char buf[2048];
 
-    // FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/in/1","r");
+    //FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/out/default/crashes/id:000004,sig:11,src:000012,time:28,execs:187,op:havoc,rep:8","r");
     // int len = fread(buf, 1, 2048, f);
 
     stack_execute(buf, len);

@@ -11,7 +11,7 @@
 #include <sys/uio.h>
 #include <sys/un.h>
 
-#include "../../../include/config.h"
+#include "../../../include/bluetooth.h"
 
 extern char* __afl_area2_ptr;
 extern int log_ptr;
@@ -41,7 +41,7 @@ arg1_idx                4
 
 */
 
-void execute_api(char *buf, int size) {
+void execute_api(unsigned char *buf, int size) {
 
   int harness_idx = *(int*)(buf + 1);
 
@@ -67,7 +67,7 @@ void execute_api(char *buf, int size) {
       arg_in[i] = context[-arg_idx];
     }
   }
-
+/*
   arg_out_count = *(int *)(buf + pos);
   pos += 4;
 
@@ -76,11 +76,12 @@ void execute_api(char *buf, int size) {
       pos += sizeof(int);
       arg_out[i] = context[idx];
   }
-  
+*/
+
   FUZZ_LIST[harness_idx](arg_in, arg_out);
 }
 
-void execute_hci(char* hci_packet_in, int size){
+void execute_hci(unsigned char* hci_packet_in, int size){
     int packet_len;
     switch(hci_packet_in[0]){
         case HCI_EVENT_PACKET:

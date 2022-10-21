@@ -27,6 +27,7 @@
 #include <string.h>
 #include "afl-fuzz.h"
 #include "bluetooth.h"
+#include "bluetooth_api.h"
 #include "cmplog.h"
 #include "mutator.h"
 
@@ -1982,8 +1983,14 @@ havoc_stage:
           break;
         }
 
+        case 45: {
+          bt_mutator_insert_hci(afl, &out_buf, &temp_len);
+          break;
+        }
+
         /*Clone bytes. */
-        case 44 ... 46: {
+        case 46: {
+          bt_mutator_insert_harness(afl, &out_buf, &temp_len);
           break;
           /*TODO*/
           if (temp_len + HAVOC_BLK_XL < MAX_FILE) {
@@ -2023,6 +2030,7 @@ havoc_stage:
         }
 
         case 47: {
+          bt_mutator_delete_harness(afl, out_buf, &temp_len);
           break;
           /*TODO*/
           if (temp_len + HAVOC_BLK_XL < MAX_FILE) {

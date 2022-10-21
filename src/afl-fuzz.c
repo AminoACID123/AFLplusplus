@@ -44,6 +44,8 @@
 extern u64 time_spent_working;
 #endif
 
+#include "bluetooth_api.h"
+
 static void at_exit() {
 
   s32   i, pid1 = 0, pid2 = 0, pgrp = -1;
@@ -545,10 +547,19 @@ int main(int argc, char **argv_orig, char **envp) {
   while (
       (opt = getopt(
            argc, argv,
-           "+Ab:B:c:CdDe:E:hi:I:f:F:g:G:l:L:m:M:nNOo:p:RQs:S:t:T:UV:WXx:YZ")) >
+           "+Ab:B:c:CdDe:E:hi:j:k:q:I:f:F:g:G:l:L:m:M:nNOo:p:RQs:S:t:T:UV:WXx:YZ")) >
       0) {
 
     switch (opt) {
+      case 'j':
+        afl->in_harness = optarg;
+        break;
+      
+      case 'k':
+        afl->out_harness = optarg;
+
+      case 'q':
+        afl->bc_file = optarg;
 
       case 'g':
         afl->min_length = atoi(optarg);
@@ -1840,6 +1851,10 @@ int main(int argc, char **argv_orig, char **envp) {
   write_setup_file(afl, argc, argv);
 
   setup_cmdline_file(afl, argv + optind);
+
+  parse_harness(afl->in_harness, afl->out_harness);
+
+  init_stack_hci(afl->bc_file);
 
   read_testcases(afl, NULL);
   // read_foreign_testcases(afl, 1); for the moment dont do this

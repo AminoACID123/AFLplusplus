@@ -344,18 +344,18 @@ void generate_seeds(const char *dir)
 
 extern "C" void generate_random_harness(u32 idx, u32 seed, u8* out_buf) {
     Harness* hn = harness_list[idx];
-    int arg_in_cnt = hn->op->inputs.size();
+    u32 arg_in_cnt = hn->op->inputs.size();
 
     struct harness_header{
-        int size;
-        char flag;
-        int harness_idx;
-        int arg_in_cnt;
+        u32 size;
+        u8 flag;
+        u32 harness_idx;
+        u32 arg_in_cnt;
     }__attribute__((packed));
 
     struct parameter_header {
-        int arg_idx;
-        int arg_len;
+        u32 arg_idx;
+        u32 arg_len;
     }__attribute__((packed));
 
     harness_header* hdr = (harness_header*)out_buf;
@@ -363,7 +363,7 @@ extern "C" void generate_random_harness(u32 idx, u32 seed, u8* out_buf) {
     hdr->harness_idx = idx;
     hdr->arg_in_cnt = arg_in_cnt;
 
-    int i = sizeof(harness_header);
+    u32 i = sizeof(harness_header);
     for(Parameter* param : harness_list[idx]->op->inputs) {
         if(param->name == "DATA"){
 
@@ -377,7 +377,7 @@ extern "C" void generate_random_harness(u32 idx, u32 seed, u8* out_buf) {
             i += (sizeof(parameter_header) + param->domain[j].size());
         }
     }
-    hdr->size = i - sizeof(harness_header);
+    hdr->size = i - 4;
 }
 
 extern "C" u32 get_total_harness() {
@@ -386,7 +386,7 @@ extern "C" u32 get_total_harness() {
 
 extern "C" void parse_harness(const char* in_file, const char* out_file) {
     parse_operations(in_file);
-    parse_harnesses(out_file);
+    parse_harnesses(in_file);
 
     FILE *f = fopen(out_file, "w");
     payload1(f);

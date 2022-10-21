@@ -57,12 +57,6 @@
             "operation": "GAP_DISCONNECT",
             "headers": ["gap.h"],
             "exec": ["gap_disconnect($i0);"]
-        },
-        {
-            "name": "harness4",
-            "operation": "GAP_ADVERTISEMENTS_SET_DATA",
-            "headers": ["gap.h"],
-            "exec": ["gap_advertisements_set_data(sizeof($i0),$i0);"] 
         }
     ]
 }

@@ -441,16 +441,7 @@ afl-as: src/afl-as.c include/afl-as.h $(COMM_HDR) | test_x86
 	$(CC) $(CFLAGS) src/$@.c -o $@ $(LDFLAGS)
 	@ln -sf afl-as as
 
-src/bluetooth/stack_analyze.o: src/bluetooth/stack_analyze.cpp
-	$(CXX) -Iinclude -I$(LLVM_INCLUDE_DIR) -I$(LLVM_BIN_INCLUDE_DIR) -c  $^ -o $@
-
-src/bluetooth/harness.so: src/bluetooth/harness.cpp
-	$(CXX) $(CFLAGS) -c -O0 -g $^ -o $@
-
-src/bluetooth/cJSON.o:  src/bluetooth/cJSON.c
-	$(CXX) $(CFLAGS) -c -O0 -g $^ -o $@
-
-src/bluetooth/bluetooth.so:  src/bluetooth/harness.cpp src/bluetooth/stack_analyze.cpp src/bluetooth/cJSON.c
+libaflbluetooth.so:  src/bluetooth/harness.cpp src/bluetooth/stack_analyze.cpp src/bluetooth/cJSON.c
 	$(CXX) -fPIC -Iinclude -I$(LLVM_INCLUDE_DIR) -I$(LLVM_BIN_INCLUDE_DIR) -L$(LLVM_LIB_DIR) -shared -O0 -g $^ -o $@  $(LLVM_LIBS) -ltinfo
 
 src/afl-performance.o : $(COMM_HDR) src/afl-performance.c include/hash.h
@@ -465,8 +456,8 @@ src/afl-forkserver.o : $(COMM_HDR) src/afl-forkserver.c include/forkserver.h
 src/afl-sharedmem.o : $(COMM_HDR) src/afl-sharedmem.c include/sharedmem.h
 	$(CC) $(CFLAGS) $(CFLAGS_FLTO) -c src/afl-sharedmem.c -o src/afl-sharedmem.o
 
-afl-fuzz: $(COMM_HDR) include/afl-fuzz.h $(AFL_FUZZ_FILES) src/afl-common.o src/afl-sharedmem.o src/afl-forkserver.o src/afl-performance.o src/bluetooth/bluetooth.so | test_x86
-	$(CC) $(CFLAGS) -O0 -g $(COMPILE_STATIC) $(CFLAGS_FLTO) $(AFL_FUZZ_FILES) src/bluetooth/bluetooth.so src/afl-common.o src/afl-sharedmem.o src/afl-forkserver.o src/afl-performance.o -o $@ $(PYFLAGS) $(LDFLAGS) -lm 
+afl-fuzz: $(COMM_HDR) include/afl-fuzz.h $(AFL_FUZZ_FILES) src/afl-common.o src/afl-sharedmem.o src/afl-forkserver.o src/afl-performance.o libaflbluetooth.so | test_x86
+	$(CC) $(CFLAGS) -O0 -g $(COMPILE_STATIC) $(CFLAGS_FLTO) $(AFL_FUZZ_FILES) libaflbluetooth.so src/afl-common.o src/afl-sharedmem.o src/afl-forkserver.o src/afl-performance.o -o $@ $(PYFLAGS) $(LDFLAGS) -lm 
 
 afl-showmap: src/afl-showmap.c src/afl-common.o src/afl-sharedmem.o src/afl-forkserver.o src/afl-performance.o $(COMM_HDR) | test_x86
 	$(CC) $(CFLAGS) $(COMPILE_STATIC) $(CFLAGS_FLTO) src/$@.c src/afl-common.o src/afl-sharedmem.o src/afl-forkserver.o src/afl-performance.o -o $@ $(LDFLAGS) -L$(LLVM_LIB_DIR) $(LLVM_LIBS) 
@@ -599,7 +590,7 @@ all_done: test_build
 
 .PHONY: clean
 clean:
-	rm -rf src/bluetooth/*.o src/bluetooth/*.so $(PROGS) afl-fuzz-document afl-as as afl-g++ afl-clang afl-clang++ *.o src/*.o *~ a.out core core.[1-9][0-9]* *.stackdump .test .test1 .test2 test-instr .test-instr0 .test-instr1 afl-cs-proxy afl-qemu-trace afl-gcc-fast afl-g++-fast ld *.so *.8 test/unittests/*.o test/unittests/unit_maybe_alloc test/unittests/preallocable .afl-* afl-gcc afl-g++ afl-clang afl-clang++ test/unittests/unit_hash test/unittests/unit_rand *.dSYM lib*.a
+	rm -rf libaflbluetooth.so $(PROGS) afl-fuzz-document afl-as as afl-g++ afl-clang afl-clang++ *.o src/*.o *~ a.out core core.[1-9][0-9]* *.stackdump .test .test1 .test2 test-instr .test-instr0 .test-instr1 afl-cs-proxy afl-qemu-trace afl-gcc-fast afl-g++-fast ld *.so *.8 test/unittests/*.o test/unittests/unit_maybe_alloc test/unittests/preallocable .afl-* afl-gcc afl-g++ afl-clang afl-clang++ test/unittests/unit_hash test/unittests/unit_rand *.dSYM lib*.a
 	-$(MAKE) -f GNUmakefile.llvm clean
 	-$(MAKE) -f GNUmakefile.gcc_plugin clean
 	-$(MAKE) -C utils/libdislocator clean
@@ -801,6 +792,7 @@ install: all $(MANPAGES)
 	@if [ -f utils/afl_network_proxy/afl-network-server ]; then $(MAKE) -C utils/afl_network_proxy install; fi
 	@if [ -f utils/aflpp_driver/libAFLDriver.a ]; then set -e; install -m 644 utils/aflpp_driver/libAFLDriver.a $${DESTDIR}$(HELPER_PATH); fi
 	@if [ -f utils/aflpp_driver/libAFLQemuDriver.a ]; then set -e; install -m 644 utils/aflpp_driver/libAFLQemuDriver.a $${DESTDIR}$(HELPER_PATH); fi
+	@if [ -f libaflbluetooth.so ]; then set -e; install -m 775 libaflbluetooth.so $${DESTDIR}$(HELPER_PATH); fi
 	-$(MAKE) -f GNUmakefile.llvm install
 ifneq "$(SYS)" "Darwin"
 	-$(MAKE) -f GNUmakefile.gcc_plugin install
@@ -820,7 +812,7 @@ endif
 .PHONY: uninstall
 uninstall:
 	-cd $${DESTDIR}$(BIN_PATH) && rm -f $(PROGS) $(SH_PROGS) afl-cs-proxy afl-qemu-trace afl-plot-ui afl-fuzz-document afl-network-server afl-g* afl-plot.sh afl-as afl-ld-lto afl-c* afl-lto*
-	-cd $${DESTDIR}$(HELPER_PATH) && rm -f afl-g*.*o afl-llvm-*.*o afl-compiler-*.*o libdislocator.so libtokencap.so libcompcov.so libqasan.so afl-frida-trace.so libnyx.so socketfuzz*.so argvfuzz*.so libAFLDriver.a libAFLQemuDriver.a as afl-as SanitizerCoverage*.so compare-transform-pass.so cmplog-*-pass.so split-*-pass.so dynamic_list.txt
+	-cd $${DESTDIR}$(HELPER_PATH) && rm -f afl-g*.*o afl-llvm-*.*o afl-compiler-*.*o libaflbluetooth.so libdislocator.so libtokencap.so libcompcov.so libqasan.so afl-frida-trace.so libnyx.so socketfuzz*.so argvfuzz*.so libAFLDriver.a libAFLQemuDriver.a as afl-as SanitizerCoverage*.so compare-transform-pass.so cmplog-*-pass.so split-*-pass.so dynamic_list.txt
 	-rm -rf $${DESTDIR}$(MISC_PATH)/testcases $${DESTDIR}$(MISC_PATH)/dictionaries
 	-sh -c "ls docs/*.md | sed 's|^docs/|$${DESTDIR}$(DOC_PATH)/|' | xargs rm -f"
 	-cd $${DESTDIR}$(MAN_PATH) && rm -f $(MANPAGES)
