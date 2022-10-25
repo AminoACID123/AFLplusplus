@@ -15,7 +15,7 @@
 
 extern char* __afl_area2_ptr;
 extern int log_ptr;
-//void (*fuzz_packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size);
+extern void (*fuzz_packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size);
 
 extern char* arg_in[];
 extern char* arg_out[];

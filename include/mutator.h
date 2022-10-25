@@ -44,6 +44,12 @@ void bt_mutator_add32_be(afl_state_t *afl, char *buf, int len);
 
 void bt_mutator_random8(afl_state_t *afl, char *buf, int len);
 
+void bt_mutator_increase_byte(afl_state_t *afl, char *buf, int len);
+
+void bt_mutator_decrease_byte(afl_state_t *afl, char *buf, int len);
+
+void bt_mutator_flip_byte(afl_state_t *afl, char *buf, int len);
+
 void mutate_parameter(afl_state_t *afl, char *buf, int len, bt_mutator mutator);
 
 /*************************

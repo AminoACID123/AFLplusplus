@@ -1992,82 +1992,10 @@ havoc_stage:
         case 46: {
           bt_mutator_insert_harness(afl, &out_buf, &temp_len);
           break;
-          /*TODO*/
-          if (temp_len + HAVOC_BLK_XL < MAX_FILE) {
-            /* Clone bytes. */
-
-            u32 clone_len = choose_block_len(afl, temp_len);
-            u32 clone_from = rand_below(afl, temp_len - clone_len + 1);
-            u32 clone_to = rand_below(afl, temp_len);
-
-#ifdef INTROSPECTION
-            snprintf(afl->m_tmp, sizeof(afl->m_tmp), " CLONE-%s-%u-%u-%u",
-                     "clone", clone_from, clone_to, clone_len);
-            strcat(afl->mutation, afl->m_tmp);
-#endif
-            u8 *new_buf =
-                afl_realloc(AFL_BUF_PARAM(out_scratch), temp_len + clone_len);
-            if (unlikely(!new_buf)) { PFATAL("alloc"); }
-
-            /* Head */
-
-            memcpy(new_buf, out_buf, clone_to);
-
-            /* Inserted part */
-
-            memcpy(new_buf + clone_to, out_buf + clone_from, clone_len);
-
-            /* Tail */
-            memcpy(new_buf + clone_to + clone_len, out_buf + clone_to,
-                   temp_len - clone_to);
-
-            out_buf = new_buf;
-            afl_swap_bufs(AFL_BUF_PARAM(out), AFL_BUF_PARAM(out_scratch));
-            temp_len += clone_len;
-          }
-
-          break;
         }
 
         case 47: {
           bt_mutator_delete_harness(afl, out_buf, &temp_len);
-          break;
-          /*TODO*/
-          if (temp_len + HAVOC_BLK_XL < MAX_FILE) {
-            /* Insert a block of constant bytes (25%). */
-
-            u32 clone_len = choose_block_len(afl, HAVOC_BLK_XL);
-            u32 clone_to = rand_below(afl, temp_len);
-
-#ifdef INTROSPECTION
-            snprintf(afl->m_tmp, sizeof(afl->m_tmp), " CLONE-%s-%u-%u",
-                     "insert", clone_to, clone_len);
-            strcat(afl->mutation, afl->m_tmp);
-#endif
-            u8 *new_buf =
-                afl_realloc(AFL_BUF_PARAM(out_scratch), temp_len + clone_len);
-            if (unlikely(!new_buf)) { PFATAL("alloc"); }
-
-            /* Head */
-
-            memcpy(new_buf, out_buf, clone_to);
-
-            /* Inserted part */
-
-            memset(new_buf + clone_to,
-                   rand_below(afl, 2) ? rand_below(afl, 256)
-                                      : out_buf[rand_below(afl, temp_len)],
-                   clone_len);
-
-            /* Tail */
-            memcpy(new_buf + clone_to + clone_len, out_buf + clone_to,
-                   temp_len - clone_to);
-
-            out_buf = new_buf;
-            afl_swap_bufs(AFL_BUF_PARAM(out), AFL_BUF_PARAM(out_scratch));
-            temp_len += clone_len;
-          }
-
           break;
         }
 
@@ -2115,40 +2043,19 @@ havoc_stage:
 
         /* Increase byte by 1. */
         case 52: {
-#ifdef INTROSPECTION
-          snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ADDBYTE_");
-          strcat(afl->mutation, afl->m_tmp);
-#endif
-
-          /*out_buf[rand_below(afl, temp_len)]++;*/
-
-          /*TODO*/
+          mutate_parameter(afl, out_buf, temp_len, bt_mutator_increase_byte);
           break;
         }
 
         /* Decrease byte by 1. */
         case 53: {
-#ifdef INTROSPECTION
-          snprintf(afl->m_tmp, sizeof(afl->m_tmp), " SUBBYTE_");
-          strcat(afl->mutation, afl->m_tmp);
-#endif
-          /*
-          out_buf[rand_below(afl, temp_len)]--;
-          */
-          /*TODO*/
+          mutate_parameter(afl, out_buf, temp_len, bt_mutator_decrease_byte);
           break;
         }
 
         /* Flip byte. */
         case 54: {
-#ifdef INTROSPECTION
-          snprintf(afl->m_tmp, sizeof(afl->m_tmp), " FLIP8_");
-          strcat(afl->mutation, afl->m_tmp);
-#endif
-          /*
-          out_buf[rand_below(afl, temp_len)] ^= 0xff;
-          */
-          /*TODO*/
+          mutate_parameter(afl, out_buf, temp_len, bt_mutator_flip_byte);
           break;
         }
 

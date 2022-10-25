@@ -17,15 +17,15 @@ void stack_execute(char*, int);
 
 int main(int argc, const char * argv[]){
 
-    __afl_coverage_off();
+  ///  __afl_coverage_off();
 
     harness_init();
 
     stack_init();
 
-    __afl_coverage_on();
-
     __AFL_INIT();
+
+    //    __afl_coverage_on();
 
     // while(__AFL_LOOP(&to_continue)){
         
@@ -36,13 +36,13 @@ int main(int argc, const char * argv[]){
     //     execute_one(buf + 1, len - 1);
     // }
 
-   char* buf = __AFL_FUZZ_TESTCASE_BUF;
+  char* buf = __AFL_FUZZ_TESTCASE_BUF;
     int len = __AFL_FUZZ_TESTCASE_LEN;
 
-  //   char buf[2048];
+   //char buf[2048];
 
-    //FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/out/default/crashes/id:000004,sig:11,src:000012,time:28,execs:187,op:havoc,rep:8","r");
-    // int len = fread(buf, 1, 2048, f);
+   // FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/crashes/id:000000,sig:06,src:000346,time:112531,execs:957846,op:havoc,rep:16","r");
+   // int len = fread(buf, 1, 2048, f);
 
     stack_execute(buf, len);
 

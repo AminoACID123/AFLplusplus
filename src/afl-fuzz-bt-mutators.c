@@ -48,6 +48,17 @@ static inline u32 get_num_hci(u8 *buf, u32 len) {
   return cnt;
 }
 
+static inline bool has_conn_complete(u8 *buf, u32 len) {
+  u32 i = 0;
+  while (i < len) {
+    int  size = *(int *)(buf + i);
+    char flag = buf[i + 4];
+    if (flag == HCI_EVENT_PACKET && buf[i+5]==4) { return true;}
+    i += (4 + size);
+  }
+  return false;
+}
+
 int get_parameter_num(u8 *buf, u32 len) {
   u32 i = 0;
   u32 ret = 0;
@@ -92,7 +103,7 @@ void bt_mutator_interesting8(afl_state_t *afl, u8 *buf, u32 len) {
 void bt_mutator_interesting16_le(afl_state_t *afl, u8 *buf, u32 len) {
   if (len < 2) return;
 #ifdef INTROSPECTION
-  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING16");
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING16LE");
   strcat(afl->mutation, afl->m_tmp);
 #endif
   *(u16 *)(buf + rand_below(afl, len - 1)) =
@@ -112,7 +123,7 @@ void bt_mutator_interesting16_be(afl_state_t *afl, u8 *buf, u32 len) {
 void bt_mutator_interesting32_le(afl_state_t *afl, u8 *buf, u32 len) {
   if (len < 4) return;
 #ifdef INTROSPECTION
-  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING32");
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " INTERESTING32LE");
   strcat(afl->mutation, afl->m_tmp);
 #endif
   *(u32 *)(buf + rand_below(afl, len - 3)) =
@@ -131,7 +142,7 @@ void bt_mutator_interesting32_be(afl_state_t *afl, u8 *buf, u32 len) {
 
 void bt_mutator_subtract8(afl_state_t *afl, u8 *buf, u32 len) {
 #ifdef INTROSPECTION
-  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH8_");
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH8-");
   strcat(afl->mutation, afl->m_tmp);
 #endif
   buf[rand_below(afl, len)] -= 1 + rand_below(afl, ARITH_MAX);
@@ -148,7 +159,7 @@ void bt_mutator_add8(afl_state_t *afl, u8 *buf, u32 len) {
 void bt_mutator_subtract16_le(afl_state_t *afl, u8 *buf, u32 len) {
   if (len < 2) return;
 #ifdef INTROSPECTION
-  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH16_-%u", pos);
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH16LE-");
   strcat(afl->mutation, afl->m_tmp);
 #endif
   u32 pos = rand_below(afl, len - 1);
@@ -158,7 +169,7 @@ void bt_mutator_subtract16_le(afl_state_t *afl, u8 *buf, u32 len) {
 void bt_mutator_subtract16_be(afl_state_t *afl, u8 *buf, u32 len) {
   if (len < 2) return;
 #ifdef INTROSPECTION
-  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH16_BE-%u_%u", pos, num);
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH16BE-");
   strcat(afl->mutation, afl->m_tmp);
 #endif
   u32 pos = rand_below(afl, len - 1);
@@ -169,7 +180,7 @@ void bt_mutator_subtract16_be(afl_state_t *afl, u8 *buf, u32 len) {
 void bt_mutator_add16_le(afl_state_t *afl, u8 *buf, u32 len) {
   if (len < 2) return;
 #ifdef INTROSPECTION
-  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH16+-%u", pos);
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " ARITH16LE+");
   strcat(afl->mutation, afl->m_tmp);
 #endif
   u32 pos = rand_below(afl, len - 1);
@@ -242,6 +253,30 @@ void bt_mutator_random8(afl_state_t *afl, u8 *buf, u32 len) {
   buf[rand_below(afl, len)] ^= 1 + rand_below(afl, 255);
 }
 
+void bt_mutator_increase_byte(afl_state_t *afl, u8 *buf, u32 len) {
+#ifdef INTROSPECTION
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " RAND8");
+  strcat(afl->mutation, afl->m_tmp);
+#endif
+  buf[rand_below(afl, len)]++;
+}
+
+void bt_mutator_decrease_byte(afl_state_t *afl, u8 *buf, u32 len) {
+#ifdef INTROSPECTION
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " RAND8");
+  strcat(afl->mutation, afl->m_tmp);
+#endif
+  buf[rand_below(afl, len)]--;
+}
+
+void bt_mutator_flip_byte(afl_state_t *afl, u8 *buf, u32 len) {
+#ifdef INTROSPECTION
+  snprintf(afl->m_tmp, sizeof(afl->m_tmp), " RAND8");
+  strcat(afl->mutation, afl->m_tmp);
+#endif
+  buf[rand_below(afl, len)]^= 0xff;
+}
+
 void mutate_parameter(afl_state_t *afl, u8 *buf, u32 len, bt_mutator mutator) {
   u32 param = rand_below(afl, get_parameter_num(buf, len));
   u32 i = 0;
@@ -252,7 +287,7 @@ void mutate_parameter(afl_state_t *afl, u8 *buf, u32 len, bt_mutator mutator) {
 
     if (flag == HCI_EVENT_PACKET) {
       if (cnt == param) {
-        mutator(afl, buf + i + 5, 255);
+        mutator(afl, buf + i + 7, 255);
         return;
       }
       cnt++;
@@ -364,6 +399,9 @@ void bt_mutator_insert_hci(afl_state_t *afl, u8 **buf, u32 *len) {
 
   u8 evt, le_evt = 0xff;
   generate_random_hci(seed, &evt, &le_evt);
+
+  if(evt == 4 && has_conn_complete(*buf, *len)) return;
+
   temp_buf[4] = HCI_EVENT_PACKET;
   temp_buf[5] = evt;
   temp_buf[6] = 0xff;
@@ -413,5 +451,30 @@ void bt_mutator_insert_hci(afl_state_t *afl, u8 **buf, u32 *len) {
 }
 
 void bt_mutator_delete_hci(afl_state_t *afl, u8 *buf, u32 *len) {
-  u32 n = get_num_hci(buf, len);
+  u32 n;
+  u32 to_delete, delete_len, delete_pos;
+  u32 i, cnt;
+
+  n = get_num_hci(buf, *len);
+  if (n == 1) return;
+  to_delete = rand_below(afl, n);
+  delete_len = 0;
+  delete_pos = 0;
+
+  while (i < *len) {
+    u32 size = *(int *)(buf + i);
+    u8 flag = buf[i + 4];
+    if (flag == HCI_EVENT_PACKET) {
+      if (cnt == to_delete) {
+        delete_pos = i;
+        delete_len = size + 4;
+        break;
+      }
+      cnt++;
+    }
+    i += (4 + size);
+  }
+
+  memmove(buf, buf + delete_pos + delete_len, *len - delete_pos - delete_len);
+  *len -= delete_len;
 }
