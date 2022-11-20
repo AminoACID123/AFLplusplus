@@ -1,7 +1,7 @@
+#include <string.h>
 #include "afl-fuzz.h"
 #include "bluetooth.h"
 #include "bluetooth_api.h"
-#include <string.h>
 
 #define FLIP_BIT(_ar, _b)                   \
   do {                                      \
@@ -17,7 +17,7 @@ static inline u32 get_num_item(u8 *buf, u32 len) {
   u32 i = 0;
   u32 cnt = 0;
   while (i < len) {
-    int  size = *(int *)(buf + i);
+    int size = *(int *)(buf + i);
     cnt++;
     i += (4 + size);
   }
@@ -51,9 +51,9 @@ static inline u32 get_num_hci(u8 *buf, u32 len) {
 static inline bool has_conn_complete(u8 *buf, u32 len) {
   u32 i = 0;
   while (i < len) {
-    int  size = *(int *)(buf + i);
-    char flag = buf[i + 4];
-    if (flag == HCI_EVENT_PACKET && buf[i+5]==4) { return true;}
+    u32 size = *(int *)(buf + i);
+    u8  flag = buf[i + 4];
+    if (flag == HCI_EVENT_PACKET && buf[i + 5] == 3) { return true; }
     i += (4 + size);
   }
   return false;
@@ -81,7 +81,6 @@ int get_parameter_num(u8 *buf, u32 len) {
   }
   return ret;
 }
-
 
 void bt_mutator_flip_bit(afl_state_t *afl, u8 *buf, u32 len) {
 #ifdef INTROSPECTION
@@ -274,7 +273,7 @@ void bt_mutator_flip_byte(afl_state_t *afl, u8 *buf, u32 len) {
   snprintf(afl->m_tmp, sizeof(afl->m_tmp), " RAND8");
   strcat(afl->mutation, afl->m_tmp);
 #endif
-  buf[rand_below(afl, len)]^= 0xff;
+  buf[rand_below(afl, len)] ^= 0xff;
 }
 
 void mutate_parameter(afl_state_t *afl, u8 *buf, u32 len, bt_mutator mutator) {
@@ -326,8 +325,8 @@ void bt_mutator_insert_harness(afl_state_t *afl, u8 **buf, u32 *len) {
   u32 i = 0;
   u32 cnt = 0;
   while (i < *len) {
-    u32  size = *(int *)(*buf + i);
-    u8 flag = (*buf)[i + 4];
+    u32 size = *(int *)(*buf + i);
+    u8  flag = (*buf)[i + 4];
     if (flag == F_API) {
       if (cnt == pos) {
         insert_to = i;
@@ -375,7 +374,7 @@ void bt_mutator_delete_harness(afl_state_t *afl, u8 *buf, u32 *len) {
 
   while (i < *len) {
     u32 size = *(int *)(buf + i);
-    u8 flag = buf[i + 4];
+    u8  flag = buf[i + 4];
     if (flag == F_API) {
       if (cnt == to_delete) {
         delete_pos = i;
@@ -391,33 +390,68 @@ void bt_mutator_delete_harness(afl_state_t *afl, u8 *buf, u32 *len) {
   *len -= delete_len;
 }
 
-void bt_mutator_insert_hci(afl_state_t *afl, u8 **buf, u32 *len) {
-  u32 n = get_num_item(*buf, *len);
-  u32 pos = rand_below(afl, n);
-  u32 seed = rand_below(afl, RAND_MAX);
-  u8  temp_buf[4 + 1 + 2+ BT_MAX_HCI_EVT_SIZE];
+u8 bt_mutator_expand_one(afl_state_t *afl, u8 **buf, u32 *len, u32 cmd)
+{
+  u32 i = 0;
+  u32 pos = 0;
+  u32 item = 0;
+  u32 size = 0;
+  u8* hci_log = afl->fsrv.trace_bits2;
 
-  u8 evt, le_evt = 0xff;
-  generate_random_hci(seed, &evt, &le_evt);
+  while (size = *(u32 *)(hci_log + i)) {
+    u8 flag = *(hci_log + i + 4);
+    if(flag == HCI_COMMAND_DATA_PACKET){
+      if(pos == cmd){
+        u16 opcode = *(u16*)(hci_log + i + 5);
+        u8 temp_buf[BT_MAX_HCI_EVT_SIZE + 4 + 1 + 2];
+        *(int *)temp_buf = BT_MAX_HCI_EVT_SIZE + 2 + 1;
+        temp_buf[4] = HCI_EVENT_PACKET;
+        struct hci_event_header *hdr = &temp_buf[5];
+        hdr->parameter_len = 0xff; 
+        if(reply_with_complete(opcode)){
+          hdr->opcode = HCI_EVENT_COMMAND_COMPLETE;
+          struct hci_event_command_complete *evt = hdr->paramters;
+          evt->command_opcode = opcode;
+          evt->num_hci_command_packets = 1;
+          evt->return_parameters[0] = 0;
+          bt_mutator_insert_hci_at(afl, buf, len, pos, temp_buf, sizeof(temp_buf));
+        }else if (reply_with_status(opcode)){
+          hdr->opcode = HCI_EVENT_COMMAND_STATUS;
+          struct hci_event_command_status *evt = hdr->paramters;
+          evt->command_opcode = opcode;
+          evt->status = 0;
+          evt->num_hci_command_packets = 1;
+        }
+      }
+      pos++;
+    }
+    else if (flag == F_API || flag == HCI_EVENT_PACKET) {
+      item++;
+    }
+    i += (4 + size);
+  }
+  return 0;
+}
 
-  if(evt == 4 && has_conn_complete(*buf, *len)) return;
+/* Expand a harness seq */
+u8 bt_mutator_expand(afl_state_t *afl, u8 **buf, u32 *len) {
+  u8 fault = 0;
+  u32 cmd;
+  while (true) {
+    if(fault = common_fuzz_stuff(afl, *buf, *len)) return fault;
+    if(!bt_mutator_expand_one(afl, buf, len, cmd)) break;
+    cmd++;
+  }
+}
 
-  temp_buf[4] = HCI_EVENT_PACKET;
-  temp_buf[5] = evt;
-  temp_buf[6] = 0xff;
-  if(le_evt != 0xff)
-    temp_buf[7] = le_evt;
-  *(int*)temp_buf = BT_MAX_HCI_EVT_SIZE + 2 + 1;
-
-  if (*len + BT_MAX_HCI_EVT_SIZE + 2 + 4 + 1 >= MAX_FILE) return;
-
-  u32 insert_len = *(int *)temp_buf + 4;
+void bt_mutator_insert_hci_at(afl_state_t *afl, u8 **buf, u32 *len, u32 pos,
+                              u8 *insert_buf, u32 insert_len) {
   u32 insert_to = 0;
-
   u32 i = 0;
   u32 cnt = 0;
+
   while (i < *len) {
-    u32  size = *(int *)(*buf + i);
+    u32 size = *(int *)(*buf + i);
     if (cnt == pos) {
       insert_to = i;
       break;
@@ -440,7 +474,7 @@ void bt_mutator_insert_hci(afl_state_t *afl, u8 **buf, u32 *len) {
 
   /* Inserted part */
 
-  memcpy(new_buf + insert_to, temp_buf, insert_len);
+  memcpy(new_buf + insert_to, insert_buf, insert_len);
 
   /* Tail */
   memcpy(new_buf + insert_to + insert_len, *buf + insert_to, *len - insert_to);
@@ -448,6 +482,67 @@ void bt_mutator_insert_hci(afl_state_t *afl, u8 **buf, u32 *len) {
   *buf = new_buf;
   afl_swap_bufs(AFL_BUF_PARAM(out), AFL_BUF_PARAM(out_scratch));
   *len += insert_len;
+}
+
+void bt_mutator_insert_hci(afl_state_t *afl, u8 **buf, u32 *len) {
+  u32 n = get_num_item(*buf, *len);
+  u32 pos = rand_below(afl, n);
+  u32 seed = rand_below(afl, RAND_MAX);
+  u8  temp_buf[4 + 1 + 2 + BT_MAX_HCI_EVT_SIZE];
+  u8  evt, le_evt = 0xff;
+
+  generate_random_hci(seed, &evt, &le_evt);
+
+  if (evt == 3 && has_conn_complete(*buf, *len)) return;
+
+  temp_buf[4] = HCI_EVENT_PACKET;
+  temp_buf[5] = evt;
+  temp_buf[6] = 0xff;
+  if (le_evt != 0xff) temp_buf[7] = le_evt;
+  *(int *)temp_buf = BT_MAX_HCI_EVT_SIZE + 2 + 1;
+
+  if (*len + BT_MAX_HCI_EVT_SIZE + 2 + 4 + 1 >= MAX_FILE) return;
+
+  u32 insert_len = *(int *)temp_buf + 4;
+  bt_mutator_insert_hci_at(afl, buf, len, pos, temp_buf, insert_len);
+
+  //   u32 insert_to = 0;
+
+  //   u32 i = 0;
+  //   u32 cnt = 0;
+  //   while (i < *len) {
+  //     u32  size = *(int *)(*buf + i);
+  //     if (cnt == pos) {
+  //       insert_to = i;
+  //       break;
+  //     }
+  //     cnt++;
+  //     i += (4 + size);
+  //   }
+
+  // #ifdef INTROSPECTION
+  //   snprintf(afl->m_tmp, sizeof(afl->m_tmp), " CLONE-%s-%u-%u", "insert",
+  //            clone_to, clone_len);
+  //   strcat(afl->mutation, afl->m_tmp);
+  // #endif
+  //   u8 *new_buf = afl_realloc(AFL_BUF_PARAM(out_scratch), *len + insert_len);
+  //   if (unlikely(!new_buf)) { PFATAL("alloc"); }
+
+  //   /* Head */
+
+  //   memcpy(new_buf, *buf, insert_to);
+
+  //   /* Inserted part */
+
+  //   memcpy(new_buf + insert_to, temp_buf, insert_len);
+
+  //   /* Tail */
+  //   memcpy(new_buf + insert_to + insert_len, *buf + insert_to, *len -
+  //   insert_to);
+
+  //   *buf = new_buf;
+  //   afl_swap_bufs(AFL_BUF_PARAM(out), AFL_BUF_PARAM(out_scratch));
+  //   *len += insert_len;
 }
 
 void bt_mutator_delete_hci(afl_state_t *afl, u8 *buf, u32 *len) {
@@ -463,7 +558,7 @@ void bt_mutator_delete_hci(afl_state_t *afl, u8 *buf, u32 *len) {
 
   while (i < *len) {
     u32 size = *(int *)(buf + i);
-    u8 flag = buf[i + 4];
+    u8  flag = buf[i + 4];
     if (flag == HCI_EVENT_PACKET) {
       if (cnt == to_delete) {
         delete_pos = i;
@@ -478,3 +573,5 @@ void bt_mutator_delete_hci(afl_state_t *afl, u8 *buf, u32 *len) {
   memmove(buf, buf + delete_pos + delete_len, *len - delete_pos - delete_len);
   *len -= delete_len;
 }
+
+

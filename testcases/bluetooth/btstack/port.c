@@ -43,11 +43,12 @@ arg1_idx                4
 
 void execute_api(unsigned char *buf, int size) {
 
-  int harness_idx = *(int*)(buf + 1);
+  unsigned harness_idx = *(unsigned*)(buf + 1);
 
-  *(int*)(__afl_area2_ptr + log_ptr) = 1;
+  *(unsigned*)(__afl_area2_ptr + log_ptr) = 1;
   log_ptr += 4;
   __afl_area2_ptr[log_ptr++] = F_API;
+
 
   int arg_in_count, arg_out_count;
 

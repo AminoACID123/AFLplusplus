@@ -13,17 +13,59 @@
 using namespace std;
 
 Parameter parameter_list[] = {
-    {.name = "DATA"},
-    {.name = "BD_ADDR",
-     .bytes = 6,
-     .domain = {{(char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA},
-                {(char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB},
-                {(char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC}}},
-    {.name = "HCI_CONN_HANDLE", .bytes = 2, .domain = {{(char)0, (char)0}, {(char)1, (char)0}, {(char)2, (char)0}}},
-    {.name = "PHY_HANDLE", .bytes = 2, .domain = {{(char)0, (char)0}, {(char)1, (char)0}, {(char)2, (char)0}}},
-    {.name = "BD_ADDR_TYPE",
-     .bytes = 1,
-     .domain = {{(char)0}, {(char)1}, {(char)2}, {(char)3}, {(char)0xfc}, {(char)0xfd}}}};
+    {
+        .name = "DATA"
+    },
+    {
+        .name = "BD_ADDR",
+        .bytes = 6,
+        .domain = {
+                    {(char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA},
+                    {(char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB},
+                    {(char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC}
+                }
+    },
+    {
+        .name = "HCI_CONN_HANDLE", 
+        .bytes = 2, 
+        .domain = {
+                    {(char)0, (char)0}, 
+                    {(char)1, (char)0}, 
+                    {(char)2, (char)0}
+                }
+    },
+    {
+        .name = "PHY_HANDLE", 
+        .bytes = 2, 
+        .domain = {
+                    {(char)0, (char)0}, 
+                    {(char)1, (char)0}, 
+                    {(char)2, (char)0}
+                }
+    },
+    {
+        .name = "BD_ADDR_TYPE",
+        .bytes = 1,
+        .domain = {
+                    {(char)0}, {(char)1}, {(char)2}, {(char)3}, {(char)0xfc}, {(char)0xfd}
+                }
+    },
+    {
+        .name = "CID",
+        .bytes = 2,
+        .domain = {
+                    {(char)1, (char)0}, 
+                    {(char)2, (char)0}, 
+                    {(char)4, (char)0},
+                    {(char)5, (char)0},
+                    {(char)6, (char)0},
+                    {(char)7, (char)0},
+                    {(char)8, (char)0},
+                    {(char)9, (char)0},
+                    {(char)10, (char)0}
+                }
+    }
+};
 
 void Operation::dump()
 {

@@ -1846,6 +1846,8 @@ havoc_stage:
     r_max += 4;
   }
 
+ // bt_mutator_expand(afl, &in_buf, &len);
+
   for (afl->stage_cur = 0; afl->stage_cur < afl->stage_max; ++afl->stage_cur) {
     u32 use_stacking = 1 << (1 + rand_below(afl, afl->havoc_stack_pow2));
 
@@ -2327,11 +2329,11 @@ havoc_stage:
     }
 
     if (common_fuzz_stuff(afl, out_buf, temp_len)) { goto abandon_entry; }
-
-    goto abandon_entry;
+  
+   // goto abandon_entry;
     /* out_buf might have been mangled a bit, so let's restore it to its
-       original size and shape. */
-
+       original size and shape. */  
+       
     out_buf = afl_realloc(AFL_BUF_PARAM(out), len);
     if (unlikely(!out_buf)) { PFATAL("alloc"); }
     temp_len = len;
@@ -2360,6 +2362,7 @@ havoc_stage:
     afl->stage_finds[STAGE_SPLICE] += new_hit_cnt - orig_hit_cnt;
     afl->stage_cycles[STAGE_SPLICE] += afl->stage_max;
   }
+  goto abandon_entry;
 
 #ifndef IGNORE_FINDS
 

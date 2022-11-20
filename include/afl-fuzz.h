@@ -763,6 +763,11 @@ typedef struct afl_state {
    * is too large) */
   struct queue_entry **q_testcase_cache;
 
+  #define STAGE_API 0
+  #define STAGE_FULL 1
+
+  u8 cur_stage;
+
 #ifdef INTROSPECTION
   char  mutation[8072];
   char  m_tmp[4096];

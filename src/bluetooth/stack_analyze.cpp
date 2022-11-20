@@ -36,6 +36,15 @@ extern "C" bool reply_with_complete(u16 opcode)
     return _stack_complete_cmds.find(opcode) != _stack_complete_cmds.end();
 }
 
+extern "C" void generate_status_reply(u8* buf, u16 opcode){
+
+}
+
+extern "C" void generate_complete_reply(u8* buf, u16 opcode)
+{
+
+}
+
 extern "C" u32 get_total_hci() {
     return stack_evts.size();
 }
