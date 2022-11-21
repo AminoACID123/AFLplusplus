@@ -1,8 +1,15 @@
 {
     "parameters": [
         {
-            "name": "bd_addr", 
-            "bytes": "6",
+            "name": "bool", 
+            "enum": 0,
+            "bytes": 1,
+            "domain": [[0], [1]]
+        },
+        {
+            "name": "bd_addr_t", 
+            "enum": 0,
+            "bytes": 6,
             "domain": [
                 [  0,   0,   0,   0,   0,   0],
                 [170, 170, 170, 170, 170, 170],
@@ -10,38 +17,71 @@
             ]
         },
         {
-            "name": "bd_addr_type", "type": "16",
-            "domain": ["", ""]
+            "name": "bd_addr_type_t", 
+            "enum": 1,
+            "domain": [
+                "BD_ADDR_TYPE_LE_PUBLIC", 
+                "BD_ADDR_TYPE_LE_RANDOM",
+                "BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC",
+                "BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM",
+                "BD_ADDR_TYPE_SCO",
+                "BD_ADDR_TYPE_ACL"
+            ]
         },
         {
-            "name": "hci_conn_handle", 
-            "bytes": "2",
-            "domain": [[1, 0]]
+            "name": "hci_conn_handle_t", 
+            "enum": 0,
+            "bytes": 2,
+            "domain": [[1, 0], [2, 0], [3, 0]]
         },
         {
-            "name": "gap_security_mode", 
-            "bytes": "1",
-            "domain": [[0], [1], [2], [3]],
-            "mapper": "gap_security_mode_t "
+            "name": "gap_security_mode_t", 
+            "enum": 1,
+            "domain": [
+                "GAP_SECURITY_MODE_1",
+                "GAP_SECURITY_MODE_2",
+                "GAP_SECURITY_MODE_3",
+                "GAP_SECURITY_MODE_4"
+            ]
         },
         {
-            "name": "gap_security_level", 
-            "bytes": "1",
-            "domain": [[0], [1], [2], [3], [4]]
+            "name": "gap_security_level_t", 
+            "enum": 1,
+            "domain": [
+                "LEVEL_0",
+                "LEVEL_1",
+                "LEVEL_2",
+                "LEVEL_3"
+            ]
         },
         {
-            "name": "link_key_type", 
-            "bytes": "1",
-            "domain": [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]
+            "name": "link_key_type_t", 
+            "enum": 1,
+            "domain": [
+                "INVALID_LINK_KEY",
+                "COMBINATION_KEY",
+                "LOCAL_UNIT_KEY",
+                "REMOTE_UNIT_KEY",
+                "DEBUG_COMBINATION_KEY",
+                "UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192",
+                "AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192",
+                "CHANGED_COMBINATION_KEY",
+                "UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256",
+                "AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256"
+            ]
         },
         {
-            "name": "hci_role", 
-            "bytes": "1",
-            "domain": [[1], [0]]
+            "name": "hci_role_t", 
+            "enum": 1,
+            "domain": [
+                "HCI_ROLE_MASTER",
+                "HCI_ROLE_SLAVE"
+            ]
         },
         {
-            "name": "cid", 
-            "bytes": "2",
+            "name": "cid",
+            "enum": 0, 
+            "bytes": 2,
             "domain": [
                 [1, 0],
                 [2, 0],
@@ -49,8 +89,9 @@
             ]
         },
         {
-            "name": "psm", 
-            "bytes": "2",
+            "name": "psm",
+            "enum": 0, 
+            "bytes": 2,
             "domain": [
                 [1, 0],
                 [2, 0],
@@ -62,245 +103,204 @@
     "static_functions" : [
         "static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}"
     ],
-    "enum_mappers" : [
-        {
-            "name" : "gap_security_mode",
-            "exec" : "swich(en){case 0: return ;break;case 1: return ;break;}"
-        },
-        {
-            "name" : "gap_security_level"
-        },
-        {
-            "name" : "link_key_type"
-        },
-        {
-            "name" : "hci_role"
-        }
-    ],
     "operations": [
         {
             "name": "gap_read_rssi",
-            "inputs": ["hci_conn_handle"],
+            "inputs": ["hci_conn_handle_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_read_rssi(*(hci_con_handle_t*)$i0);"
+            "exec" : ["gap_read_rssi($i0);"]
         },
         {
             "name": "gap_local_bd_addr",
             "inputs": [],
-            "outputs": ["bd_addr"],
-            "headers": ["gap.h"],
-            "exec": "gap_local_bd_addr((bd_addr_t)$o0)"
+            "outputs": ["bd_addr_t"],
+            "exec": ["gap_local_bd_addr($o0);"]
         },
         {
             "name": "gap_disconnect",
-            "inputs": ["hci_conn_handle"],
+            "inputs": ["hci_conn_handle_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_disconnect(*(hci_con_handle_t*)$i0);"
+            "exec" : ["gap_disconnect(*(hci_con_handle_t*)$i0);"]
         },
         {
             "name": "gap_get_connection_type",
-            "inputs": ["hci_conn_handle"],
+            "inputs": ["hci_conn_handle_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_get_connection_type(*(hci_con_handle_t*)$i0);"
+            "exec" : ["gap_get_connection_type(*(hci_con_handle_t*)$i0);"]
         },
         {
             "name": "gap_get_role",
-            "inputs": ["hci_conn_handle"],
+            "inputs": ["hci_conn_handle_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_get_role(*(hci_con_handle_t*)$i0);"
+            "exec" : ["gap_get_role(*(hci_con_handle_t*)$i0);"]
         },
         {
             "name": "gap_request_role",
-            "inputs": ["hci_conn_handle", "hci_role"],
+            "inputs": ["hci_conn_handle_t", "hci_role_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_request_role(*(hci_con_handle_t*)$i0, *(hci_role_t*)$i1);"
+            "exec" : ["gap_request_role(*(hci_con_handle_t*)$i0, $i1);"]
         },
         {
             "name": "gap_set_local_name",
             "inputs": ["data"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "$i0[$s0-1]=0;gap_set_local_name($i0);"
+            "exec" : [
+                    "$i0[$s0-1]=0;",
+                    "gap_set_local_name($i0);"
+            ]
         },
         {
             "name": "gap_set_extended_inquiry_response",
             "inputs": ["data"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "$i0[$s0-1]=0;gap_set_extended_inquiry_response($i0);"
+            "exec" : [
+                    "$i0[$s0-1]=0;",
+                    "gap_set_extended_inquiry_response($i0);"
+            ]
         },
         {
             "name": "gap_set_class_of_device",
             "inputs": ["data[4]"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_class_of_device(*(u32*)i0);"
+            "exec" : ["gap_set_class_of_device(*(u32*)$i0);"]
         },
         {
             "name": "gap_set_default_link_policy_settings",
             "inputs": ["data[2]"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_default_link_policy_settings(*(u16*)i0);"
+            "exec" : ["gap_set_default_link_policy_settings(*(u16*)$i0);"]
         },
         {
             "name": "gap_set_allow_role_switch",
             "inputs": ["bool"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_allow_role_switch(*(bool*)i0);"
+            "exec" : ["gap_set_allow_role_switch(*(bool*)$i0);"]
         },
         {
             "name": "gap_set_link_supervision_timeout",
             "inputs": ["data[2]"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_link_supervision_timeout(*(u16*)i0);"
+            "exec" : ["gap_set_link_supervision_timeout(*(u16*)$i0);"]
         },
         {
             "name": "gap_enable_link_watchdog",
             "inputs": ["data[2]"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_enable_link_watchdog(*(u16*)i0);"
+            "exec" : ["gap_enable_link_watchdog(*(u16*)$i0);"]
         },
         {
             "name": "gap_set_bondable_mode",
             "inputs": ["bool"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_bondable_mode(*(bool*)i0);"
+            "exec" : ["gap_set_bondable_mode(*(bool*)$i0);"]
         },
         {
             "name": "gap_get_bondable_mode",
-            "inputs": [""],
+            "inputs": [],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_get_bondable_mode(*(bool*)i0);"
+            "exec" : ["gap_get_bondable_mode();"]
         },
         {
             "name": "gap_set_security_mode",
-            "inputs": ["gap_security_mode"],
+            "inputs": ["gap_security_mode_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_security_mode(*(gap_security_mode_t*)i0);"
+            "exec" : ["gap_set_security_mode($i0);"]
         },
         {
             "name": "gap_get_security_mode",
             "inputs": [],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_get_security_mode();"
+            "exec" : ["gap_get_security_mode();"]
         },
         {
             "name": "gap_set_security_level",
-            "inputs": ["gap_security_level"],
+            "inputs": ["gap_security_level_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_security_level(*(gap_security_level_t*)i0);"
+            "exec" : ["gap_set_security_level($i0);"]
         },
         {
             "name": "gap_get_security_level",
             "inputs": [],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_get_security_level();"
+            "exec" : ["gap_get_security_level();"]
         },
         {
             "name": "gap_set_secure_connections_only_mode",
             "inputs": ["bool"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_secure_connections_only_mode(*(bool*)i0);"
+            "exec" : ["gap_set_secure_connections_only_mode(*(bool*)$i0);"]
         },
         {
             "name": "gap_get_secure_connections_only_mode",
             "inputs": [],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_get_secure_connections_only_mode();"
+            "exec" : ["gap_get_secure_connections_only_mode();"]
         },
         {
             "name": "gap_set_minimal_service_security_level",
-            "inputs": ["gap_security_level"],
+            "inputs": ["gap_security_level_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_minimal_service_security_level(*(gap_set_minimal_service_security_level*)i0);"
+            "exec" : ["gap_set_minimal_service_security_level($i0);"]
         },
         {
             "name": "gap_register_classic_connection_filter",
             "inputs": [],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_register_classic_connection_filter(f1);"
+            "exec" : ["gap_register_classic_connection_filter(f1);"]
         },
         {
             "name": "gap_ssp_set_enable",
             "inputs": ["bool"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_ssp_set_enable(*(bool*)$i0 == 0 ? 0 : 1);"
+            "exec" : ["gap_ssp_set_enable(*$i0);"]
         },
         {
             "name": "gap_ssp_set_io_capability",
             "inputs": ["data[4]"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_ssp_set_io_capability(*(s4*)$i0);"
+            "exec" : ["gap_ssp_set_io_capability(*(int*)$i0);"]
         },
         {
             "name": "gap_ssp_set_authentication_requirement",
             "inputs": ["data[4]"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_ssp_set_authentication_requirement(*(s4*)$i0);"
+            "exec" : ["gap_ssp_set_authentication_requirement(*(int*)$i0);"]
         },
         {
             "name": "gap_secure_connections_enable",
             "inputs": ["bool"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_secure_connections_enable(*(bool*)$i0);"
+            "exec" : ["gap_secure_connections_enable(*(bool*)$i0);"]
         },
         {
             "name": "gap_secure_connections_active",
             "inputs": [],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_secure_connections_active();"
+            "exec" : ["gap_secure_connections_active();"]
         },
         {
             "name": "gap_ssp_set_auto_accept",
             "inputs": ["bool"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_ssp_set_auto_accept(*(bool*)$i0 == 0 ? 0 : 1);"
+            "exec" : ["gap_ssp_set_auto_accept(*$i0);"]
         },
         {
             "name": "gap_set_required_encryption_key_size",
             "inputs": ["data[1]"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_set_required_encryption_key_size(*(u8*)$i0);"
+            "exec" : ["gap_set_required_encryption_key_size(*(u8*)$i0);"]
         },
         {
             "name": "gap_dedicated_bonding",
-            "inputs": ["bd_addr", "data[4]"],
+            "inputs": ["bd_addr_t", "bool"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_dedicated_bonding(*(bd_addr_t*)$i0, *(s4*)$i1 == 0 ? 0 : 1);"
+            "exec" : ["gap_dedicated_bonding(*(bd_addr_t*)$i0, *$i1);"]
         },
         {
             "name": "gap_security_level_for_link_key_type",
-            "inputs": ["link_key_type"],
+            "inputs": ["link_key_type_t"],
             "outputs": [],
-            "headers": ["gap.h"],
-            "exec" : "gap_security_level_for_link_key_type(*(link_key_type_t*)$i0);"
-        },
+            "exec" : ["gap_security_level_for_link_key_type($i0);"]
+        }
     ]
 }

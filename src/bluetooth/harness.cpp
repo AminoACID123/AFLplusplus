@@ -8,64 +8,72 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+#include "../../include/bluetooth.h"
 #include "../../include/config.h"
 
 using namespace std;
 
-Parameter parameter_list[] = {
-    {
-        .name = "DATA"
-    },
-    {
-        .name = "BD_ADDR",
-        .bytes = 6,
-        .domain = {
-                    {(char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA},
-                    {(char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB},
-                    {(char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC}
-                }
-    },
-    {
-        .name = "HCI_CONN_HANDLE", 
-        .bytes = 2, 
-        .domain = {
-                    {(char)0, (char)0}, 
-                    {(char)1, (char)0}, 
-                    {(char)2, (char)0}
-                }
-    },
-    {
-        .name = "PHY_HANDLE", 
-        .bytes = 2, 
-        .domain = {
-                    {(char)0, (char)0}, 
-                    {(char)1, (char)0}, 
-                    {(char)2, (char)0}
-                }
-    },
-    {
-        .name = "BD_ADDR_TYPE",
-        .bytes = 1,
-        .domain = {
-                    {(char)0}, {(char)1}, {(char)2}, {(char)3}, {(char)0xfc}, {(char)0xfd}
-                }
-    },
-    {
-        .name = "CID",
-        .bytes = 2,
-        .domain = {
-                    {(char)1, (char)0}, 
-                    {(char)2, (char)0}, 
-                    {(char)4, (char)0},
-                    {(char)5, (char)0},
-                    {(char)6, (char)0},
-                    {(char)7, (char)0},
-                    {(char)8, (char)0},
-                    {(char)9, (char)0},
-                    {(char)10, (char)0}
-                }
-    }
-};
+// Parameter parameter_list[] = {
+//     {
+//         .name = "DATA"
+//     },
+//     {
+//         .name = "BD_ADDR",
+//         .bytes = 6,
+//         .domain = {
+//                     {(char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA},
+//                     {(char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB},
+//                     {(char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC}
+//                 }
+//     },
+//     {
+//         .name = "HCI_CONN_HANDLE",
+//         .bytes = 2,
+//         .domain = {
+//                     {(char)0, (char)0},
+//                     {(char)1, (char)0},
+//                     {(char)2, (char)0}
+//                 }
+//     },
+//     {
+//         .name = "PHY_HANDLE",
+//         .bytes = 2,
+//         .domain = {
+//                     {(char)0, (char)0},
+//                     {(char)1, (char)0},
+//                     {(char)2, (char)0}
+//                 }
+//     },
+//     {
+//         .name = "BD_ADDR_TYPE",
+//         .bytes = 1,
+//         .domain = {
+//                     {(char)0}, {(char)1}, {(char)2}, {(char)3}, {(char)0xfc}, {(char)0xfd}
+//                 }
+//     },
+//     {
+//         .name = "CID",
+//         .bytes = 2,
+//         .domain = {
+//                     {(char)1, (char)0},
+//                     {(char)2, (char)0},
+//                     {(char)4, (char)0},
+//                     {(char)5, (char)0},
+//                     {(char)6, (char)0},
+//                     {(char)7, (char)0},
+//                     {(char)8, (char)0},
+//                     {(char)9, (char)0},
+//                     {(char)10, (char)0}
+//                 }
+//     }
+// };
+
+vector<Parameter *> parameter_list;
+vector<Operation *> operation_list;
+// vector<Harness *> harness_list;
+
+set<string> headers;
+vector<string> static_functions;
 
 void Operation::dump()
 {
@@ -76,22 +84,18 @@ void Operation::dump()
         printf("    Parameter Out: %s\n", out->name.c_str());
 }
 
-void Harness::dump()
+// void Harness::dump()
+// {
+//     printf("Operation: %s\n", op->name.c_str());
+//     for (string &header : headers)
+//         printf("    Header: %s\n", header.c_str());
+//     for (string &e : exec)
+//         printf("    Exec: %s\n", e.c_str());
+// }
+
+cJSON *load_from_file(const char *file)
 {
-    printf("Operation: %s\n", op->name.c_str());
-    for (string &header : headers)
-        printf("    Header: %s\n", header.c_str());
-    for (string &e : exec)
-        printf("    Exec: %s\n", e.c_str());
-}
-
-vector<Operation*> operation_list;
-vector<Harness*> harness_list;
-
-
-cJSON* load_from_file(const char *file)
-{
-    int len;
+    u32 len;
     char *data;
     cJSON *root;
     FILE *f = fopen(file, "rb");
@@ -111,35 +115,108 @@ cJSON* load_from_file(const char *file)
     return root;
 }
 
-Parameter* get_parameter(string name)
+Parameter *get_parameter(string name)
 {
-    for (Parameter &param : parameter_list)
-        if (name == param.name)
+    if (name.find("data") == 0)
+    {
+        Parameter *param = new Parameter;
+        param->name = "data";
+        param->isEnum = false;
+        if (name.find('[') != name.npos)
         {
-            return &param;
+            printf("%s\n", name.c_str());
+            sscanf(name.c_str(), "data[%d]", &param->bytes);
         }
+        else
+        {
+            param->bytes = -1;
+        }
+        return param;
+    }
+
+    for (Parameter *param : parameter_list)
+    {
+        if (name == param->name)
+            return param;
+    }
     return NULL;
 }
 
 Operation *get_operation(string name)
 {
     for (Operation *op : operation_list)
+    {
         if (name == op->name)
-        {
             return op;
-        }
+    }
     return NULL;
 }
 
-void parse_operations(const char *file)
+void parse_headers(cJSON *file)
+{
+    cJSON *item;
+    cJSON *root = cJSON_GetObjectItem(file, "headers");
+    cJSON_ArrayForEach(item, root)
+    {
+        headers.insert(item->valuestring);
+    }
+}
+
+void parse_static_functions(cJSON *file)
+{
+    cJSON *item;
+    cJSON *root = cJSON_GetObjectItem(file, "static_functions");
+    cJSON_ArrayForEach(item, root)
+    {
+        static_functions.push_back(item->valuestring);
+    }
+}
+
+void parse_parameters(cJSON *file)
+{
+    cJSON *item, *value, *_byte;
+    cJSON *root = cJSON_GetObjectItem(file, "parameters");
+    cJSON_ArrayForEach(item, root)
+    {
+        Parameter *param = new Parameter;
+        cJSON *domain = cJSON_GetObjectItem(item, "domain");
+        param->name = cJSON_GetObjectItem(item, "name")->valuestring;
+        if (param->isEnum = cJSON_GetObjectItem(item, "enum")->valueint)
+        {
+            cJSON_ArrayForEach(value, domain)
+            {
+                param->enum_domain.push_back(value->valuestring);
+            }
+        }
+        else
+        {
+            cJSON_ArrayForEach(value, domain)
+            {
+                vector<u8> temp;
+                cJSON_ArrayForEach(_byte, value)
+                {
+                    temp.push_back(_byte->valueint);
+                }
+                param->domain.push_back(temp);
+            }
+            param->bytes = cJSON_GetObjectItem(item, "bytes")->valueint;
+        }
+        parameter_list.push_back(param);
+    }
+}
+
+void parse_operations(cJSON *file)
 {
     cJSON *op;
-    cJSON *root = cJSON_GetObjectItem(load_from_file(file), "operations");
+    cJSON *root = cJSON_GetObjectItem(file, "operations");
+    u32 i = 0;
     cJSON_ArrayForEach(op, root)
     {
-        cJSON *input, *output;
+        printf("%d\n", i++);
+        cJSON *input, *output, *str;
         cJSON *inputs = cJSON_GetObjectItem(op, "inputs");
         cJSON *outputs = cJSON_GetObjectItem(op, "outputs");
+        cJSON *exec = cJSON_GetObjectItem(op, "exec");
         Operation *operation = new Operation();
         operation->name = cJSON_GetObjectItem(op, "name")->valuestring;
 
@@ -152,48 +229,49 @@ void parse_operations(const char *file)
         {
             operation->outputs.push_back(get_parameter(output->valuestring));
         }
+
+        cJSON_ArrayForEach(str, exec)
+        {
+            operation->exec.push_back(str->valuestring);
+        }
         operation_list.push_back(operation);
     }
 }
 
-void parse_harnesses(const char *file)
+// void parse_harnesses(cJSON *file)
+// {
+//     cJSON *hn;
+//     cJSON *root = cJSON_GetObjectItem(file, "harnesses");
+//     cJSON_ArrayForEach(hn, root)
+//     {
+//         cJSON *header, *exec;
+//         cJSON *operation = cJSON_GetObjectItem(hn, "operation");
+//         cJSON *execs = cJSON_GetObjectItem(hn, "exec");
+//         Harness *harness = new Harness();
+//         harness->op = get_operation(operation->valuestring);
+
+//         cJSON_ArrayForEach(exec, execs)
+//         {
+//             harness->exec.push_back(exec->valuestring);
+//         }
+//         harness_list.push_back(harness);
+//     }
+// }
+
+void parse(const char *fn)
 {
-    cJSON *hn;
-    cJSON *root = cJSON_GetObjectItem(load_from_file(file), "harnesses");
-    cJSON_ArrayForEach(hn, root)
-    {
-        cJSON *header, *exec;
-        cJSON *operation = cJSON_GetObjectItem(hn, "operation");
-        cJSON *headers = cJSON_GetObjectItem(hn, "headers");
-        cJSON *execs = cJSON_GetObjectItem(hn, "exec");
-        Harness *harness = new Harness();
-        harness->op = get_operation(operation->valuestring);
-
-        cJSON_ArrayForEach(header, headers)
-        {
-            harness->headers.push_back(header->valuestring);
-        }
-
-        cJSON_ArrayForEach(exec, execs)
-        {
-            harness->exec.push_back(exec->valuestring);
-        }
-        harness_list.push_back(harness);
-    }
-}
-
-void parse(const char *file)
-{
+    cJSON *file = load_from_file(fn);
+    parse_parameters(file);
     parse_operations(file);
-    parse_harnesses(file);
+    // parse_harnesses(file);
 }
 
 void dump()
 {
     for (Operation *op : operation_list)
         op->dump();
-    for (Harness *hn : harness_list)
-        hn->dump();
+    // for (Harness *hn : harness_list)
+    //     hn->dump();
 }
 
 /**
@@ -202,19 +280,13 @@ Write Headers and Macros
 void payload1(FILE *f)
 {
     // fprintf(f, "#include \"%s\"", )
-    int max_in = 0;
-    int max_out = 0;
-    set<string> headers;
+    u32 max_in = 0;
+    u32 max_out = 0;
 
-    for (Harness *hn : harness_list)
-    {
-        for (string &header : hn->headers)
-            headers.insert(header);
-    }
     for (const string &header : headers)
         fprintf(f, "#include \"%s\"\n", header.c_str());
 
-    fprintf(f, "#define NUM_PARAM %ld\n", sizeof(parameter_list)/sizeof(Parameter) - 1);
+    fprintf(f, "#define NUM_PARAM %ld\n", parameter_list.size() + 1);
     for (Operation *op : operation_list)
     {
         if (op->inputs.size() > max_in)
@@ -222,8 +294,12 @@ void payload1(FILE *f)
         if (op->outputs.size() > max_out)
             max_out = op->outputs.size();
     }
-    fprintf(f, "#define MAX_INPUT %d\n", max_in);
+    fprintf(f, "#define MAX_INPUT %d\n", max_in * 2);
     fprintf(f, "#define MAX_OUTPUT %d\n", max_out);
+
+    fprintf(f, "typedef uint8_t u8;\n");
+    fprintf(f, "typedef uint16_t u16;\n");
+    fprintf(f, "typedef uint32_t u32;\n");
 }
 
 /**
@@ -231,42 +307,70 @@ Write Global Variables
 */
 void payload2(FILE *f)
 {
-    fprintf(f, "char *arg_in[MAX_INPUT];\n"
-               "char *arg_out[MAX_OUTPUT];\n"
-               "char *context[NUM_PARAM];\n"
-               "int   context_len[NUM_PARAM] = { ");
+    fprintf(f, "void *arg_in[MAX_INPUT];\n"
+               "void *arg_out[MAX_OUTPUT];\n"
+               "void *context[NUM_PARAM];\n"
+               "u32   context_len[NUM_PARAM] = { ");
+    fprintf(f, "1");
 
-    for (int i = 1, n = sizeof(parameter_list)/sizeof(Parameter); i != n; i++)
+    for (u32 i = 0, n = parameter_list.size(); i != n; i++)
     {
-        fprintf(f, "%d", parameter_list[i].bytes);
-        if (i != n - 1)
-            fprintf(f, ",");
+        fprintf(f, ", %d", parameter_list[i]->isEnum ? 1 : parameter_list[i]->bytes);
     }
     fprintf(f, "};\n\n");
 }
 
 /**
-Write Fuzz Targets
+Write Static Functions and enum mappers
 */
 void payload3(FILE *f)
 {
+    u32 i = 0;
+    for (string &func : static_functions)
+        fprintf(f, (func + "\n").c_str());
+
+    for (Parameter *param : parameter_list)
+    {
+        if (!param->isEnum)
+            continue;
+
+        u32 c = 0;
+        fprintf(f, "%s _e%d(u8 i) {\n", param->name.c_str(), i);
+        fprintf(f, "switch(i) {\n");
+        for (string &e : param->enum_domain)
+        {
+            fprintf(f, "case %d: return %s;break;\n", c, e.c_str());
+            c++;
+        }
+        fprintf(f, "}\n}\n");
+        i++;
+    }
+}
+
+/**
+Write Fuzz Targets
+*/
+void payload4(FILE *f)
+{        
     fprintf(f, "void harness_init() {\n"
                "  for (int i = 0; i < NUM_PARAM; i++)\n"
                "    context[i] = malloc(sizeof(char) * context_len[i]);\n}\n");
-    for (int i = 0, n = harness_list.size(); i != n; i++)
+    for (u32 i = 0, n = operation_list.size(); i != n; i++)
     {
-        Harness *hn = harness_list[i];
-        fprintf(f, "void harness%d(char **arg_in) {\n", i);
-        for (int j = 0; j < hn->op->inputs.size(); j++)
+
+        Operation *op = operation_list[i];
+        fprintf(f, "void operation%d() {\n", i);
+        for (u32 j = 0; j < op->inputs.size(); j++)
         {
-            fprintf(f, "  char* _i%d = arg_in[%d];\n", j, j);
+            fprintf(f, "  u8* _i%d = arg_in[%d];\n", j, j * 2);
+            fprintf(f, "  u32 _s%d = *(u32*)arg_in[%d];\n", j, j * 2 + 1);
         }
-        for (int j = 0; j < hn->op->outputs.size(); j++)
+        for (u32 j = 0; j < op->outputs.size(); j++)
         {
-            int idx = get_parameter_idx(hn->op->outputs[j]);
-            fprintf(f, "  char* _o%d = context[%d];\n", j, idx - 1);
+            int idx = get_parameter_idx(op->outputs[j]);
+            fprintf(f, "  u8* _o%d = context[%d];\n", j, idx);
         }
-        for (string &e : hn->exec)
+        for (string &e : op->exec)
         {
             for (int k = 0; k < e.length(); k++)
             {
@@ -278,11 +382,11 @@ void payload3(FILE *f)
         fprintf(f, "}\n\n");
     }
 
-    fprintf(f, "typedef void (*fun_ptr)(char **, char **);\n"
+    fprintf(f, "typedef void (*fun_ptr)();\n"
                "fun_ptr FUZZ_LIST[] = {\n");
-    for (int i = 0, n = harness_list.size(); i != n; i++)
+    for (int i = 0, n = operation_list.size(); i != n; i++)
     {
-        fprintf(f, "  &harness%d", i);
+        fprintf(f, "  &operation%d", i);
         if (i != n - 1)
             fprintf(f, ",");
         fprintf(f, "\n");
@@ -292,7 +396,7 @@ void payload3(FILE *f)
 
 u32 get_operation_idx(Operation *op)
 {
-    for (int i = 0, n = operation_list.size(); i < n; i++)
+    for (u32 i = 0, n = operation_list.size(); i < n; i++)
     {
         if (operation_list[i] == op)
             return i;
@@ -302,14 +406,15 @@ u32 get_operation_idx(Operation *op)
 
 u32 get_parameter_idx(Parameter *param)
 {
-    for (int i = 0, n = sizeof(parameter_list)/sizeof(Parameter); i < n; i++)
+    if(param->name == "data")
+        return 0;
+    for (u32 i = 0, n = parameter_list.size(); i < n; i++)
     {
-        if (&parameter_list[i] == param)
-            return i;
+        if (parameter_list[i] == param)
+            return i + 1;
     }
     return -1;
 }
-
 
 void generate_harness(const char *file)
 {
@@ -320,121 +425,151 @@ void generate_harness(const char *file)
     fclose(f);
 }
 
-void generate_seeds(const char *dir)
+// void generate_seeds(const char *dir)
+// {
+//     struct stat sb;
+
+//     if (stat(dir, &sb) != 0 || !S_ISDIR(sb.st_mode))
+//     {
+//         mkdir(dir, S_IRUSR | S_IWUSR);
+//     }
+
+//     for (u32 i = 0, n = harness_list.size(); i < n; i++)
+//     {
+//         Harness *hn = harness_list[i];
+//         char file[512];
+//         int len = 0;
+//         char flag = F_API;
+//         u32 harness_idx = i;
+//         u32 arg_in_cnt = hn->op->inputs.size();
+//         u32 arg_out_cnt = hn->op->outputs.size();
+
+//         sprintf(file, "%d", i);
+
+//         FILE *F = fopen((string(dir) + "/" + file).c_str(), "w");
+
+//         fwrite(&len, 4, 1, F);
+//         fwrite(&flag, 1, 1, F);
+//         fwrite(&harness_idx, 4, 1, F);
+
+//         fwrite(&arg_in_cnt, 4, 1, F);
+//         for (int j = 0, n = hn->op->inputs.size(); j < n; j++)
+//         {
+//             Parameter *input = hn->op->inputs[j];
+//             int idx = get_parameter_idx(input);
+//             fwrite(&idx, 4, 1, F);
+//             if (input->name != "DATA")
+//             {
+//                 int size = input->bytes;
+//                 fwrite(&size, 4, 1, F);
+//                 fwrite(input->domain[0].data(), 1, size, F);
+//             }
+//             else
+//             {
+//                 int size = 16;
+//                 unsigned data[] = {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
+//                 fwrite(&size, 4, 1, F);
+//                 fwrite(data, 4, 4, F);
+//             }
+//         }
+
+//         fwrite(&arg_out_cnt, 4, 1, F);
+//         for (int j = 0, n = hn->op->outputs.size(); j < n; j++)
+//         {
+//             Parameter *output = hn->op->outputs[j];
+//             int idx = get_parameter_idx(output);
+//             fwrite(&idx, 4, 1, F);
+//         }
+
+//         long pos = ftell(F);
+//         len = pos - 4;
+//         fseek(F, 0, SEEK_SET);
+//         fwrite(&len, 4, 1, F);
+//         fclose(F);
+//     }
+// }
+
+extern "C" void generate_random_operation(u32 idx, u32 seed, u8 *out_buf)
 {
-    struct stat sb;
+    Operation *op = operation_list[idx];
+    u32 arg_in_cnt = op->inputs.size();
 
-    if (stat(dir, &sb) != 0 || !S_ISDIR(sb.st_mode))
+    struct operation_header
     {
-        mkdir(dir, S_IRUSR | S_IWUSR);
-    }
-
-    for (int i = 0, n = harness_list.size(); i < n; i++)
-    {
-        Harness *hn = harness_list[i];
-        char file[512];
-        int len = 0;
-        char flag = F_API;
-        int harness_idx = i;
-        int arg_in_cnt = hn->op->inputs.size();
-        int arg_out_cnt = hn->op->outputs.size();
-
-        sprintf(file, "%d", i);
-
-        FILE *F = fopen((string(dir) + "/" + file).c_str(), "w");
-
-        fwrite(&len, 4, 1, F);
-        fwrite(&flag, 1, 1, F);
-        fwrite(&harness_idx, 4, 1, F);
-
-        fwrite(&arg_in_cnt, 4, 1, F);
-        for (int j = 0, n = hn->op->inputs.size(); j < n; j++)
-        {
-            Parameter *input = hn->op->inputs[j];
-            int idx = get_parameter_idx(input);
-            fwrite(&idx, 4, 1, F);
-            if (input->name != "DATA")
-            {
-                int size = input->bytes;
-                fwrite(&size, 4, 1, F);
-                fwrite(input->domain[0].data(), 1, size, F);
-            }
-            else
-            {
-                int size = 16;
-                unsigned data[] = {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
-                fwrite(&size, 4, 1, F);
-                fwrite(data, 4, 4, F);
-            }
-        }
-
-        fwrite(&arg_out_cnt, 4, 1, F);
-        for (int j = 0, n = hn->op->outputs.size(); j < n; j++)
-        {
-            Parameter *output = hn->op->outputs[j];
-            int idx = get_parameter_idx(output);
-            fwrite(&idx, 4, 1, F);
-        }
-
-        long pos = ftell(F);
-        len = pos - 4;
-        fseek(F, 0, SEEK_SET);
-        fwrite(&len, 4, 1, F);
-        fclose(F);
-    }
-}
-
-extern "C" void generate_random_harness(u32 idx, u32 seed, u8* out_buf) {
-    Harness* hn = harness_list[idx];
-    u32 arg_in_cnt = hn->op->inputs.size();
-
-    struct harness_header{
         u32 size;
         u8 flag;
-        u32 harness_idx;
+        u32 operation_idx;
         u32 arg_in_cnt;
-    }__attribute__((packed));
+    } __attribute__((packed));
 
-    struct parameter_header {
+    struct parameter_header
+    {
         u32 arg_idx;
         u32 arg_len;
-    }__attribute__((packed));
+    } __attribute__((packed));
 
-    harness_header* hdr = (harness_header*)out_buf;
+    operation_header *hdr = (operation_header *)out_buf;
     hdr->flag = F_API;
-    hdr->harness_idx = idx;
+    hdr->operation_idx = idx;
     hdr->arg_in_cnt = arg_in_cnt;
 
-    u32 i = sizeof(harness_header);
-    for(Parameter* param : harness_list[idx]->op->inputs) {
-        if(param->name == "DATA"){
-
+    u32 i = sizeof(operation_header);
+    for (Parameter *param : op->inputs)
+    {
+        parameter_header *param_hdr = (parameter_header *)(out_buf + i);
+        if (param->name == "data")
+        {
+            u32 len = (param->bytes == -1 ? seed % BT_MAX_PARAM_SIZE : param->bytes);
+            u8* param_buf = new u8[len];
+            param_hdr->arg_len = len;
+            memcpy(out_buf + i + sizeof(parameter_header), param_buf, len);
+            i += (sizeof(parameter_header) + len);
         }
-        else{
-            int j = seed % param->domain.size();
-            parameter_header* param_hdr = (parameter_header*)(out_buf + i);
+        else
+        {
+            u32 j = seed % param->domain.size();
             param_hdr->arg_idx = get_parameter_idx(param);
-            param_hdr->arg_len = param->domain[j].size();
-            memcpy(out_buf + i + sizeof(parameter_header), param->domain[j].data(), param->domain[j].size());
-            i += (sizeof(parameter_header) + param->domain[j].size());
+            if (param->isEnum){
+                param_hdr->arg_len = 1;
+                out_buf[i + sizeof(parameter_header)] = j;
+            }
+            else{
+                param_hdr->arg_len = param->bytes;
+                memcpy(out_buf + i + sizeof(parameter_header), param->domain[j].data(), param->domain[j].size());
+            }
+            i += (sizeof(parameter_header) + param->bytes);
         }
     }
     hdr->size = i - 4;
 }
 
-extern "C" u32 get_total_harness() {
-    return harness_list.size();    
+extern "C" u32 get_total_operation()
+{
+    return operation_list.size();
 }
 
-extern "C" void parse_harness(const char* in_file, const char* out_file) {
-    parse_operations(in_file);
-    parse_harnesses(in_file);
+extern "C" void parse_operation(const char *in_file, const char *out_file)
+{
+    cJSON *file = load_from_file(in_file);
+printf("%s\n", "hhh\n\n");
+    parse_headers(file);
+    printf("%s\n", "hhh\n\n");
+    parse_static_functions(file);
+    printf("%s\n", "hhh\n\n");
+    parse_parameters(file);
+    printf("%s\n", "hhh\n\n");
+    parse_operations(file);
+    printf("%s\n", "hhh\n\n");
+    // parse_harnesses(file);
 
     FILE *f = fopen(out_file, "w");
     payload1(f);
     payload2(f);
     payload3(f);
+    payload4(f);
     fclose(f);
+
+    system(strcat("clang-format -i ", out_file));
 }
 
 /*

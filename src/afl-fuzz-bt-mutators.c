@@ -307,15 +307,15 @@ void mutate_parameter(afl_state_t *afl, u8 *buf, u32 len, bt_mutator mutator) {
   }
 }
 
-extern void generate_random_harness(u32 idx, u32 seed, u8 *out_buf);
+// extern void generate_random_harness(u32 idx, u32 seed, u8 *out_buf);
 
 void bt_mutator_insert_harness(afl_state_t *afl, u8 **buf, u32 *len) {
   u32 n = get_num_harness(*buf, *len);
   u32 pos = rand_below(afl, n);
-  u32 idx = rand_below(afl, get_total_harness());
+  u32 idx = rand_below(afl, get_total_operation());
   u32 seed = rand_below(afl, UINT32_MAX);
   u8  temp_buf[BT_MAX_BUFFER_SIZE];
-  generate_random_harness(idx, seed, temp_buf);
+  generate_random_operation(idx, seed, temp_buf);
 
   if (*len + *(int *)temp_buf + 4 >= MAX_FILE) return;
 

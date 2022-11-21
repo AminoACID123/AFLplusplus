@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -13,19 +14,24 @@
 
 #include "../../../include/bluetooth.h"
 
-extern char* __afl_area2_ptr;
-extern int log_ptr;
-extern void (*fuzz_packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size);
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef int32_t s32;
 
-extern char* arg_in[];
-extern char* arg_out[];
-extern char* context[];
+extern u8* __afl_area2_ptr;
+extern u32 log_ptr;
+extern void (*fuzz_packet_handler)(u8 packet_type, u8 *packet, uint16_t size);
 
-static char* BUF;
-static int SIZE;
-static int POS;
+extern void* arg_in[];
+extern void* arg_out[];
+extern void* context[];
 
-typedef void (*fun_ptr)(char **, char **);
+static u8* BUF;
+static u32 SIZE;
+static u32 POS;
+
+typedef void (*fun_ptr)();
 extern fun_ptr FUZZ_LIST[];
 
 /*
@@ -41,28 +47,30 @@ arg1_idx                4
 
 */
 
-void execute_api(unsigned char *buf, int size) {
+void execute_api(u8 *buf, u32 size) {
 
-  unsigned harness_idx = *(unsigned*)(buf + 1);
+  u32 harness_idx = *(u32*)(buf + 1);
 
-  *(unsigned*)(__afl_area2_ptr + log_ptr) = 1;
+  *(u32*)(__afl_area2_ptr + log_ptr) = 1;
   log_ptr += 4;
   __afl_area2_ptr[log_ptr++] = F_API;
 
 
-  int arg_in_count, arg_out_count;
+  u32 arg_in_count, arg_out_count;
 
-  arg_in_count = *(int*)(buf + 5);
+  arg_in_count = *(u32*)(buf + 5);
 
-  int pos = 9;
+  u32 pos = 9;
 
-  for(int i=0;i<arg_in_count;i++){
-    int arg_idx = *(int*)(buf + pos);
+  for(u32 i=0;i<arg_in_count;i++){
+    s32 arg_idx = *(s32*)(buf + pos);
     pos += 4;
     if (arg_idx >= 0) {
-      int len = *(int *)(buf + pos);
-      pos += sizeof(int);
-      arg_in[i] = (char*)(buf + pos);
+      u32 len = *(u32*)(buf + pos);
+      arg_in[i*2+1] = (u32*)(buf + pos);
+      pos += sizeof(u32);
+      arg_in[i*2] = (u8*)(buf + pos);
+      
       pos += len;
     } else {
       arg_in[i] = context[-arg_idx];
@@ -79,11 +87,11 @@ void execute_api(unsigned char *buf, int size) {
   }
 */
 
-  FUZZ_LIST[harness_idx](arg_in, arg_out);
+  FUZZ_LIST[harness_idx]();
 }
 
-void execute_hci(unsigned char* hci_packet_in, int size){
-    int packet_len;
+void execute_hci(u8* hci_packet_in, u32 size){
+    u32 packet_len;
     switch(hci_packet_in[0]){
         case HCI_EVENT_PACKET:
             packet_len = hci_packet_in[2] + 3;
@@ -94,7 +102,7 @@ void execute_hci(unsigned char* hci_packet_in, int size){
         default:
             return;
     }
-    *(int*)(__afl_area2_ptr + log_ptr) = size;
+    *(u32*)(__afl_area2_ptr + log_ptr) = size;
     log_ptr += 4;
     memcpy(__afl_area2_ptr + log_ptr, hci_packet_in, size);
     log_ptr += size;
@@ -106,7 +114,7 @@ bool execute_one(){
   if(POS >= SIZE)
     return false;
 
-  int size = *(int*)(BUF + POS);
+  u32 size = *(u32*)(BUF + POS);
   POS += 4;
   if(BUF[POS] == F_API)
     execute_api(BUF + POS, size);
@@ -116,7 +124,7 @@ bool execute_one(){
   return true;
 }
 
-void stack_execute(char* buf, int size){
+void stack_execute(u8* buf, u32 size){
   BUF = buf;
   SIZE = size;
   POS = 0;

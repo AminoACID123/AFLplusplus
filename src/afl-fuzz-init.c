@@ -815,13 +815,13 @@ void read_testcases(afl_state_t *afl, u8 *directory) {
 
   }
   else{
-    u32 n = get_total_harness();
+    u32 n = get_total_operation();
     for(u32 i = 0;i<n;i++) {
       char file[64];
       sprintf(file, "%s/%d",afl->in_dir, i);
       FILE* f = fopen(file, "w");
       u8 buf[BT_MAX_BUFFER_SIZE];
-      generate_random_harness(i, rand_below(afl, RAND_MAX), buf);
+      generate_random_operation(i, rand_below(afl, RAND_MAX), buf);
       fwrite(buf, 1, (*(int*)buf) + 4, f);
       fclose(f);
     }

@@ -1852,7 +1852,7 @@ int main(int argc, char **argv_orig, char **envp) {
 
   setup_cmdline_file(afl, argv + optind);
 
-  parse_harness(afl->in_harness, afl->out_harness);
+  parse_operation(afl->in_harness, afl->out_harness);
 
   init_stack_hci(afl->bc_file);
 

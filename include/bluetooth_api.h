@@ -1,13 +1,13 @@
 #include "types.h"
 
 /*******************
-* Harness API Begin*
+* Operation API Begin*
 ********************/
-void parse_harness(const char* in_file, const char* out_file); 
+void parse_operation(const char* in_file, const char* out_file); 
 
-void generate_random_harness(u32 idx, u32 seed, u8* out_buf);
+void generate_random_operation(u32 idx, u32 seed, u8* out_buf);
 
-u32 get_total_harness();
+u32 get_total_operation();
 /******************
 * Harness API End *
 *******************/
