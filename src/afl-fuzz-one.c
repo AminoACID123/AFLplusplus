@@ -315,7 +315,7 @@ void get_parameter(char *buf, int len, int param, char **out_buf,
         return;
       }
       pos++;
-    } else if (flag == F_API) {
+    } else if (flag == OPERATION) {
       int j = i + 13;
       int arg_in_cnt = *(int *)(buf + i + 9);
       for (int k = 0; k < arg_in_cnt; k++) {
@@ -333,13 +333,13 @@ void get_parameter(char *buf, int len, int param, char **out_buf,
   }
 }
 
-int get_harness_num(char *buf, int len) {
+int get_operation_num(char *buf, int len) {
   int i = 0;
   int ret = 0;
   while (i < len) {
     int  size = *(int *)(buf + i);
     char flag = buf[i + 4];
-    if (flag == F_API) { ret++; }
+    if (flag == OPERATION) { ret++; }
     i += (4 + size);
   }
   return ret;
@@ -1992,12 +1992,12 @@ havoc_stage:
 
         /*Clone bytes. */
         case 46: {
-          bt_mutator_insert_harness(afl, &out_buf, &temp_len);
+          bt_mutator_insert_operation(afl, &out_buf, &temp_len);
           break;
         }
 
         case 47: {
-          bt_mutator_delete_harness(afl, out_buf, &temp_len);
+          bt_mutator_delete_operation(afl, out_buf, &temp_len);
           break;
         }
 

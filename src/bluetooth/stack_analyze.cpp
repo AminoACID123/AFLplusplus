@@ -53,7 +53,7 @@ extern "C" u32 get_total_hci_le() {
     return stack_le_evts.size();
 }
 
-extern "C" void generate_random_hci(u32 seed, u8* evt, u8* le_evt) {
+extern "C" void generate_random_event(u32 seed, u8* evt, u8* le_evt) {
    *evt =  stack_evts[(seed >> 16) % stack_evts.size()];
    if(*evt == BT_HCI_EVT_LE_META_EVENT)
     *le_evt = stack_le_evts[seed % stack_le_evts.size()];

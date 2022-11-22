@@ -1,6 +1,7 @@
 #include "harness.h"
 #include "bluetooth.h"
 #include "cJSON.h"
+#include <assert.h>
 #include <set>
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,7 +137,7 @@ Parameter *get_parameter(string name)
 
     for (Parameter *param : parameter_list)
     {
-        if (name == param->name)
+        if (param && name == param->name)
             return param;
     }
     return NULL;
@@ -176,6 +177,7 @@ void parse_parameters(cJSON *file)
 {
     cJSON *item, *value, *_byte;
     cJSON *root = cJSON_GetObjectItem(file, "parameters");
+    parameter_list.push_back(NULL);
     cJSON_ArrayForEach(item, root)
     {
         Parameter *param = new Parameter;
@@ -313,7 +315,7 @@ void payload2(FILE *f)
                "u32   context_len[NUM_PARAM] = { ");
     fprintf(f, "1");
 
-    for (u32 i = 0, n = parameter_list.size(); i != n; i++)
+    for (u32 i = 1, n = parameter_list.size(); i != n; i++)
     {
         fprintf(f, ", %d", parameter_list[i]->isEnum ? 1 : parameter_list[i]->bytes);
     }
@@ -331,11 +333,9 @@ void payload3(FILE *f)
 
     for (Parameter *param : parameter_list)
     {
-        if (!param->isEnum)
-            continue;
-
+        if (param && param->isEnum){
         u32 c = 0;
-        fprintf(f, "%s _e%d(u8 i) {\n", param->name.c_str(), i);
+        fprintf(f, "%s e%d(u8 i) {\n", param->name.c_str(), i);
         fprintf(f, "switch(i) {\n");
         for (string &e : param->enum_domain)
         {
@@ -343,6 +343,7 @@ void payload3(FILE *f)
             c++;
         }
         fprintf(f, "}\n}\n");
+        }
         i++;
     }
 }
@@ -362,8 +363,15 @@ void payload4(FILE *f)
         fprintf(f, "void operation%d() {\n", i);
         for (u32 j = 0; j < op->inputs.size(); j++)
         {
+            Parameter* param = op->inputs[j];
+            if(!param->isEnum){
             fprintf(f, "  u8* _i%d = arg_in[%d];\n", j, j * 2);
             fprintf(f, "  u32 _s%d = *(u32*)arg_in[%d];\n", j, j * 2 + 1);
+            }
+            else{
+                u32 idx = get_parameter_idx(param);
+                fprintf(f, "  %s _i%d = e%d(*(u8*)arg_in[%d]);\n", param->name.c_str(), j, idx, j*2);
+            }
         }
         for (u32 j = 0; j < op->outputs.size(); j++)
         {
@@ -408,12 +416,13 @@ u32 get_parameter_idx(Parameter *param)
 {
     if(param->name == "data")
         return 0;
-    for (u32 i = 0, n = parameter_list.size(); i < n; i++)
+    for (u32 i = 1, n = parameter_list.size(); i < n; i++)
     {
         if (parameter_list[i] == param)
-            return i + 1;
+            return i;
     }
-    return -1;
+    assert(false && "Unknown parameter");
+    return 0;
 }
 
 void generate_harness(const char *file)
@@ -509,7 +518,7 @@ extern "C" void generate_random_operation(u32 idx, u32 seed, u8 *out_buf)
     } __attribute__((packed));
 
     operation_header *hdr = (operation_header *)out_buf;
-    hdr->flag = F_API;
+    hdr->flag = OPERATION;
     hdr->operation_idx = idx;
     hdr->arg_in_cnt = arg_in_cnt;
 
@@ -551,15 +560,10 @@ extern "C" u32 get_total_operation()
 extern "C" void parse_operation(const char *in_file, const char *out_file)
 {
     cJSON *file = load_from_file(in_file);
-printf("%s\n", "hhh\n\n");
     parse_headers(file);
-    printf("%s\n", "hhh\n\n");
     parse_static_functions(file);
-    printf("%s\n", "hhh\n\n");
     parse_parameters(file);
-    printf("%s\n", "hhh\n\n");
     parse_operations(file);
-    printf("%s\n", "hhh\n\n");
     // parse_harnesses(file);
 
     FILE *f = fopen(out_file, "w");
@@ -570,6 +574,23 @@ printf("%s\n", "hhh\n\n");
     fclose(f);
 
     system(strcat("clang-format -i ", out_file));
+}
+
+extern "C" bool parameter_has_domain(u32 op_idx, u32 param_idx)
+{
+    return operation_list[op_idx]->inputs[param_idx]->name != "data";
+}
+
+extern "C" void set_parameter(u32 op_idx, u32 param_idx, u8* buf, u32 seed)
+{
+    Parameter* param = operation_list[op_idx]->inputs[param_idx];
+    assert(param->name != "data" && "Setting a parameter with no domain");
+    if(param->isEnum)
+        *buf = seed % param->enum_domain.size();
+    else {
+        u32 i = seed % param->domain.size();
+        memcpy(buf, param->domain[i].data(), param->bytes);
+    }
 }
 
 /*

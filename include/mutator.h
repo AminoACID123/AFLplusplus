@@ -60,13 +60,13 @@ void mutate_parameter(afl_state_t *afl, char *buf, int len, bt_mutator mutator);
 /**********************
 * Item Mutators Begin *
 * *********************/
-void bt_mutator_insert_harness(afl_state_t *afl, char **buf, int* len);
+void bt_mutator_insert_operation(afl_state_t *afl, char **buf, int* len);
 
-void bt_mutator_delete_harness(afl_state_t *afl, char *buf, int* len);
+void bt_mutator_delete_operation(afl_state_t *afl, char *buf, int* len);
 
-void bt_mutator_insert_hci(afl_state_t *afl, char **buf, int* len);
+void bt_mutator_insert_packet(afl_state_t *afl, char **buf, int* len);
 
-void bt_mutator_delete_hci(afl_state_t *afl, char* buf, int* len);
+void bt_mutator_delete_packet(afl_state_t *afl, char* buf, int* len);
 /********************
 * Item Mutators End *
 * *******************/

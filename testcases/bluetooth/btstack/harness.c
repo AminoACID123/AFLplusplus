@@ -1,5 +1,5 @@
 #include "gap.h"
-#define NUM_PARAM 11
+#define NUM_PARAM 12
 #define MAX_INPUT 4
 #define MAX_OUTPUT 1
 typedef uint8_t u8;
@@ -11,7 +11,7 @@ void *context[NUM_PARAM];
 u32   context_len[NUM_PARAM] = { 1, 1, 6, 1, 2, 1, 1, 1, 1, 2, 2};
 
 static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}
-bd_addr_type_t _e0(u8 i) {
+bd_addr_type_t e3(u8 i) {
 switch(i) {
 case 0: return BD_ADDR_TYPE_LE_PUBLIC;break;
 case 1: return BD_ADDR_TYPE_LE_RANDOM;break;
@@ -21,7 +21,7 @@ case 4: return BD_ADDR_TYPE_SCO;break;
 case 5: return BD_ADDR_TYPE_ACL;break;
 }
 }
-gap_security_mode_t _e1(u8 i) {
+gap_security_mode_t e5(u8 i) {
 switch(i) {
 case 0: return GAP_SECURITY_MODE_1;break;
 case 1: return GAP_SECURITY_MODE_2;break;
@@ -29,7 +29,7 @@ case 2: return GAP_SECURITY_MODE_3;break;
 case 3: return GAP_SECURITY_MODE_4;break;
 }
 }
-gap_security_level_t _e2(u8 i) {
+gap_security_level_t e6(u8 i) {
 switch(i) {
 case 0: return LEVEL_0;break;
 case 1: return LEVEL_1;break;
@@ -37,7 +37,7 @@ case 2: return LEVEL_2;break;
 case 3: return LEVEL_3;break;
 }
 }
-link_key_type_t _e3(u8 i) {
+link_key_type_t e7(u8 i) {
 switch(i) {
 case 0: return INVALID_LINK_KEY;break;
 case 1: return COMBINATION_KEY;break;
@@ -51,7 +51,7 @@ case 8: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
 case 9: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
 }
 }
-hci_role_t _e4(u8 i) {
+hci_role_t e8(u8 i) {
 switch(i) {
 case 0: return HCI_ROLE_MASTER;break;
 case 1: return HCI_ROLE_SLAVE;break;
@@ -93,8 +93,7 @@ void operation4() {
 void operation5() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  u8* _i1 = arg_in[2];
-  u32 _s1 = *(u32*)arg_in[3];
+  hci_role_t _i1 = e8(*(u8*)arg_in[2]);
   gap_request_role(*(hci_con_handle_t*)_i0, _i1);
 }
 
@@ -153,8 +152,7 @@ void operation14() {
 }
 
 void operation15() {
-  u8* _i0 = arg_in[0];
-  u32 _s0 = *(u32*)arg_in[1];
+  gap_security_mode_t _i0 = e5(*(u8*)arg_in[0]);
   gap_set_security_mode(_i0);
 }
 
@@ -163,8 +161,7 @@ void operation16() {
 }
 
 void operation17() {
-  u8* _i0 = arg_in[0];
-  u32 _s0 = *(u32*)arg_in[1];
+  gap_security_level_t _i0 = e6(*(u8*)arg_in[0]);
   gap_set_security_level(_i0);
 }
 
@@ -183,8 +180,7 @@ void operation20() {
 }
 
 void operation21() {
-  u8* _i0 = arg_in[0];
-  u32 _s0 = *(u32*)arg_in[1];
+  gap_security_level_t _i0 = e6(*(u8*)arg_in[0]);
   gap_set_minimal_service_security_level(_i0);
 }
 
@@ -241,8 +237,7 @@ void operation30() {
 }
 
 void operation31() {
-  u8* _i0 = arg_in[0];
-  u32 _s0 = *(u32*)arg_in[1];
+  link_key_type_t _i0 = e7(*(u8*)arg_in[0]);
   gap_security_level_for_link_key_type(_i0);
 }
 

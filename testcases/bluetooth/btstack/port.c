@@ -53,7 +53,7 @@ void execute_api(u8 *buf, u32 size) {
 
   *(u32*)(__afl_area2_ptr + log_ptr) = 1;
   log_ptr += 4;
-  __afl_area2_ptr[log_ptr++] = F_API;
+  __afl_area2_ptr[log_ptr++] = OPERATION;
 
 
   u32 arg_in_count, arg_out_count;
@@ -116,7 +116,7 @@ bool execute_one(){
 
   u32 size = *(u32*)(BUF + POS);
   POS += 4;
-  if(BUF[POS] == F_API)
+  if(BUF[POS] == OPERATION)
     execute_api(BUF + POS, size);
   else 
     execute_hci(BUF + POS, size);

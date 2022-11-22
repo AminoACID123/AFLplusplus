@@ -35,7 +35,7 @@ void init_mutable_map(char *buf, int len)
             for (int j = i + 7; j < i + size; j++)
                 mutable_map[j] = true;
         }
-        else if (flag == F_API)
+        else if (flag == OPERATION)
         {
             int j = i + 13;
             int arg_in_cnt = *(int *)(buf + i + 9);
@@ -70,7 +70,7 @@ int get_data_param_len(char *buf, int len)
             for (int j = i + 7; j < i + size; j++)
                 ret++;
         }
-        else if (flag == F_API)
+        else if (flag == OPERATION)
         {
             int j = i + 13;
             int arg_in_cnt = *(int *)(buf + i + 9);

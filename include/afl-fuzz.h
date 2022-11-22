@@ -478,7 +478,7 @@ typedef struct afl_state {
       *file_extension,                  /* File extension                   */
       *orig_cmdline,                    /* Original command line            */
       *infoexec,                       /* Command to execute on a new crash */
-      *in_harness,
+      *stack_desc,
       *out_harness,
       *bc_file;
 

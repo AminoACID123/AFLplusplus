@@ -40,7 +40,6 @@ extern std::vector<Operation*> operation_list;
 cJSON *load_from_file(const char *file);
 void parse_parameters();
 void parse_operations(const char *file);
-void parse_harnesses(const char *file);
 void payload1(FILE *f);
 void payload2(FILE *f);
 void payload3(FILE *f);
@@ -51,7 +50,6 @@ u32 get_parameter_idx(Parameter *param);
 Parameter *get_parameter(std::string name);
 Operation *get_operation(std::string name);
 void parse(const char *file);
-void generate_harness(const char *file);
 void generate_seeds(const char *dir);
 void dump();
 
