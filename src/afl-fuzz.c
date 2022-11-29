@@ -2142,6 +2142,7 @@ int main(int argc, char **argv_orig, char **envp) {
 
   }
 afl->disable_trim = 1; 
+
   load_auto(afl);
 
   if (extras_dir_cnt) {
@@ -2172,6 +2173,8 @@ afl->disable_trim = 1;
 
   memset(afl->virgin_tmout, 255, map_size);
   memset(afl->virgin_crash, 255, map_size);
+
+
 
   if (likely(!afl->afl_env.afl_no_startup_calibration)) {
 

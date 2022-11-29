@@ -1986,7 +1986,7 @@ havoc_stage:
         }
 
         case 45: {
-          bt_mutator_insert_hci(afl, &out_buf, &temp_len);
+          bt_mutator_insert_event(afl, &out_buf, &temp_len);
           break;
         }
 

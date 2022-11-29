@@ -49,8 +49,8 @@ u32 get_parameter_idx(Parameter *param);
 
 Parameter *get_parameter(std::string name);
 Operation *get_operation(std::string name);
+extern "C" void generate_random_operation(u32 idx, u32 seed, u8 *out_buf);
 void parse(const char *file);
-void generate_seeds(const char *dir);
 void dump();
 
 

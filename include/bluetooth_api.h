@@ -7,6 +7,8 @@ void parse_operation(const char* in_file, const char* out_file);
 
 void generate_random_operation(u32 idx, u32 seed, u8* out_buf);
 
+void generate_seeds(const char* dir);
+
 
 u32 get_total_operation();
 /******************

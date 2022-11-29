@@ -492,6 +492,7 @@ void bt_mutator_insert_event(afl_state_t *afl, u8 **buf, u32 *len) {
   item_hdr_t* item = (item_hdr_t*)temp_buf;
   hci_evt_hdr_t* evt = (hci_evt_hdr_t*)item->payload;
   u8  evt_op, le_evt_op = 0xff;
+  evt->param_len = 0xff;
 
   generate_random_event(seed, &evt_op, &le_evt_op);
 

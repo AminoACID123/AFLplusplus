@@ -130,12 +130,17 @@ def main():
 			(size, flag) = struct.unpack("<IB", buf[i:i+5])
 			if flag == 6:
 				(size, flag, harness) = struct.unpack("<IBI", buf[i:i+9])
-				print("Harness: ")
+				print("Operation: ")
 				print(harness)
 			else:
 				(size, flag, event) = struct.unpack("<IBB", buf[i:i+6])
 				print("HCI Event: ")
-				print(evt_dict[event])
+				if event in evt_dict.keys():
+					print(evt_dict[event])
+					if event == 0x3e:
+						print(le_evt_dict[buf[i+7]])
+				else:
+					print("Unknown event " + str(hex(event)))
 			i += (4 + size)
 			if i >= len(buf):
 				return

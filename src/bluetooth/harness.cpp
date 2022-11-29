@@ -125,7 +125,6 @@ Parameter *get_parameter(string name)
         param->isEnum = false;
         if (name.find('[') != name.npos)
         {
-            printf("%s\n", name.c_str());
             sscanf(name.c_str(), "data[%d]", &param->bytes);
         }
         else
@@ -183,7 +182,8 @@ void parse_parameters(cJSON *file)
         Parameter *param = new Parameter;
         cJSON *domain = cJSON_GetObjectItem(item, "domain");
         param->name = cJSON_GetObjectItem(item, "name")->valuestring;
-        if (param->isEnum = cJSON_GetObjectItem(item, "enum")->valueint)
+        param->isEnum = cJSON_GetObjectItem(item, "enum")->valueint;
+        if (param->isEnum)
         {
             cJSON_ArrayForEach(value, domain)
             {
@@ -322,7 +322,7 @@ void payload2(FILE *f)
     fprintf(f, "};\n\n");
 }
 
-/**
+/** 
 Write Static Functions and enum mappers
 */
 void payload3(FILE *f)
@@ -434,69 +434,29 @@ void generate_harness(const char *file)
     fclose(f);
 }
 
-// void generate_seeds(const char *dir)
-// {
-//     struct stat sb;
+extern "C" void generate_seeds(const char *dir)
+{
+    struct stat sb;
+    u8 buf[BT_MAX_BUFFER_SIZE];
 
-//     if (stat(dir, &sb) != 0 || !S_ISDIR(sb.st_mode))
-//     {
-//         mkdir(dir, S_IRUSR | S_IWUSR);
-//     }
+    if (stat(dir, &sb) != 0 || !S_ISDIR(sb.st_mode))
+    {
+        mkdir(dir, S_IRUSR | S_IWUSR);
+    }
 
-//     for (u32 i = 0, n = harness_list.size(); i < n; i++)
-//     {
-//         Harness *hn = harness_list[i];
-//         char file[512];
-//         int len = 0;
-//         char flag = F_API;
-//         u32 harness_idx = i;
-//         u32 arg_in_cnt = hn->op->inputs.size();
-//         u32 arg_out_cnt = hn->op->outputs.size();
+    for (u32 i = 0, n = operation_list.size(); i < n; i++)
+    {
+        char file[512];
+        sprintf(file, "%d", i);
 
-//         sprintf(file, "%d", i);
+        FILE *F = fopen((string(dir) + "/" + file).c_str(), "w");
 
-//         FILE *F = fopen((string(dir) + "/" + file).c_str(), "w");
+        generate_random_operation(i, 0, buf);
 
-//         fwrite(&len, 4, 1, F);
-//         fwrite(&flag, 1, 1, F);
-//         fwrite(&harness_idx, 4, 1, F);
-
-//         fwrite(&arg_in_cnt, 4, 1, F);
-//         for (int j = 0, n = hn->op->inputs.size(); j < n; j++)
-//         {
-//             Parameter *input = hn->op->inputs[j];
-//             int idx = get_parameter_idx(input);
-//             fwrite(&idx, 4, 1, F);
-//             if (input->name != "DATA")
-//             {
-//                 int size = input->bytes;
-//                 fwrite(&size, 4, 1, F);
-//                 fwrite(input->domain[0].data(), 1, size, F);
-//             }
-//             else
-//             {
-//                 int size = 16;
-//                 unsigned data[] = {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff};
-//                 fwrite(&size, 4, 1, F);
-//                 fwrite(data, 4, 4, F);
-//             }
-//         }
-
-//         fwrite(&arg_out_cnt, 4, 1, F);
-//         for (int j = 0, n = hn->op->outputs.size(); j < n; j++)
-//         {
-//             Parameter *output = hn->op->outputs[j];
-//             int idx = get_parameter_idx(output);
-//             fwrite(&idx, 4, 1, F);
-//         }
-
-//         long pos = ftell(F);
-//         len = pos - 4;
-//         fseek(F, 0, SEEK_SET);
-//         fwrite(&len, 4, 1, F);
-//         fclose(F);
-//     }
-// }
+        fwrite(buf, 1, *(u32*)buf + sizeof(u32), F);
+        fclose(F);
+    }
+}
 
 extern "C" void generate_random_operation(u32 idx, u32 seed, u8 *out_buf)
 {
@@ -528,21 +488,22 @@ extern "C" void generate_random_operation(u32 idx, u32 seed, u8 *out_buf)
         parameter_header *param_hdr = (parameter_header *)(out_buf + i);
         if (param->name == "data")
         {
-            u32 len = (param->bytes == -1 ? seed % BT_MAX_PARAM_SIZE : param->bytes);
+            u32 len = (param->bytes == -1 ? 1 + seed % (BT_MAX_PARAM_SIZE-1) : param->bytes);
             u8* param_buf = new u8[len];
             param_hdr->arg_len = len;
             memcpy(out_buf + i + sizeof(parameter_header), param_buf, len);
             i += (sizeof(parameter_header) + len);
+            delete[] param_buf;
         }
         else
         {
-            u32 j = seed % param->domain.size();
             param_hdr->arg_idx = get_parameter_idx(param);
             if (param->isEnum){
                 param_hdr->arg_len = 1;
-                out_buf[i + sizeof(parameter_header)] = j;
+                out_buf[i + sizeof(parameter_header)] = seed % param->enum_domain.size();
             }
             else{
+                u32 j = seed % param->domain.size();
                 param_hdr->arg_len = param->bytes;
                 memcpy(out_buf + i + sizeof(parameter_header), param->domain[j].data(), param->domain[j].size());
             }
@@ -566,6 +527,8 @@ extern "C" void parse_operation(const char *in_file, const char *out_file)
     parse_operations(file);
     // parse_harnesses(file);
 
+    printf("%d\n\n", operation_list.size());
+
     FILE *f = fopen(out_file, "w");
     payload1(f);
     payload2(f);
@@ -573,7 +536,6 @@ extern "C" void parse_operation(const char *in_file, const char *out_file)
     payload4(f);
     fclose(f);
 
-    system(strcat("clang-format -i ", out_file));
 }
 
 extern "C" bool parameter_has_domain(u32 op_idx, u32 param_idx)

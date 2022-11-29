@@ -55,7 +55,6 @@ void execute_api(u8 *buf, u32 size) {
   log_ptr += 4;
   __afl_area2_ptr[log_ptr++] = OPERATION;
 
-
   u32 arg_in_count, arg_out_count;
 
   arg_in_count = *(u32*)(buf + 5);
@@ -70,7 +69,6 @@ void execute_api(u8 *buf, u32 size) {
       arg_in[i*2+1] = (u32*)(buf + pos);
       pos += sizeof(u32);
       arg_in[i*2] = (u8*)(buf + pos);
-      
       pos += len;
     } else {
       arg_in[i] = context[-arg_idx];

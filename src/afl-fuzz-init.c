@@ -25,6 +25,7 @@
 
 #include "afl-fuzz.h"
 #include "bluetooth.h"
+#include "bluetooth_api.h"
 #include <limits.h>
 #include "cmplog.h"
 
@@ -822,7 +823,7 @@ void read_testcases(afl_state_t *afl, u8 *directory) {
       FILE* f = fopen(file, "w");
       u8 buf[BT_MAX_BUFFER_SIZE];
       generate_random_operation(i, rand_below(afl, RAND_MAX), buf);
-      fwrite(buf, 1, (*(int*)buf) + 4, f);
+      fwrite(buf, 1, (*(u32*)buf) + 4, f);
       fclose(f);
     }
     read_testcases(afl, afl->in_dir);
