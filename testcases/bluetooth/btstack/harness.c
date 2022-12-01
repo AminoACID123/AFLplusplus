@@ -1,6 +1,6 @@
 #include "gap.h"
-#define NUM_PARAM 12
-#define MAX_INPUT 4
+#define NUM_PARAM 14
+#define MAX_INPUT 8
 #define MAX_OUTPUT 1
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -8,7 +8,7 @@ typedef uint32_t u32;
 void *arg_in[MAX_INPUT];
 void *arg_out[MAX_OUTPUT];
 void *context[NUM_PARAM];
-u32   context_len[NUM_PARAM] = { 1, 1, 6, 1, 2, 1, 1, 1, 1, 2, 2};
+u32   context_len[NUM_PARAM] = { 1, 1, 6, 1, 2, 1, 1, 1, 1, 1, 1, 2, 2};
 
 static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}
 bd_addr_type_t e3(u8 i) {
@@ -29,7 +29,14 @@ case 2: return GAP_SECURITY_MODE_3;break;
 case 3: return GAP_SECURITY_MODE_4;break;
 }
 }
-gap_security_level_t e6(u8 i) {
+gap_random_address_type_t e6(u8 i) {
+switch(i) {
+case 0: return GAP_RANDOM_ADDRESS_TYPE_STATIC;break;
+case 1: return GAP_RANDOM_ADDRESS_NON_RESOLVABLE;break;
+case 2: return GAP_RANDOM_ADDRESS_RESOLVABLE;break;
+}
+}
+gap_security_level_t e7(u8 i) {
 switch(i) {
 case 0: return LEVEL_0;break;
 case 1: return LEVEL_1;break;
@@ -37,7 +44,7 @@ case 2: return LEVEL_2;break;
 case 3: return LEVEL_3;break;
 }
 }
-link_key_type_t e7(u8 i) {
+link_key_type_t e8(u8 i) {
 switch(i) {
 case 0: return INVALID_LINK_KEY;break;
 case 1: return COMBINATION_KEY;break;
@@ -51,7 +58,13 @@ case 8: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
 case 9: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
 }
 }
-hci_role_t e8(u8 i) {
+page_scan_type_t e9(u8 i) {
+switch(i) {
+case 0: return PAGE_SCAN_MODE_STANDARD;break;
+case 1: return PAGE_SCAN_MODE_INTERLACED;break;
+}
+}
+hci_role_t e10(u8 i) {
 switch(i) {
 case 0: return HCI_ROLE_MASTER;break;
 case 1: return HCI_ROLE_SLAVE;break;
@@ -93,7 +106,7 @@ void operation4() {
 void operation5() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  hci_role_t _i1 = e8(*(u8*)arg_in[2]);
+  hci_role_t _i1 = e10(*(u8*)arg_in[2]);
   gap_request_role(*(hci_con_handle_t*)_i0, _i1);
 }
 
@@ -161,7 +174,7 @@ void operation16() {
 }
 
 void operation17() {
-  gap_security_level_t _i0 = e6(*(u8*)arg_in[0]);
+  gap_security_level_t _i0 = e7(*(u8*)arg_in[0]);
   gap_set_security_level(_i0);
 }
 
@@ -180,7 +193,7 @@ void operation20() {
 }
 
 void operation21() {
-  gap_security_level_t _i0 = e6(*(u8*)arg_in[0]);
+  gap_security_level_t _i0 = e7(*(u8*)arg_in[0]);
   gap_set_minimal_service_security_level(_i0);
 }
 
@@ -237,8 +250,106 @@ void operation30() {
 }
 
 void operation31() {
-  link_key_type_t _i0 = e7(*(u8*)arg_in[0]);
+  link_key_type_t _i0 = e8(*(u8*)arg_in[0]);
   gap_security_level_for_link_key_type(_i0);
+}
+
+void operation32() {
+  link_key_type_t _i0 = e8(*(u8*)arg_in[0]);
+  gap_secure_connection_for_link_key_type(_i0);
+}
+
+void operation33() {
+  link_key_type_t _i0 = e8(*(u8*)arg_in[0]);
+  gap_authenticated_for_link_key_type(_i0);
+}
+
+void operation34() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gap_security_level(*(hci_con_handle_t*)_i0);
+}
+
+void operation35() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gap_security_level_t _i1 = e7(*(u8*)arg_in[2]);
+  gap_request_security_level(*(hci_con_handle_t*)_i0, _i1);
+}
+
+void operation36() {
+  gap_security_level_t _i0 = e7(*(u8*)arg_in[0]);
+  gap_mitm_protection_required_for_security_level(_i0);
+}
+
+void operation37() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gap_set_page_scan_activity(*(u16*)_i0, *(u16*)_i1);
+}
+
+void operation38() {
+  page_scan_type_t _i0 = e9(*(u8*)arg_in[0]);
+  gap_set_page_scan_type(_i0);
+}
+
+void operation39() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gap_set_page_timeout(*(u16*)_i0);
+}
+
+void operation40() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  gap_set_scan_params(*(u8*)_i0, *(u16*)_i1, *(u16*)_i2, *(u8*)_i3);
+}
+
+void operation41() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gap_set_scan_parameters(*(u8*)_i0, *(u16*)_i1, *(u16*)_i2);
+}
+
+void operation42() {
+  gap_start_scan();
+}
+
+void operation43() {
+  gap_stop_scan();
+}
+
+void operation44() {
+  gap_random_address_type_t _i0 = e6(*(u8*)arg_in[0]);
+  gap_random_address_set_mode(_i0);
+}
+
+void operation45() {
+  gap_random_address_get_mode();
+}
+
+void operation46() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gap_random_address_set_update_period(*(u32*)_i0);
+}
+
+void operation47() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gap_random_address_set(_i0);
 }
 
 typedef void (*fun_ptr)();
@@ -274,6 +385,22 @@ fun_ptr FUZZ_LIST[] = {
   &operation28,
   &operation29,
   &operation30,
-  &operation31
+  &operation31,
+  &operation32,
+  &operation33,
+  &operation34,
+  &operation35,
+  &operation36,
+  &operation37,
+  &operation38,
+  &operation39,
+  &operation40,
+  &operation41,
+  &operation42,
+  &operation43,
+  &operation44,
+  &operation45,
+  &operation46,
+  &operation47
 };
 

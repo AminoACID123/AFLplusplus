@@ -211,17 +211,16 @@ void parse_operations(cJSON *file)
 {
     cJSON *op;
     cJSON *root = cJSON_GetObjectItem(file, "operations");
-    u32 i = 0;
     cJSON_ArrayForEach(op, root)
     {
-        printf("%d\n", i++);
         cJSON *input, *output, *str;
         cJSON *inputs = cJSON_GetObjectItem(op, "inputs");
         cJSON *outputs = cJSON_GetObjectItem(op, "outputs");
         cJSON *exec = cJSON_GetObjectItem(op, "exec");
         Operation *operation = new Operation();
         operation->name = cJSON_GetObjectItem(op, "name")->valuestring;
-
+        printf("%s\n", operation->name.c_str());
+        printf("%d\n", cJSON_GetArraySize(inputs));
         cJSON_ArrayForEach(input, inputs)
         {
             operation->inputs.push_back(get_parameter(input->valuestring));
@@ -365,8 +364,8 @@ void payload4(FILE *f)
         {
             Parameter* param = op->inputs[j];
             if(!param->isEnum){
-            fprintf(f, "  u8* _i%d = arg_in[%d];\n", j, j * 2);
-            fprintf(f, "  u32 _s%d = *(u32*)arg_in[%d];\n", j, j * 2 + 1);
+                fprintf(f, "  u8* _i%d = arg_in[%d];\n", j, j * 2);
+                fprintf(f, "  u32 _s%d = *(u32*)arg_in[%d];\n", j, j * 2 + 1);
             }
             else{
                 u32 idx = get_parameter_idx(param);
@@ -491,6 +490,7 @@ extern "C" void generate_random_operation(u32 idx, u32 seed, u8 *out_buf)
             u32 len = (param->bytes == -1 ? 1 + seed % (BT_MAX_PARAM_SIZE-1) : param->bytes);
             u8* param_buf = new u8[len];
             param_hdr->arg_len = len;
+            param_hdr->arg_idx = 0;
             memcpy(out_buf + i + sizeof(parameter_header), param_buf, len);
             i += (sizeof(parameter_header) + len);
             delete[] param_buf;
@@ -526,8 +526,6 @@ extern "C" void parse_operation(const char *in_file, const char *out_file)
     parse_parameters(file);
     parse_operations(file);
     // parse_harnesses(file);
-
-    printf("%d\n\n", operation_list.size());
 
     FILE *f = fopen(out_file, "w");
     payload1(f);

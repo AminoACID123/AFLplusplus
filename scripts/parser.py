@@ -136,9 +136,10 @@ def main():
 				(size, flag, event) = struct.unpack("<IBB", buf[i:i+6])
 				print("HCI Event: ")
 				if event in evt_dict.keys():
-					print(evt_dict[event])
 					if event == 0x3e:
 						print(le_evt_dict[buf[i+7]])
+					else:
+						print(evt_dict[event])
 				else:
 					print("Unknown event " + str(hex(event)))
 			i += (4 + size)
