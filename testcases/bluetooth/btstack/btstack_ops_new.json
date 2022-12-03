@@ -17,6 +17,16 @@
             ]
         },
         {
+            "name": "link_key_t", 
+            "enum": 0,
+            "bytes": 16,
+            "domain": [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+            ]
+        },
+        {
             "name": "bd_addr_type_t", 
             "enum": 1,
             "domain": [
@@ -33,6 +43,21 @@
             "enum": 0,
             "bytes": 2,
             "domain": [[1, 0], [2, 0], [3, 0]]
+        },
+        {
+            "name": "hci_service_type_t", 
+            "enum": 1,
+            "domain": [
+                "HCI_SERVICE_TYPE_NO_TRAFFIC",
+                "HCI_SERVICE_TYPE_BEST_EFFORT", 
+                "HCI_SERVICE_TYPE_GUARANTEED"
+            ]
+        },
+        {
+            "name": "advertising_handle", 
+            "enum": 0,
+            "bytes": 1,
+            "domain": [[0], [1], [2]]
         },
         {
             "name": "gap_security_mode_t", 
@@ -67,7 +92,6 @@
             "name": "link_key_type_t", 
             "enum": 1,
             "domain": [
-                "INVALID_LINK_KEY",
                 "COMBINATION_KEY",
                 "LOCAL_UNIT_KEY",
                 "REMOTE_UNIT_KEY",
@@ -116,9 +140,9 @@
             ]
         }
     ],
-    "headers" : ["gap.h"],
+    "headers" : ["stdlib.h", "gap.h"],
     "static_functions" : [
-        "le_advertising_set_t le_adv_set_storage;",
+        "le_advertising_set_t le_adv_set;",
         "static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}"
     ],
     "operations": [
@@ -126,7 +150,7 @@
             "name": "gap_read_rssi",
             "inputs": ["hci_con_handle_t"],
             "outputs": [],
-            "exec" : ["gap_read_rssi($i0);"]
+            "exec" : ["gap_read_rssi(*(hci_con_handle_t*)$i0);"]
         },
         {
             "name": "gap_local_bd_addr",
@@ -154,9 +178,9 @@
         },
         {
             "name": "gap_request_role",
-            "inputs": ["hci_con_handle_t", "hci_role_t"],
+            "inputs": ["bd_addr_t", "hci_role_t"],
             "outputs": [],
-            "exec" : ["gap_request_role(*(hci_con_handle_t*)$i0, $i1);"]
+            "exec" : ["gap_request_role($i0, $i1);"]
         },
         {
             "name": "gap_set_local_name",
@@ -432,13 +456,13 @@
             "name": "gap_advertisements_enable",
             "inputs": ["bool"],
             "outputs": [],
-            "exec": ["gap_advertisements_enable($i0);"]
+            "exec": ["gap_advertisements_enable(*$i0);"]
         },
         {
             "name": "gap_scan_response_set_data",
-            "inputs": ["data[1]","data[255]"],
+            "inputs": ["data[0: 255]"],
             "outputs": [],
-            "exec": ["gap_scan_response_set_data(*(u8*)$i0, $i1);"]
+            "exec": ["gap_scan_response_set_data($s0, $i0);"]
         },
         {
             "name": "gap_extended_advertising_setup",
@@ -448,7 +472,7 @@
                 "le_extended_advertising_parameters_t param;",
                 "param.own_address_type = $i1;",
                 "param.peer_address_type = $i2;",
-                "param.peer_address = $i3;",
+                "memcpy(param.peer_address, $i3, 6);",
                 "param.advertising_event_properties = *(u16*)$i0;",
                 "param.primary_advertising_interval_min = *(u16*)($i0 + 2);",
                 "param.primary_advertising_interval_max = *(u16*)($i0 + 4);",
@@ -460,7 +484,567 @@
                 "param.secondary_advertising_phy = *(u8*)($i0 + 11);",
                 "param.advertising_sid = *(u8*)($i0 + 12);",
                 "param.scan_request_notification_enable = *(u8*)($i0 + 13);",
-                "gap_extended_advertising_setup(&le_adv_set_storage, &param, $i4)"
+                "gap_extended_advertising_setup(&le_adv_set, &param, $i4);"
+            ]            
+        },
+        {
+            "name": "gap_extended_advertising_set_params",
+            "inputs": ["data[14]","bd_addr_type_t", "bd_addr_type_t", "bd_addr_t", "advertising_handle"],
+            "outputs": [],
+            "exec": [
+                "le_extended_advertising_parameters_t param;",
+                "param.own_address_type = $i1;",
+                "param.peer_address_type = $i2;",
+                "memcpy(param.peer_address, $i3, 6);",
+                "param.advertising_event_properties = *(u16*)$i0;",
+                "param.primary_advertising_interval_min = *(u16*)($i0 + 2);",
+                "param.primary_advertising_interval_max = *(u16*)($i0 + 4);",
+                "param.primary_advertising_channel_map = *(u8*)($i0 + 6);",
+                "param.advertising_filter_policy = *(u8*)($i0 + 7);",
+                "param.advertising_tx_power = *(u8*)($i0 + 8);",
+                "param.primary_advertising_phy = *(u8*)($i0 + 9);",
+                "param.secondary_advertising_max_skip = *(u8*)($i0 + 10);",
+                "param.secondary_advertising_phy = *(u8*)($i0 + 11);",
+                "param.advertising_sid = *(u8*)($i0 + 12);",
+                "param.scan_request_notification_enable = *(u8*)($i0 + 13);",
+                "gap_extended_advertising_set_params(*(u8*)$i4, &param);"
+            ]            
+        },
+        {
+            "name": "gap_extended_advertising_get_params",
+            "inputs": ["advertising_handle"],
+            "outputs": [],
+            "exec": [
+                "le_extended_advertising_parameters_t param;",
+                "gap_extended_advertising_get_params(*(u8*)$i0, &param);"
+            ]            
+        },
+        {
+            "name": "gap_periodic_advertising_set_params",
+            "inputs": ["data[6]", "advertising_handle"],
+            "outputs": [],
+            "exec": [
+                "le_periodic_advertising_parameters_t param;",
+                "param.periodic_advertising_interval_min = *(u16*)$i0;",
+                "param.periodic_advertising_interval_max = *(u16*)($i0+2);",
+                "param.periodic_advertising_properties = *(u16*)($i0+4);",
+                "gap_periodic_advertising_set_params(*$i1, &param);"
+            ]            
+        },
+        {
+            "name": "gap_periodic_advertising_get_params",
+            "inputs": ["advertising_handle"],
+            "outputs": [],
+            "exec": [
+                "le_periodic_advertising_parameters_t param;",
+                "gap_periodic_advertising_get_params(*$i0, &param);"
+            ]            
+        }, 
+        {
+            "name": "gap_extended_advertising_set_random_address",
+            "inputs": ["advertising_handle", "bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_extended_advertising_set_random_address(*$i0, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_extended_advertising_set_adv_data",
+            "inputs": ["advertising_handle", "data[0:65535]"],
+            "outputs": [],
+            "exec": [
+                "gap_extended_advertising_set_adv_data(*$i0, $s1, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_extended_advertising_set_scan_response_data",
+            "inputs": ["advertising_handle", "data[0:65535]"],
+            "outputs": [],
+            "exec": [
+                "gap_extended_advertising_set_scan_response_data(*$i0, $s1, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_periodic_advertising_set_data",
+            "inputs": ["advertising_handle", "data[0:65535]"],
+            "outputs": [],
+            "exec": [
+                "gap_periodic_advertising_set_data(*$i0, $s1, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_extended_advertising_start",
+            "inputs": ["advertising_handle", "data[2]", "data[1]"],
+            "outputs": [],
+            "exec": [
+                "gap_extended_advertising_start(*$i0, *(u16*)$i1, *$i2);"
+            ]            
+        },
+        {
+            "name": "gap_extended_advertising_stop",
+            "inputs": ["advertising_handle"],
+            "outputs": [],
+            "exec": [
+                "gap_extended_advertising_stop(*$i0);"
+            ]            
+        },
+        {
+            "name": "gap_periodic_advertising_start",
+            "inputs": ["advertising_handle", "bool"],
+            "outputs": [],
+            "exec": [
+                "gap_periodic_advertising_start(*$i0, *(bool*)$i1);"
+            ]            
+        },
+        {
+            "name": "gap_periodic_advertising_stop",
+            "inputs": ["advertising_handle"],
+            "outputs": [],
+            "exec": [
+                "gap_periodic_advertising_stop(*$i0);"
+            ]            
+        },
+        {
+            "name": "gap_extended_advertising_remove",
+            "inputs": ["advertising_handle"],
+            "outputs": [],
+            "exec": [
+                "gap_extended_advertising_remove(*$i0);"
+            ]            
+        },
+        {
+            "name": "gap_set_connection_parameters",
+            "inputs": ["data[16]"],
+            "outputs": [],
+            "exec": [
+                "gap_set_connection_parameters(*(u16*)$i0, *(u16*)&$i0[2], *(u16*)&$i0[4], *(u16*)&$i0[6], *(u16*)&$i0[8], *(u16*)&$i0[10], *(u16*)&$i0[12], *(u16*)&$i0[14]);"
+            ]            
+        },
+        {
+            "name": "gap_request_connection_parameter_update",
+            "inputs": ["hci_con_handle_t", "data[8]"],
+            "outputs": [],
+            "exec": [
+                "gap_request_connection_parameter_update(*(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)&$i1[2], *(u16*)&$i1[4], *(u16*)&$i1[6]);"
+            ]            
+        },
+        {
+            "name": "gap_update_connection_parameters",
+            "inputs": ["hci_con_handle_t", "data[8]"],
+            "outputs": [],
+            "exec": [
+                "gap_update_connection_parameters(*(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)&$i1[2], *(u16*)&$i1[4], *(u16*)&$i1[6]);"
+            ]            
+        },
+        {
+            "name": "gap_set_connection_parameter_range",
+            "inputs": ["data[12]"],
+            "outputs": [],
+            "exec": [
+                "le_connection_parameter_range_t r;",
+                "memcpy(&r, $i0, 12);",
+                "gap_set_connection_parameter_range(&r);"
+            ]            
+        },
+        {
+            "name": "gap_connection_parameter_range_included",
+            "inputs": ["data[20]"],
+            "outputs": [],
+            "exec": [
+                "le_connection_parameter_range_t r;",
+                "memcpy(&r, $i0, 12);",
+                "gap_connection_parameter_range_included(&r, *(u16*)&$i0[12], *(u16*)&$i0[14], *(u16*)&$i0[16], *(u16*)&$i0[18]);"
+            ]            
+        },
+        {
+            "name": "gap_set_max_number_peripheral_connections",
+            "inputs": ["data[1]"],
+            "outputs": [],
+            "exec": [
+                "gap_set_max_number_peripheral_connections(*$i0);"
+            ]            
+        },
+        {
+            "name": "gap_whitelist_add",
+            "inputs": ["bd_addr_type_t", "bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_whitelist_add($i0, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_whitelist_remove",
+            "inputs": ["bd_addr_type_t", "bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_whitelist_remove($i0, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_whitelist_clear",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "gap_whitelist_clear();"
+            ]            
+        },
+        {
+            "name": "gap_connect",
+            "inputs": ["bd_addr_t", "bd_addr_type_t"],
+            "outputs": [],
+            "exec": [
+                "gap_connect($i0, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_connect_with_whitelist",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "gap_connect_with_whitelist();"
+            ]            
+        },
+        {
+            "name": "gap_connect_cancel",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "gap_connect_cancel();"
+            ]            
+        },
+        {
+            "name": "gap_auto_connection_start",
+            "inputs": ["bd_addr_type_t", "bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_auto_connection_start($i0, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_auto_connection_stop",
+            "inputs": ["bd_addr_type_t", "bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_auto_connection_stop($i0, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_auto_connection_stop_all",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "gap_auto_connection_stop_all();"
+            ]            
+        },
+        {
+            "name": "gap_le_set_phy",
+            "inputs": ["hci_con_handle_t", "data[1]", "data[1]", "data[1]", "data[1]"],
+            "outputs": [],
+            "exec": [
+                "gap_le_set_phy(*(hci_con_handle_t*)$i0, $i1, $i2, $i3, $i4);"
+            ]            
+        },
+        {
+            "name": "gap_le_connection_interval",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "gap_le_connection_interval(*(hci_con_handle_t*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_encryption_key_size",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "gap_encryption_key_size(*(hci_con_handle_t*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_authenticated",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "gap_authenticated(*(hci_con_handle_t*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_secure_connection",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "gap_secure_connection(*(hci_con_handle_t*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_authorization_state",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "gap_authorization_state(*(hci_con_handle_t*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_bonded",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "gap_bonded(*(hci_con_handle_t*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_connectable_control",
+            "inputs": ["bool"],
+            "outputs": [],
+            "exec": [
+                "gap_connectable_control(*$i0);"
+            ]            
+        },
+        {
+            "name": "gap_discoverable_control",
+            "inputs": ["bool"],
+            "outputs": [],
+            "exec": [
+                "gap_discoverable_control(*$i0);"
+            ]            
+        },
+        {
+            "name": "gap_inquiry_start",
+            "inputs": ["data[1]"],
+            "outputs": [],
+            "exec": [
+                "gap_inquiry_start(*$i0);"
+            ]            
+        },
+        {
+            "name": "gap_inquiry_periodic_start",
+            "inputs": ["data[1]", "data[2]", "data[2]"],
+            "outputs": [],
+            "exec": [
+                "gap_inquiry_periodic_start(*$i0, *(u16*)$i1, *(u16*)$i2);"
+            ]            
+        },
+        {
+            "name": "gap_inquiry_stop",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "gap_inquiry_stop();"
+            ]            
+        },
+        {
+            "name": "gap_inquiry_set_lap",
+            "inputs": ["data[4]"],
+            "outputs": [],
+            "exec": [
+                "gap_inquiry_set_lap(*(u32*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_inquiry_set_scan_activity",
+            "inputs": ["data[2]", "data[2]"],
+            "outputs": [],
+            "exec": [
+                "gap_inquiry_set_scan_activity(*(u16*)$i0, *(u16*)$i1);"
+            ]            
+        },
+        {
+            "name": "gap_remote_name_request",
+            "inputs": ["bd_addr_t", "data[1]", "data[2]"],
+            "outputs": [],
+            "exec": [
+                "gap_remote_name_request($i0, *$i1, *(u16*)$i2);"
+            ]            
+        },
+        {
+            "name": "gap_pin_code_response",
+            "inputs": ["bd_addr_t", "data[1:255]"],
+            "outputs": [],
+            "exec": [
+                "$i1[$s1 - 1] = 0;",
+                "gap_pin_code_response($i0, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_pin_code_response_binary",
+            "inputs": ["bd_addr_t", "data[1:255]"],
+            "outputs": [],
+            "exec": [
+                "gap_pin_code_response($i0, $i1, $s1);"
+            ]            
+        },
+        {
+            "name": "gap_pin_code_negative",
+            "inputs": ["bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_pin_code_negative($i0);"
+            ]            
+        },
+        {
+            "name": "gap_ssp_passkey_response",
+            "inputs": ["bd_addr_t", "data[4]"],
+            "outputs": [],
+            "exec": [
+                "gap_ssp_passkey_response($i0, *(u32*)$i1);"
+            ]            
+        },
+        {
+            "name": "gap_ssp_passkey_negative",
+            "inputs": ["bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_ssp_passkey_negative($i0);"
+            ]            
+        },
+        {
+            "name": "gap_ssp_confirmation_response",
+            "inputs": ["bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_ssp_confirmation_response($i0);"
+            ]            
+        },
+        {
+            "name": "gap_ssp_confirmation_negative",
+            "inputs": ["bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_ssp_confirmation_negative($i0);"
+            ]            
+        },
+        {
+            "name": "gap_ssp_generate_oob_data",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "gap_ssp_generate_oob_data();"
+            ]            
+        },
+        {
+            "name": "gap_ssp_remote_oob_data",
+            "inputs": ["bd_addr_t", "data[1]", "data[1]", "data[1]", "data[1]"],
+            "outputs": [],
+            "exec": [
+                "gap_ssp_remote_oob_data($i0, *$i1, *$i2, *$i3, *$i4);"
+            ]            
+        },
+        {
+            "name": "gap_ssp_io_capabilities_response",
+            "inputs": ["bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_ssp_io_capabilities_response($i0);"
+            ]            
+        },
+        {
+            "name": "gap_ssp_io_capabilities_negative",
+            "inputs": ["bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_ssp_io_capabilities_negative($i0);"
+            ]            
+        },
+        {
+            "name": "gap_send_link_key_response",
+            "inputs": ["bd_addr_t", "link_key_t", "link_key_type_t"],
+            "outputs": [],
+            "exec": [
+                "gap_send_link_key_response($i0, $i1, $i2);"
+            ]            
+        },
+        {
+            "name": "gap_sniff_mode_enter",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]", "data[2]", "data[2]"],
+            "outputs": [],
+            "exec": [
+                "gap_sniff_mode_enter(*(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2, *(u16*)$i3, *(u16*)$i4);"
+            ]            
+        },
+        {
+            "name": "gap_sniff_mode_exit",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "gap_sniff_mode_exit(*(hci_con_handle_t*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_sniff_subrating_configure",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]", "data[2]"],
+            "outputs": [],
+            "exec": [
+                "gap_sniff_subrating_configure(*(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2, *(u16*)$i3);"
+            ]            
+        },
+        {
+            "name": "gap_qos_set",
+            "inputs": ["hci_con_handle_t", "hci_service_type_t" ,"data[4]", "data[4]", "data[4]", "data[4]"],
+            "outputs": [],
+            "exec": [
+                "gap_qos_set(*(hci_con_handle_t*)$i0, $i1, *(u32*)$i2, *(u32*)$i3, *(u32*)$i4, *(u32*)$i5);"
+            ]            
+        },
+        {
+            "name": "gap_le_get_own_address",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "u8 addr_type;",
+                "bd_addr_t addr;",
+                "gap_le_get_own_address(&addr_type, addr);"
+            ]            
+        },
+        {
+            "name": "gap_le_get_own_advertisements_address",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "u8 addr_type;",
+                "bd_addr_t addr;",
+                "gap_le_get_own_advertisements_address(&addr_type, addr);"
+            ]            
+        },
+        {
+            "name": "gap_le_get_own_connection_address",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "u8 addr_type;",
+                "bd_addr_t addr;",
+                "gap_le_get_own_connection_address(&addr_type, addr);"
+            ]            
+        },
+        {
+            "name": "gap_reconnect_security_setup_active",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "gap_reconnect_security_setup_active(*(hci_con_handle_t*)$i0);"
+            ]            
+        },
+        {
+            "name": "gap_delete_bonding",
+            "inputs": ["bd_addr_type_t", "bd_addr_t"],
+            "outputs": [],
+            "exec": [
+                "gap_delete_bonding($i0, $i1);"
+            ]            
+        },
+        {
+            "name": "gap_load_resolving_list_from_le_device_db",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "gap_load_resolving_list_from_le_device_db();"
+            ]            
+        },
+        {
+            "name": "gap_get_persistent_irk",
+            "inputs": [],
+            "outputs": [],
+            "exec": [
+                "gap_get_persistent_irk();"
             ]            
         }
     ]

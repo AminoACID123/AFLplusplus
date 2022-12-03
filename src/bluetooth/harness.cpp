@@ -185,6 +185,7 @@ void parse_parameters(cJSON *file)
         param->isEnum = cJSON_GetObjectItem(item, "enum")->valueint;
         if (param->isEnum)
         {
+            param->bytes = 1;
             cJSON_ArrayForEach(value, domain)
             {
                 param->enum_domain.push_back(value->valuestring);

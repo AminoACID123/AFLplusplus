@@ -39,10 +39,10 @@ int main(int argc, const char * argv[]){
  char* buf = __AFL_FUZZ_TESTCASE_BUF;
    int len = __AFL_FUZZ_TESTCASE_LEN;
 
- // char buf[2048];
+//char buf[2048];
 
- // FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/out/default/crashes/new","r");
-  // int len = fread(buf, 1, 2048, f);
+ //FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/out/default/crashes/id:000001,sig:11,src:000005,time:267,execs:2642,op:havoc,rep:16","r");
+// int len = fread(buf, 1, 2048, f);
 
     stack_execute(buf, len);
 
