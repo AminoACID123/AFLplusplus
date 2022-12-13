@@ -1,6 +1,7 @@
+#include "ble/sm.h"
 #include "gap.h"
 #include "stdlib.h"
-#define NUM_PARAM 17
+#define NUM_PARAM 19
 #define MAX_INPUT 14
 #define MAX_OUTPUT 1
 typedef uint8_t u8;
@@ -9,11 +10,25 @@ typedef uint32_t u32;
 void *arg_in[MAX_INPUT];
 void *arg_out[MAX_OUTPUT];
 void *context[NUM_PARAM];
-u32   context_len[NUM_PARAM] = { 1, 1, 6, 16, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2};
+u32   context_len[NUM_PARAM] = { 1, 1, 6, 16, 16, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2};
 
 le_advertising_set_t le_adv_set;
 static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}
-bd_addr_type_t e4(u8 i) {
+int get_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_data){return 1;}
+void done_callback(u8* hash){}
+int get_sc_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_sc_peer_confirm, uint8_t * oob_sc_peer_random){return 1;}
+bool get_ltk_callback(hci_con_handle_t con_handle, uint8_t address_type, bd_addr_t addr, uint8_t * ltk){return true;}
+io_capability_t e5(u8 i) {
+switch(i) {
+case 0: return IO_CAPABILITY_DISPLAY_ONLY;break;
+case 1: return IO_CAPABILITY_DISPLAY_YES_NO;break;
+case 2: return IO_CAPABILITY_KEYBOARD_ONLY;break;
+case 3: return IO_CAPABILITY_NO_INPUT_NO_OUTPUT;break;
+case 4: return IO_CAPABILITY_KEYBOARD_DISPLAY;break;
+default: return IO_CAPABILITY_DISPLAY_ONLY;
+}
+}
+bd_addr_type_t e6(u8 i) {
 switch(i) {
 case 0: return BD_ADDR_TYPE_LE_PUBLIC;break;
 case 1: return BD_ADDR_TYPE_LE_RANDOM;break;
@@ -21,39 +36,44 @@ case 2: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC;break;
 case 3: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM;break;
 case 4: return BD_ADDR_TYPE_SCO;break;
 case 5: return BD_ADDR_TYPE_ACL;break;
+default: return BD_ADDR_TYPE_LE_PUBLIC;
 }
 }
-hci_service_type_t e6(u8 i) {
+hci_service_type_t e8(u8 i) {
 switch(i) {
 case 0: return HCI_SERVICE_TYPE_NO_TRAFFIC;break;
 case 1: return HCI_SERVICE_TYPE_BEST_EFFORT;break;
 case 2: return HCI_SERVICE_TYPE_GUARANTEED;break;
+default: return HCI_SERVICE_TYPE_NO_TRAFFIC;
 }
 }
-gap_security_mode_t e8(u8 i) {
+gap_security_mode_t e10(u8 i) {
 switch(i) {
 case 0: return GAP_SECURITY_MODE_1;break;
 case 1: return GAP_SECURITY_MODE_2;break;
 case 2: return GAP_SECURITY_MODE_3;break;
 case 3: return GAP_SECURITY_MODE_4;break;
+default: return GAP_SECURITY_MODE_1;
 }
 }
-gap_random_address_type_t e9(u8 i) {
+gap_random_address_type_t e11(u8 i) {
 switch(i) {
 case 0: return GAP_RANDOM_ADDRESS_TYPE_STATIC;break;
 case 1: return GAP_RANDOM_ADDRESS_NON_RESOLVABLE;break;
 case 2: return GAP_RANDOM_ADDRESS_RESOLVABLE;break;
+default: return GAP_RANDOM_ADDRESS_TYPE_STATIC;
 }
 }
-gap_security_level_t e10(u8 i) {
+gap_security_level_t e12(u8 i) {
 switch(i) {
 case 0: return LEVEL_0;break;
 case 1: return LEVEL_1;break;
 case 2: return LEVEL_2;break;
 case 3: return LEVEL_3;break;
+default: return LEVEL_0;
 }
 }
-link_key_type_t e11(u8 i) {
+link_key_type_t e13(u8 i) {
 switch(i) {
 case 0: return COMBINATION_KEY;break;
 case 1: return LOCAL_UNIT_KEY;break;
@@ -64,18 +84,21 @@ case 5: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
 case 6: return CHANGED_COMBINATION_KEY;break;
 case 7: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
 case 8: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
+default: return COMBINATION_KEY;
 }
 }
-page_scan_type_t e12(u8 i) {
+page_scan_type_t e14(u8 i) {
 switch(i) {
 case 0: return PAGE_SCAN_MODE_STANDARD;break;
 case 1: return PAGE_SCAN_MODE_INTERLACED;break;
+default: return PAGE_SCAN_MODE_STANDARD;
 }
 }
-hci_role_t e13(u8 i) {
+hci_role_t e15(u8 i) {
 switch(i) {
 case 0: return HCI_ROLE_MASTER;break;
 case 1: return HCI_ROLE_SLAVE;break;
+default: return HCI_ROLE_MASTER;
 }
 }
 void harness_init() {
@@ -114,7 +137,7 @@ void operation4() {
 void operation5() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  hci_role_t _i1 = e13(*(u8*)arg_in[2]);
+  hci_role_t _i1 = e15(*(u8*)arg_in[2]);
   gap_request_role(_i0, _i1);
 }
 
@@ -122,7 +145,7 @@ void operation6() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
   _i0[_s0-1]=0;
-  gap_set_local_name(_i0);
+  gap_set_local_name((char*)_i0);
 }
 
 void operation7() {
@@ -173,7 +196,7 @@ void operation14() {
 }
 
 void operation15() {
-  gap_security_mode_t _i0 = e8(*(u8*)arg_in[0]);
+  gap_security_mode_t _i0 = e10(*(u8*)arg_in[0]);
   gap_set_security_mode(_i0);
 }
 
@@ -182,7 +205,7 @@ void operation16() {
 }
 
 void operation17() {
-  gap_security_level_t _i0 = e10(*(u8*)arg_in[0]);
+  gap_security_level_t _i0 = e12(*(u8*)arg_in[0]);
   gap_set_security_level(_i0);
 }
 
@@ -201,7 +224,7 @@ void operation20() {
 }
 
 void operation21() {
-  gap_security_level_t _i0 = e10(*(u8*)arg_in[0]);
+  gap_security_level_t _i0 = e12(*(u8*)arg_in[0]);
   gap_set_minimal_service_security_level(_i0);
 }
 
@@ -258,17 +281,17 @@ void operation30() {
 }
 
 void operation31() {
-  link_key_type_t _i0 = e11(*(u8*)arg_in[0]);
+  link_key_type_t _i0 = e13(*(u8*)arg_in[0]);
   gap_security_level_for_link_key_type(_i0);
 }
 
 void operation32() {
-  link_key_type_t _i0 = e11(*(u8*)arg_in[0]);
+  link_key_type_t _i0 = e13(*(u8*)arg_in[0]);
   gap_secure_connection_for_link_key_type(_i0);
 }
 
 void operation33() {
-  link_key_type_t _i0 = e11(*(u8*)arg_in[0]);
+  link_key_type_t _i0 = e13(*(u8*)arg_in[0]);
   gap_authenticated_for_link_key_type(_i0);
 }
 
@@ -281,12 +304,12 @@ void operation34() {
 void operation35() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  gap_security_level_t _i1 = e10(*(u8*)arg_in[2]);
+  gap_security_level_t _i1 = e12(*(u8*)arg_in[2]);
   gap_request_security_level(*(hci_con_handle_t*)_i0, _i1);
 }
 
 void operation36() {
-  gap_security_level_t _i0 = e10(*(u8*)arg_in[0]);
+  gap_security_level_t _i0 = e12(*(u8*)arg_in[0]);
   gap_mitm_protection_required_for_security_level(_i0);
 }
 
@@ -299,7 +322,7 @@ void operation37() {
 }
 
 void operation38() {
-  page_scan_type_t _i0 = e12(*(u8*)arg_in[0]);
+  page_scan_type_t _i0 = e14(*(u8*)arg_in[0]);
   gap_set_page_scan_type(_i0);
 }
 
@@ -340,7 +363,7 @@ void operation43() {
 }
 
 void operation44() {
-  gap_random_address_type_t _i0 = e9(*(u8*)arg_in[0]);
+  gap_random_address_type_t _i0 = e11(*(u8*)arg_in[0]);
   gap_random_address_set_mode(_i0);
 }
 
@@ -401,8 +424,8 @@ void operation51() {
 void operation52() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  bd_addr_type_t _i1 = e4(*(u8*)arg_in[2]);
-  bd_addr_type_t _i2 = e4(*(u8*)arg_in[4]);
+  bd_addr_type_t _i1 = e6(*(u8*)arg_in[2]);
+  bd_addr_type_t _i2 = e6(*(u8*)arg_in[4]);
   u8* _i3 = arg_in[6];
   u32 _s3 = *(u32*)arg_in[7];
   u8* _i4 = arg_in[8];
@@ -428,8 +451,8 @@ void operation52() {
 void operation53() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  bd_addr_type_t _i1 = e4(*(u8*)arg_in[2]);
-  bd_addr_type_t _i2 = e4(*(u8*)arg_in[4]);
+  bd_addr_type_t _i1 = e6(*(u8*)arg_in[2]);
+  bd_addr_type_t _i2 = e6(*(u8*)arg_in[4]);
   u8* _i3 = arg_in[6];
   u32 _s3 = *(u32*)arg_in[7];
   u8* _i4 = arg_in[8];
@@ -591,14 +614,14 @@ void operation71() {
 }
 
 void operation72() {
-  bd_addr_type_t _i0 = e4(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_whitelist_add(_i0, _i1);
 }
 
 void operation73() {
-  bd_addr_type_t _i0 = e4(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_whitelist_remove(_i0, _i1);
@@ -611,7 +634,7 @@ void operation74() {
 void operation75() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  bd_addr_type_t _i1 = e4(*(u8*)arg_in[2]);
+  bd_addr_type_t _i1 = e6(*(u8*)arg_in[2]);
   gap_connect(_i0, _i1);
 }
 
@@ -624,14 +647,14 @@ void operation77() {
 }
 
 void operation78() {
-  bd_addr_type_t _i0 = e4(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_auto_connection_start(_i0, _i1);
 }
 
 void operation79() {
-  bd_addr_type_t _i0 = e4(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_auto_connection_stop(_i0, _i1);
@@ -652,7 +675,7 @@ void operation81() {
   u32 _s3 = *(u32*)arg_in[7];
   u8* _i4 = arg_in[8];
   u32 _s4 = *(u32*)arg_in[9];
-  gap_le_set_phy(*(hci_con_handle_t*)_i0, _i1, _i2, _i3, _i4);
+  gap_le_set_phy(*(hci_con_handle_t*)_i0, *_i1, *_i2, *_i3, *_i4);
 }
 
 void operation82() {
@@ -753,7 +776,7 @@ void operation96() {
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   _i1[_s1 - 1] = 0;
-  gap_pin_code_response(_i0, _i1);
+  gap_pin_code_response(_i0, (char*)_i1);
 }
 
 void operation97() {
@@ -761,7 +784,7 @@ void operation97() {
   u32 _s0 = *(u32*)arg_in[1];
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
-  gap_pin_code_response(_i0, _i1, _s1);
+  gap_pin_code_response_binary(_i0, _i1, _s1);
 }
 
 void operation98() {
@@ -811,7 +834,7 @@ void operation104() {
   u32 _s3 = *(u32*)arg_in[7];
   u8* _i4 = arg_in[8];
   u32 _s4 = *(u32*)arg_in[9];
-  gap_ssp_remote_oob_data(_i0, *_i1, *_i2, *_i3, *_i4);
+  gap_ssp_remote_oob_data(_i0, _i1, _i2, _i3, _i4);
 }
 
 void operation105() {
@@ -831,7 +854,7 @@ void operation107() {
   u32 _s0 = *(u32*)arg_in[1];
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
-  link_key_type_t _i2 = e11(*(u8*)arg_in[4]);
+  link_key_type_t _i2 = e13(*(u8*)arg_in[4]);
   gap_send_link_key_response(_i0, _i1, _i2);
 }
 
@@ -870,7 +893,7 @@ void operation110() {
 void operation111() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  hci_service_type_t _i1 = e6(*(u8*)arg_in[2]);
+  hci_service_type_t _i1 = e8(*(u8*)arg_in[2]);
   u8* _i2 = arg_in[4];
   u32 _s2 = *(u32*)arg_in[5];
   u8* _i3 = arg_in[6];
@@ -907,7 +930,7 @@ void operation115() {
 }
 
 void operation116() {
-  bd_addr_type_t _i0 = e4(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_delete_bonding(_i0, _i1);
@@ -919,6 +942,176 @@ void operation117() {
 
 void operation118() {
   gap_get_persistent_irk();
+}
+
+void operation119() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_set_er(_i0);
+}
+
+void operation120() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_set_ir(_i0);
+}
+
+void operation121() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_set_accepted_stk_generation_methods(*(u8*)_i0);
+}
+
+void operation122() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  sm_set_encryption_key_size_range(*(u8*)_i0, *(u8*)_i1);
+}
+
+void operation123() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_set_authentication_requirements(*(u8*)_i0);
+}
+
+void operation124() {
+  io_capability_t _i0 = e5(*(u8*)arg_in[0]);
+  sm_set_io_capabilities(_i0);
+}
+
+void operation125() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_set_secure_connections_only_mode(*_i0);
+}
+
+void operation126() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_set_request_security(*_i0);
+}
+
+void operation127() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_send_security_request(*(hci_con_handle_t*)_i0);
+}
+
+void operation128() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_bonding_decline(*(hci_con_handle_t*)_i0);
+}
+
+void operation129() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_just_works_confirm(*(hci_con_handle_t*)_i0);
+}
+
+void operation130() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_numeric_comparison_confirm(*(hci_con_handle_t*)_i0);
+}
+
+void operation131() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  sm_passkey_input(*(hci_con_handle_t*)_i0, *(u32*)_i1);
+}
+
+void operation132() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  sm_keypress_notification(*(hci_con_handle_t*)_i0, *_i1);
+}
+
+void operation133() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_request_pairing(*(hci_con_handle_t*)_i0);
+}
+
+void operation134() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_authorization_decline(*(hci_con_handle_t*)_i0);
+}
+
+void operation135() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_authorization_grant(*(hci_con_handle_t*)_i0);
+}
+
+void operation136() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_cmac_ready();
+}
+
+void operation137() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  u8* _i4 = arg_in[8];
+  u32 _s4 = *(u32*)arg_in[9];
+  sm_cmac_signed_write_start(_i0, *_i1, *(hci_con_handle_t*)_i2,_s3, _i3, *(u32*)_i3, done_callback);
+}
+
+void operation138() {
+  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  sm_address_resolution_lookup(_i0, _i1);
+}
+
+void operation139() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_identity_resolving_state(*(hci_con_handle_t*)_i0);
+}
+
+void operation140() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_le_device_index(*(hci_con_handle_t*)_i0);
+}
+
+void operation141() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_use_fixed_passkey_in_display_role(*(u32*)_i0);
+}
+
+void operation142() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  sm_allow_ltk_reconstruction_without_le_device_db_entry(*_i0);
+}
+
+void operation143() {
+  sm_generate_sc_oob_data(NULL);
+}
+
+void operation144() {
+  sm_register_sc_oob_data_callback(get_sc_oob_data_callback);
+}
+
+void operation145() {
+  sm_register_ltk_callback(get_sc_oob_data_callback);
 }
 
 typedef void (*fun_ptr)();
@@ -1041,6 +1234,33 @@ fun_ptr FUZZ_LIST[] = {
   &operation115,
   &operation116,
   &operation117,
-  &operation118
+  &operation118,
+  &operation119,
+  &operation120,
+  &operation121,
+  &operation122,
+  &operation123,
+  &operation124,
+  &operation125,
+  &operation126,
+  &operation127,
+  &operation128,
+  &operation129,
+  &operation130,
+  &operation131,
+  &operation132,
+  &operation133,
+  &operation134,
+  &operation135,
+  &operation136,
+  &operation137,
+  &operation138,
+  &operation139,
+  &operation140,
+  &operation141,
+  &operation142,
+  &operation143,
+  &operation144,
+  &operation145
 };
 

@@ -2,10 +2,7 @@
 #include <string>
 #include <vector>
 
-typedef uint8_t  u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef int32_t s32;
+#include "../../include/types.h"
 
 struct Parameter
 {
@@ -25,17 +22,39 @@ struct Operation
     void dump();
 };
 
-// struct Harness
-// {
-//     Operation *op;
-//     std::vector<std::string> headers;
-//     std::vector<std::string> exec;
-//     void dump();
-// };
+#define CORE_OPERATION_NUM 4
+#define CORE_PARAMETER_NUM 5
 
-// extern Parameter param_list[];
 extern std::vector<Parameter*> parameter_list;
 extern std::vector<Operation*> operation_list;
+extern std::string core_parameters[CORE_PARAMETER_NUM];
+extern std::string core_operations[CORE_OPERATION_NUM];
+
+static inline bool is_core_parameter(std::string name)
+{
+    for(std::string& param : core_parameters)
+        if(param == name)
+            return true;
+    return false;
+}
+
+static inline bool is_core_operation(std::string name)
+{
+    for(std::string& op : core_operations)
+        if(op == name)
+            return true;
+    return false;
+}
+
+static inline u32 get_core_parameter_num()
+{
+    return sizeof(core_parameters) / sizeof(std::string);
+}
+
+static inline u32 get_core_operation_num()
+{
+    return sizeof(core_operations) / sizeof(std::string);
+}
 
 cJSON *load_from_file(const char *file);
 void parse_parameters();
@@ -49,7 +68,6 @@ u32 get_parameter_idx(Parameter *param);
 
 Parameter *get_parameter(std::string name);
 Operation *get_operation(std::string name);
-extern "C" void generate_random_operation(u32 idx, u32 seed, u8 *out_buf);
 void parse(const char *file);
 void dump();
 

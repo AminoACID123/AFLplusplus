@@ -1,4 +1,4 @@
-#include "harness.h"
+#include "bt-harness.h"
 #include "bluetooth.h"
 #include "cJSON.h"
 #include <assert.h>
@@ -14,60 +14,20 @@
 
 using namespace std;
 
-// Parameter parameter_list[] = {
-//     {
-//         .name = "DATA"
-//     },
-//     {
-//         .name = "BD_ADDR",
-//         .bytes = 6,
-//         .domain = {
-//                     {(char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA, (char)0xAA},
-//                     {(char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB, (char)0xBB},
-//                     {(char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC, (char)0xCC}
-//                 }
-//     },
-//     {
-//         .name = "HCI_CONN_HANDLE",
-//         .bytes = 2,
-//         .domain = {
-//                     {(char)0, (char)0},
-//                     {(char)1, (char)0},
-//                     {(char)2, (char)0}
-//                 }
-//     },
-//     {
-//         .name = "PHY_HANDLE",
-//         .bytes = 2,
-//         .domain = {
-//                     {(char)0, (char)0},
-//                     {(char)1, (char)0},
-//                     {(char)2, (char)0}
-//                 }
-//     },
-//     {
-//         .name = "BD_ADDR_TYPE",
-//         .bytes = 1,
-//         .domain = {
-//                     {(char)0}, {(char)1}, {(char)2}, {(char)3}, {(char)0xfc}, {(char)0xfd}
-//                 }
-//     },
-//     {
-//         .name = "CID",
-//         .bytes = 2,
-//         .domain = {
-//                     {(char)1, (char)0},
-//                     {(char)2, (char)0},
-//                     {(char)4, (char)0},
-//                     {(char)5, (char)0},
-//                     {(char)6, (char)0},
-//                     {(char)7, (char)0},
-//                     {(char)8, (char)0},
-//                     {(char)9, (char)0},
-//                     {(char)10, (char)0}
-//                 }
-//     }
-// };
+string core_parameters[] = {
+    "bd_addr_t",
+    "hci_con_handle_t",
+    "bd_addr_type_t",
+    "cid",
+    "psm"
+};
+
+string core_operations[] = {
+    "gap_connect",              // bd_addr_t, bd_addr_type_t
+    "gap_disconnect",           // hci_con_handle_t
+    "l2cap_create_channel",     // 
+    "l2cap_register_service"
+};
 
 vector<Parameter *> parameter_list;
 vector<Operation *> operation_list;
@@ -177,12 +137,14 @@ void parse_parameters(cJSON *file)
     cJSON *item, *value, *_byte;
     cJSON *root = cJSON_GetObjectItem(file, "parameters");
     parameter_list.push_back(NULL);
+
     cJSON_ArrayForEach(item, root)
     {
         Parameter *param = new Parameter;
-        cJSON *domain = cJSON_GetObjectItem(item, "domain");
         param->name = cJSON_GetObjectItem(item, "name")->valuestring;
         param->isEnum = cJSON_GetObjectItem(item, "enum")->valueint;
+
+        cJSON *domain = cJSON_GetObjectItem(item, "domain");
         if (param->isEnum)
         {
             param->bytes = 1;
@@ -220,8 +182,7 @@ void parse_operations(cJSON *file)
         cJSON *exec = cJSON_GetObjectItem(op, "exec");
         Operation *operation = new Operation();
         operation->name = cJSON_GetObjectItem(op, "name")->valuestring;
-        printf("%s\n", operation->name.c_str());
-        printf("%d\n", cJSON_GetArraySize(inputs));
+
         cJSON_ArrayForEach(input, inputs)
         {
             operation->inputs.push_back(get_parameter(input->valuestring));
@@ -342,6 +303,7 @@ void payload3(FILE *f)
             fprintf(f, "case %d: return %s;break;\n", c, e.c_str());
             c++;
         }
+        fprintf(f, "default: return %s;\n", param->enum_domain[0].c_str());
         fprintf(f, "}\n}\n");
         }
         i++;
@@ -434,85 +396,29 @@ void generate_harness(const char *file)
     fclose(f);
 }
 
-extern "C" void generate_seeds(const char *dir)
-{
-    struct stat sb;
-    u8 buf[BT_MAX_BUFFER_SIZE];
+// extern "C" void generate_seeds(const char *dir)
+// {
+//     struct stat sb;
+//     u8 buf[BT_MAX_BUFFER_SIZE];
 
-    if (stat(dir, &sb) != 0 || !S_ISDIR(sb.st_mode))
-    {
-        mkdir(dir, S_IRUSR | S_IWUSR);
-    }
+//     if (stat(dir, &sb) != 0 || !S_ISDIR(sb.st_mode))
+//     {
+//         mkdir(dir, S_IRUSR | S_IWUSR);
+//     }
 
-    for (u32 i = 0, n = operation_list.size(); i < n; i++)
-    {
-        char file[512];
-        sprintf(file, "%d", i);
+//     for (u32 i = 0, n = operation_list.size(); i < n; i++)
+//     {
+//         char file[512];
+//         sprintf(file, "%d", i);
 
-        FILE *F = fopen((string(dir) + "/" + file).c_str(), "w");
+//         FILE *F = fopen((string(dir) + "/" + file).c_str(), "w");
 
-        generate_random_operation(i, 0, buf);
+//         generate_random_operation(i, 0, buf);
 
-        fwrite(buf, 1, *(u32*)buf + sizeof(u32), F);
-        fclose(F);
-    }
-}
-
-extern "C" void generate_random_operation(u32 idx, u32 seed, u8 *out_buf)
-{
-    Operation *op = operation_list[idx];
-    u32 arg_in_cnt = op->inputs.size();
-
-    struct operation_header
-    {
-        u32 size;
-        u8 flag;
-        u32 operation_idx;
-        u32 arg_in_cnt;
-    } __attribute__((packed));
-
-    struct parameter_header
-    {
-        u32 arg_idx;
-        u32 arg_len;
-    } __attribute__((packed));
-
-    operation_header *hdr = (operation_header *)out_buf;
-    hdr->flag = OPERATION;
-    hdr->operation_idx = idx;
-    hdr->arg_in_cnt = arg_in_cnt;
-
-    u32 i = sizeof(operation_header);
-    for (Parameter *param : op->inputs)
-    {
-        parameter_header *param_hdr = (parameter_header *)(out_buf + i);
-        if (param->name == "data")
-        {
-            u32 len = (param->bytes == -1 ? 1 + seed % (BT_MAX_PARAM_SIZE-1) : param->bytes);
-            u8* param_buf = new u8[len];
-            param_hdr->arg_len = len;
-            param_hdr->arg_idx = 0;
-            memcpy(out_buf + i + sizeof(parameter_header), param_buf, len);
-            i += (sizeof(parameter_header) + len);
-            delete[] param_buf;
-        }
-        else
-        {
-            param_hdr->arg_idx = get_parameter_idx(param);
-            if (param->isEnum){
-                param_hdr->arg_len = 1;
-                out_buf[i + sizeof(parameter_header)] = seed % param->enum_domain.size();
-            }
-            else{
-                u32 j = seed % param->domain.size();
-                param_hdr->arg_len = param->bytes;
-                memcpy(out_buf + i + sizeof(parameter_header), param->domain[j].data(), param->domain[j].size());
-            }
-            i += (sizeof(parameter_header) + param->bytes);
-        }
-    }
-    hdr->size = i - 4;
-}
+//         fwrite(buf, 1, *(u32*)buf + sizeof(u32), F);
+//         fclose(F);
+//     }
+// }
 
 extern "C" u32 get_total_operation()
 {

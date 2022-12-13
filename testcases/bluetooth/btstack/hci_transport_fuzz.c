@@ -100,7 +100,7 @@ void send_initial_packets(){
     uint8_t packet2[]      =   {0x0E, 0x0C, 0x01, 0x01, 0x10, 0x00, 0x0C, 0xFF, 0xFF, 0x0C, 0xFF, 0xFF, 0xFF, 0xFF};
     uint8_t packet3[254]   =   {0x0E, 0xFC, 0x01, 0x14, 0x0c, 0x00, 'F', 'U', 'Z', 'Z'};
     uint8_t packet4[70]    =   {0x0E, 0x44, 0x01, 0x02, 0x10, 0x00};
-    memset(packet4 + 7, 0xFF, 64);
+    memset(packet4 + 6, 0xFF, 64);
     uint8_t packet5[]      =   {0x0E, 0x0a, 0x01, 0x09, 0x10, 0x00, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
     uint8_t packet6[]      =   {0x0E, 0x0B, 0x01, 0x05, 0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
     uint8_t packet7[]      =   {0x0E, 0x0c, 0x01, 0x03, 0x10, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -150,7 +150,7 @@ void send_initial_packets(){
     fuzz_packet_handler(HCI_EVENT_PACKET, packet21, sizeof(packet21));
     fuzz_packet_handler(HCI_EVENT_PACKET, packet21, sizeof(packet21));
    
-   fuzz_packet_handler(HCI_EVENT_PACKET, packet22, sizeof(packet22));
-   fuzz_packet_handler(HCI_EVENT_PACKET, packet23, sizeof(packet23));
-   fuzz_packet_handler(HCI_EVENT_PACKET, packet24, sizeof(packet24));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet22, sizeof(packet22));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet23, sizeof(packet23));
+    fuzz_packet_handler(HCI_EVENT_PACKET, packet24, sizeof(packet24));
 }

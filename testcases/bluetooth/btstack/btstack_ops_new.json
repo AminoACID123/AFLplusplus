@@ -10,11 +10,7 @@
             "name": "bd_addr_t", 
             "enum": 0,
             "bytes": 6,
-            "domain": [
-                [  0,   0,   0,   0,   0,   0],
-                [170, 170, 170, 170, 170, 170],
-                [187, 187, 187, 187, 187, 187]
-            ]
+            "domain": []
         },
         {
             "name": "link_key_t", 
@@ -24,6 +20,27 @@
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                 [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+            ]
+        },
+        {
+            "name": "sm_key_t", 
+            "enum": 0,
+            "bytes": 16,
+            "domain": [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+            ]
+        },
+        {
+            "name": "io_capability_t", 
+            "enum": 1,
+            "domain": [
+                "IO_CAPABILITY_DISPLAY_ONLY", 
+                "IO_CAPABILITY_DISPLAY_YES_NO",
+                "IO_CAPABILITY_KEYBOARD_ONLY",
+                "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
+                "IO_CAPABILITY_KEYBOARD_DISPLAY"
             ]
         },
         {
@@ -42,7 +59,7 @@
             "name": "hci_con_handle_t", 
             "enum": 0,
             "bytes": 2,
-            "domain": [[1, 0], [2, 0], [3, 0]]
+            "domain": []
         },
         {
             "name": "hci_service_type_t", 
@@ -123,27 +140,23 @@
             "name": "cid",
             "enum": 0, 
             "bytes": 2,
-            "domain": [
-                [1, 0],
-                [2, 0],
-                [3, 0]
-            ]
+            "domain": []
         },
         {
             "name": "psm",
             "enum": 0, 
             "bytes": 2,
-            "domain": [
-                [1, 0],
-                [2, 0],
-                [3, 0]
-            ]
+            "domain": []
         }
     ],
-    "headers" : ["stdlib.h", "gap.h"],
+    "headers" : ["stdlib.h", "gap.h", "ble/sm.h"],
     "static_functions" : [
         "le_advertising_set_t le_adv_set;",
-        "static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}"
+        "static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}",
+        "int get_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_data){return 1;}",
+        "void done_callback(u8* hash){}",
+        "int get_sc_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_sc_peer_confirm, uint8_t * oob_sc_peer_random){return 1;}",
+        "bool get_ltk_callback(hci_con_handle_t con_handle, uint8_t address_type, bd_addr_t addr, uint8_t * ltk){return true;}"
     ],
     "operations": [
         {
@@ -188,7 +201,7 @@
             "outputs": [],
             "exec" : [
                     "$i0[$s0-1]=0;",
-                    "gap_set_local_name($i0);"
+                    "gap_set_local_name((char*)$i0);"
             ]
         },
         {
@@ -741,7 +754,7 @@
             "inputs": ["hci_con_handle_t", "data[1]", "data[1]", "data[1]", "data[1]"],
             "outputs": [],
             "exec": [
-                "gap_le_set_phy(*(hci_con_handle_t*)$i0, $i1, $i2, $i3, $i4);"
+                "gap_le_set_phy(*(hci_con_handle_t*)$i0, *$i1, *$i2, *$i3, *$i4);"
             ]            
         },
         {
@@ -862,7 +875,7 @@
             "outputs": [],
             "exec": [
                 "$i1[$s1 - 1] = 0;",
-                "gap_pin_code_response($i0, $i1);"
+                "gap_pin_code_response($i0, (char*)$i1);"
             ]            
         },
         {
@@ -870,7 +883,7 @@
             "inputs": ["bd_addr_t", "data[1:255]"],
             "outputs": [],
             "exec": [
-                "gap_pin_code_response($i0, $i1, $s1);"
+                "gap_pin_code_response_binary($i0, $i1, $s1);"
             ]            
         },
         {
@@ -926,7 +939,7 @@
             "inputs": ["bd_addr_t", "data[1]", "data[1]", "data[1]", "data[1]"],
             "outputs": [],
             "exec": [
-                "gap_ssp_remote_oob_data($i0, *$i1, *$i2, *$i3, *$i4);"
+                "gap_ssp_remote_oob_data($i0, $i1, $i2, $i3, $i4);"
             ]            
         },
         {
@@ -1046,6 +1059,168 @@
             "exec": [
                 "gap_get_persistent_irk();"
             ]            
-        }
+        },
+        {
+            "name": "sm_set_er",
+            "inputs": ["sm_key_t"],
+            "outputs": [],
+            "exec": ["sm_set_er($i0);"]
+        },
+        {
+            "name": "sm_set_ir",
+            "inputs": ["sm_key_t"],
+            "outputs": [],
+            "exec": ["sm_set_ir($i0);"]
+        },
+        {
+            "name": "sm_set_accepted_stk_generation_methods",
+            "inputs": ["data[1]"],
+            "outputs": [],
+            "exec": ["sm_set_accepted_stk_generation_methods(*(u8*)$i0);"]
+        },    
+        {
+            "name": "sm_set_encryption_key_size_range",
+            "inputs": ["data[1]", "data[1]"],
+            "outputs": [],
+            "exec": ["sm_set_encryption_key_size_range(*(u8*)$i0, *(u8*)$i1);"]
+        },  
+        {
+            "name": "sm_set_authentication_requirements",
+            "inputs": ["data[1]"],
+            "outputs": [],
+            "exec": ["sm_set_authentication_requirements(*(u8*)$i0);"]
+        },  
+        {
+            "name": "sm_set_io_capabilities",
+            "inputs": ["io_capability_t"],
+            "outputs": [],
+            "exec": ["sm_set_io_capabilities($i0);"]
+        },       
+        {
+            "name": "sm_set_secure_connections_only_mode",
+            "inputs": ["bool"],
+            "outputs": [],
+            "exec": ["sm_set_secure_connections_only_mode(*$i0);"]
+        },   
+        {
+            "name": "sm_set_request_security",
+            "inputs": ["bool"],
+            "outputs": [],
+            "exec": ["sm_set_request_security(*$i0);"]
+        },   
+        {
+            "name": "sm_send_security_request",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_send_security_request(*(hci_con_handle_t*)$i0);"]
+        }, 
+        {
+            "name": "sm_bonding_decline",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_bonding_decline(*(hci_con_handle_t*)$i0);"]
+        }, 
+        {
+            "name": "sm_just_works_confirm",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_just_works_confirm(*(hci_con_handle_t*)$i0);"]
+        }, 
+        {
+            "name": "sm_numeric_comparison_confirm",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_numeric_comparison_confirm(*(hci_con_handle_t*)$i0);"]
+        }, 
+        {
+            "name": "sm_passkey_input",
+            "inputs": ["hci_con_handle_t", "data[4]"],
+            "outputs": [],
+            "exec": ["sm_passkey_input(*(hci_con_handle_t*)$i0, *(u32*)$i1);"]
+        },       
+        {
+            "name": "sm_keypress_notification",
+            "inputs": ["hci_con_handle_t", "data[1]"],
+            "outputs": [],
+            "exec": ["sm_keypress_notification(*(hci_con_handle_t*)$i0, *$i1);"]
+        },  
+        {
+            "name": "sm_request_pairing",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_request_pairing(*(hci_con_handle_t*)$i0);"]
+        }, 
+        {
+            "name": "sm_authorization_decline",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_authorization_decline(*(hci_con_handle_t*)$i0);"]
+        }, 
+        {
+            "name": "sm_authorization_grant",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_authorization_grant(*(hci_con_handle_t*)$i0);"]
+        },        
+        {
+            "name": "sm_cmac_ready",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_cmac_ready();"]
+        },   
+        {
+            "name": "sm_cmac_signed_write_start",
+            "inputs": ["sm_key_t", "data[1]", "hci_con_handle_t", "data[1:255]", "data[4]"],
+            "outputs": [],
+            "exec": ["sm_cmac_signed_write_start($i0, *$i1, *(hci_con_handle_t*)$i2,$s3, $i3, *(u32*)$i3, done_callback);"]
+        },  
+        {
+            "name": "sm_address_resolution_lookup",
+            "inputs": ["bd_addr_type_t", "bd_addr_t"],
+            "outputs": [],
+            "exec": ["sm_address_resolution_lookup($i0, $i1);"]
+        },  
+        {
+            "name": "sm_identity_resolving_state",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_identity_resolving_state(*(hci_con_handle_t*)$i0);"]
+        },  
+        {
+            "name": "sm_le_device_index",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["sm_le_device_index(*(hci_con_handle_t*)$i0);"]
+        },  
+        {
+            "name": "sm_use_fixed_passkey_in_display_role",
+            "inputs": ["data[4]"],
+            "outputs": [],
+            "exec": ["sm_use_fixed_passkey_in_display_role(*(u32*)$i0);"]
+        },  
+        {
+            "name": "sm_allow_ltk_reconstruction_without_le_device_db_entry",
+            "inputs": ["bool"],
+            "outputs": [],
+            "exec": ["sm_allow_ltk_reconstruction_without_le_device_db_entry(*$i0);"]
+        },  
+        {
+            "name": "sm_generate_sc_oob_data",
+            "inputs": [],
+            "outputs": [],
+            "exec": ["sm_generate_sc_oob_data(NULL);"]
+        },  
+        {
+            "name": "sm_register_sc_oob_data_callback",
+            "inputs": [],
+            "outputs": [],
+            "exec": ["sm_register_sc_oob_data_callback(get_sc_oob_data_callback);"]
+        },   
+        {
+            "name": "sm_register_ltk_callback",
+            "inputs": [],
+            "outputs": [],
+            "exec": ["sm_register_ltk_callback(get_sc_oob_data_callback);"]
+        }             
     ]
 }
