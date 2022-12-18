@@ -20,15 +20,15 @@ extern "C" void reset_bt_fuzz_state()
 }
 
 u32 BTFuzzState::core_parameter_choose(u8* buf, string name){
-    if(name == "bd_addr_t")
+    if(name == CORE_PARAMETER_BD_ADDR)
         return choose_bd_addr(buf);
-    else if(name == "bd_addr_type_t")
+    else if(name == CORE_PARAMETER_BD_ADDR_TYPE)
         return choose_bd_addr_type(buf);
-    else if(name == "hci_con_handle_t")
+    else if(name == CORE_PARAMETER_HCI_HANDLE)
         return choose_hci_con_handle(buf);
-    else if(name == "psm")
+    else if(name == CORE_PARAMETER_PSM)
         return choose_l2cap_psm(buf);
-    else if(name == "cid")
+    else if(name == CORE_PARAMETER_CID)
         return choose_l2cap_cid(buf);
 }
 
@@ -40,7 +40,7 @@ u32 BTFuzzState::choose_bd_addr(u8* buf)
     auto iter = bd_addr_s.begin();
     for(;n>0;n--) ++iter;
     memcpy(buf, &iter->bd_addr[0], 6);
-    return 6;
+    return CORE_PARAMETER_BD_ADDR_SIZE;
 }
 
 u32 BTFuzzState::choose_bd_addr_type(u8* buf)
@@ -48,7 +48,7 @@ u32 BTFuzzState::choose_bd_addr_type(u8* buf)
     u32 m = sizeof(bd_addr_type_s) / sizeof(bd_addr_type_t);
     u32 n = rand_below(m);
     *buf = bd_addr_type_s[n];
-    return 1;
+    return CORE_PARAMETER_BD_ADDR_TYPE_SIZE;
 }
 
 u32 BTFuzzState::choose_hci_con_handle(u8* buf)
@@ -59,60 +59,118 @@ u32 BTFuzzState::choose_hci_con_handle(u8* buf)
     auto iter = hci_con_handle_m.begin();
     for(;n>0;n--) ++iter;
     memcpy(buf, &iter->first, 2);
-    return 2;
+    return CORE_PARAMETER_HCI_HANDLE_SIZE;
 }
 
 u32 BTFuzzState::choose_l2cap_psm(u8* buf)
 {
-    
+    if(psm_s.empty())
+        return 0;
+    u32 n = rand_below(psm_s.size());
+    auto iter = psm_s.begin();
+    for(;n>0;n--) ++iter;
+    *(u16*)buf = *iter;
+    return CORE_PARAMETER_PSM_SIZE;
 }
 
 u32 BTFuzzState::choose_l2cap_cid(u8* buf)
 {
-    u32 m = l2cap_remote_cid_s.size() + l2cap_local_cid_s.size();
-    if(m == 0) return 0;
-    u32 n = rand_below(m);
-    if(n < l2cap_local_cid_s.size()){
-        auto iter = l2cap_local_cid_s.begin();
-        for(;n>0;n--) ++iter;
-        *(u16*)buf = *iter;
-    }else{
-        n -= l2cap_local_cid_s.size();
-        auto iter = l2cap_remote_cid_s.begin();
-        for(;n>0;n--) ++iter;
-        *(u16*)buf = *iter;
-    }
-    return 2;
+    if(psm_s.empty())
+        return 0;
+    u32 n = rand_below(psm_s.size());
+    auto iter = psm_s.begin();
+    for(;n>0;n--) ++iter;
+    *(u16*)buf = *iter;
+    return CORE_PARAMETER_CID_SIZE;
 }
 
-void BTFuzzState::generate_gap_connect()
+u32 BTFuzzState::generate_gap_connect(u8* buf)
+{
+    bd_addr_t bd_addr;
+    for(u32 i=0;i<6;i++)
+        bd_addr.bd_addr[i] = rand_below(UINT8_MAX);
+    
+    operation_header* op_hdr = (operation_header*)buf;
+    parameter_header* pa_hdr1 = (parameter_header*)(buf + sizeof(operation_header));
+    parameter_header* pa_hdr2 = (parameter_header*)(buf + sizeof(operation_header) + sizeof(parameter_header) + CORE_PARAMETER_BD_ADDR_SIZE);
+    Operation* op = get_operation(CORE_OPERATION_GAP_CONNECT);
+    op_hdr->flag = OPERATION;
+    op_hdr->operation_idx = op->idx;
+    op_hdr->arg_in_cnt = 2;
+    op_hdr->size = CORE_OPERATION_GAP_CONNECT_SIZE;
+    pa_hdr1->arg_idx = get_parameter(CORE_PARAMETER_BD_ADDR)->idx;
+    pa_hdr1->arg_len = CORE_PARAMETER_BD_ADDR_SIZE;
+    pa_hdr2->arg_idx = get_parameter(CORE_PARAMETER_BD_ADDR_TYPE)->idx;
+    pa_hdr2->arg_len = CORE_PARAMETER_BD_ADDR_TYPE_SIZE;
+    memcpy(pa_hdr1->data, &bd_addr.bd_addr[0], 6);
+    choose_bd_addr_type(pa_hdr2->data);
+    pending_con.emplace(bd_addr, *(bd_addr_type_t*)pa_hdr2->data);
+    return op_hdr->size + sizeof(u32);
+}
+
+u32 BTFuzzState::generate_hci_con_complete_event(u8* buf)
 {
 
 }
 
-void BTFuzzState::generate_hci_con_complete_event()
+u32 BTFuzzState::generate_hci_le_con_complete_event(u8* buf)
 {
 
 }
 
-void BTFuzzState::generate_hci_le_con_complete_event()
+u32 BTFuzzState::generate_gap_disconnect(u8* buf)
 {
+    operation_header* op_hdr = (operation_header*)buf;
+    parameter_header* pa_hdr = (parameter_header*)(buf + sizeof(operation_header));
+    Operation* op = get_operation(CORE_OPERATION_GAP_DISCONNECT);
 
+    if(choose_hci_con_handle(&pa_hdr->data[0]) == 0)
+        return 0;
+    op_hdr->flag = OPERATION;
+    op_hdr->arg_in_cnt = 1;
+    op_hdr->operation_idx = op->idx;
+    op_hdr->size = CORE_OPERATION_GAP_DISCONENCT_SIZE;
+
+    pa_hdr->arg_idx = get_parameter(CORE_PARAMETER_HCI_HANDLE)->idx;
+    pa_hdr->arg_len = CORE_PARAMETER_HCI_HANDLE_SIZE;
+    pending_discon.emplace(*(hci_con_handle_t*)pa_hdr->data[0]);
+    return op_hdr->size + sizeof(u32);
 }
 
-void BTFuzzState::generate_gap_disconnect()
-{
+u32 BTFuzzState::generate_l2cap_create_channel(u8* buf)
+{  
+    operation_header* op_hdr = (operation_header*)buf;
+    parameter_header* pa_hdr = (parameter_header*)(buf + sizeof(operation_header));
 
+    if(choose_bd_addr(&pa_hdr->data[0]) == 0)
+        return 0;
+    
+    op_hdr->operation_idx = get_parameter(CORE_OPERATION_L2CAP_REGISTER_SERVICE)->idx;
+    op_hdr->arg_in_cnt = 1;
+    op_hdr->flag = OPERATION;
+    op_hdr->size = CORE_OPERATION_L2CAP_REGISTER_SERVICE_SIZE;
+    pa_hdr->arg_idx = get_parameter(CORE_PARAMETER_BD_ADDR)->idx;
+    pa_hdr->arg_len = CORE_PARAMETER_BD_ADDR_SIZE;
+    return op_hdr->size + sizeof(u32);
 }
 
-void BTFuzzState::generate_l2cap_create_channel()
+u32 BTFuzzState::generate_l2cap_register_service(u8* buf)
 {
+    operation_header* op_hdr = (operation_header*)buf;
+    parameter_header* pa_hdr = (parameter_header*)(buf + sizeof(operation_header));
 
-}
+    u16 psm = rand_below(UINT16_MAX);
 
-void BTFuzzState::generate_l2cap_register_service()
-{
+    op_hdr->flag = OPERATION;
+    op_hdr->arg_in_cnt = 1;
+    op_hdr->operation_idx = get_operation(CORE_OPERATION_L2CAP_REGISTER_SERVICE)->idx;
+    op_hdr->size = CORE_OPERATION_L2CAP_REGISTER_SERVICE_SIZE;
 
+    pa_hdr->arg_idx = get_parameter(CORE_PARAMETER_PSM)->idx;
+    pa_hdr->arg_len = CORE_PARAMETER_PSM_SIZE;
+    *(u16*)pa_hdr->data = psm;
+    psm_s.emplace(psm);
+    return op_hdr->size + sizeof(u32);
 }
 
 extern "C" void generate_random_operation(u8 *out_buf)
@@ -132,18 +190,6 @@ extern "C" void generate_random_operation(u8 *out_buf)
     }
 
     arg_in_cnt = op->inputs.size();
-
-    struct operation_header{
-        u32 size;
-        u8 flag;
-        u32 operation_idx;
-        u32 arg_in_cnt;
-    } __attribute__((packed));
-
-    struct parameter_header{
-        u32 arg_idx;
-        u32 arg_len;
-    } __attribute__((packed));
 
     operation_header *hdr = (operation_header *)out_buf;
     hdr->flag = OPERATION;

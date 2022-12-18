@@ -15,18 +15,18 @@
 using namespace std;
 
 string core_parameters[] = {
-    "bd_addr_t",
-    "hci_con_handle_t",
-    "bd_addr_type_t",
-    "cid",
-    "psm"
+    CORE_PARAMETER_BD_ADDR,
+    CORE_PARAMETER_HCI_HANDLE,
+    CORE_PARAMETER_BD_ADDR_TYPE,
+    CORE_PARAMETER_CID,
+    CORE_PARAMETER_PSM
 };
 
 string core_operations[] = {
-    "gap_connect",              // bd_addr_t, bd_addr_type_t
-    "gap_disconnect",           // hci_con_handle_t
-    "l2cap_create_channel",     // 
-    "l2cap_register_service"
+    CORE_OPERATION_GAP_CONNECT,
+    CORE_OPERATION_GAP_DISCONNECT,       
+    CORE_OPERATION_L2CAP_CREATE_CHANNEL, 
+    CORE_OPERATION_L2CAP_REGISTER_SERVICE
 };
 
 vector<Parameter *> parameter_list;
@@ -134,6 +134,7 @@ void parse_static_functions(cJSON *file)
 
 void parse_parameters(cJSON *file)
 {
+    s32 i = 0;
     cJSON *item, *value, *_byte;
     cJSON *root = cJSON_GetObjectItem(file, "parameters");
     parameter_list.push_back(NULL);
@@ -143,7 +144,6 @@ void parse_parameters(cJSON *file)
         Parameter *param = new Parameter;
         param->name = cJSON_GetObjectItem(item, "name")->valuestring;
         param->isEnum = cJSON_GetObjectItem(item, "enum")->valueint;
-
         cJSON *domain = cJSON_GetObjectItem(item, "domain");
         if (param->isEnum)
         {
@@ -166,6 +166,7 @@ void parse_parameters(cJSON *file)
             }
             param->bytes = cJSON_GetObjectItem(item, "bytes")->valueint;
         }
+        param->idx = (i++);
         parameter_list.push_back(param);
     }
 }
@@ -174,13 +175,15 @@ void parse_operations(cJSON *file)
 {
     cJSON *op;
     cJSON *root = cJSON_GetObjectItem(file, "operations");
+    s32 i = 0;
     cJSON_ArrayForEach(op, root)
     {
         cJSON *input, *output, *str;
         cJSON *inputs = cJSON_GetObjectItem(op, "inputs");
         cJSON *outputs = cJSON_GetObjectItem(op, "outputs");
         cJSON *exec = cJSON_GetObjectItem(op, "exec");
-        Operation *operation = new Operation();
+        Operation *operation = new Operation;
+        operation->idx = (i++);
         operation->name = cJSON_GetObjectItem(op, "name")->valuestring;
 
         cJSON_ArrayForEach(input, inputs)
@@ -364,7 +367,7 @@ void payload4(FILE *f)
     fprintf(f, "};\n\n");
 }
 
-u32 get_operation_idx(Operation *op)
+s32 get_operation_idx(Operation *op)
 {
     for (u32 i = 0, n = operation_list.size(); i < n; i++)
     {
@@ -374,7 +377,7 @@ u32 get_operation_idx(Operation *op)
     return -1;
 }
 
-u32 get_parameter_idx(Parameter *param)
+s32 get_parameter_idx(Parameter *param)
 {
     if(param->name == "data")
         return 0;
@@ -384,7 +387,7 @@ u32 get_parameter_idx(Parameter *param)
             return i;
     }
     assert(false && "Unknown parameter");
-    return 0;
+    return -1;
 }
 
 void generate_harness(const char *file)

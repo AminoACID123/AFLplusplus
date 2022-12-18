@@ -10,7 +10,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-
 typedef u8 bd_addr_type_t;
 typedef u16 hci_con_handle_t;
 
@@ -23,10 +22,11 @@ class BTFuzzState {
   bd_addr_type_t bd_addr_type_s[6] = {0, 1, 2, 3, 4, 5};
   std::map<hci_con_handle_t, std::pair<bd_addr_t, bd_addr_type_t>>
       hci_con_handle_m;
-  std::set<u16> l2cap_local_cid_s;
-  std::set<u16> l2cap_remote_cid_s;
-  std::set<u16> l2cap_local_psm_s;
-  std::set<u16> l2cap_remote_psm_s;
+  std::set<u16> cid_s;
+  std::set<u16> psm_s;
+
+  std::set<std::pair<bd_addr_t, bd_addr_type_t>> pending_con;
+  std::set<hci_con_handle_t> pending_discon;
 
   s32 dev_urandom_fd;
   u64 rand_seed[3];
@@ -48,10 +48,8 @@ public:
   void reset() {
     bd_addr_s.clear();
     hci_con_handle_m.clear();
-    l2cap_local_psm_s.clear();
-    l2cap_remote_psm_s.clear();
-    l2cap_local_cid_s.clear();
-    l2cap_remote_cid_s.clear();
+    psm_s.clear();
+    cid_s.clear();
   }
 
   u32 core_parameter_choose(u8* buf, string name);
@@ -66,17 +64,17 @@ public:
 
   u32 choose_l2cap_cid(u8* buf);
 
-  void generate_gap_connect();
+  u32 generate_gap_connect(u8* buf);
 
-  void generate_hci_con_complete_event();
+  u32 generate_hci_con_complete_event(u8* buf);
 
-  void generate_hci_le_con_complete_event();
+  u32 generate_hci_le_con_complete_event(u8* buf);
 
-  void generate_gap_disconnect();
+  u32 generate_gap_disconnect(u8* buf);
 
-  void generate_l2cap_create_channel();
+  u32 generate_l2cap_create_channel(u8* buf);
 
-  void generate_l2cap_register_service();
+  u32 generate_l2cap_register_service(u8* buf);
 
   u64 rand_next() {
     u64 xp = rand_seed[0];
