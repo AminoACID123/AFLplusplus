@@ -1,103 +1,15 @@
-#ifndef BT_MUTATE_H
-#define BT_MUTATE_H
+#ifndef BT_FUZZ_H
+#define BT_FUZZ_H
 
 #include "../../include/types.h"
+#include "BTFuzzState.h"
 
-#include <fcntl.h>
-#include <map>
-#include <set>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-typedef u8 bd_addr_type_t;
-typedef u16 hci_con_handle_t;
+extern "C" inline void bt_fuzz_reset_state()
+{
+    BTFuzzState::get()->reset();
+}
 
-struct bd_addr_t {u8 bd_addr[6];};
-
-#define ROTL(d, lrot) ((d << (lrot)) | (d >> (8 * sizeof(d) - (lrot))))
-
-class BTFuzzState {
-  std::set<bd_addr_t> bd_addr_s;
-  bd_addr_type_t bd_addr_type_s[6] = {0, 1, 2, 3, 4, 5};
-  std::map<hci_con_handle_t, std::pair<bd_addr_t, bd_addr_type_t>>
-      hci_con_handle_m;
-  std::set<u16> cid_s;
-  std::set<u16> psm_s;
-
-  std::set<std::pair<bd_addr_t, bd_addr_type_t>> pending_con;
-  std::set<hci_con_handle_t> pending_discon;
-
-  s32 dev_urandom_fd;
-  u64 rand_seed[3];
-  u32 rand_cnt;
-
-  static BTFuzzState* bt;
-
-  BTFuzzState() {
-    dev_urandom_fd = open("/dev/urandom", O_RDONLY);
-    read(dev_urandom_fd, &rand_seed, sizeof(rand_seed));
-  }
-
-public:
-  static BTFuzzState* get(){
-    if(!bt) bt = new BTFuzzState();
-    return bt;
-  }
-
-  void reset() {
-    bd_addr_s.clear();
-    hci_con_handle_m.clear();
-    psm_s.clear();
-    cid_s.clear();
-  }
-
-  u32 core_parameter_choose(u8* buf, string name);
-
-  u32 choose_bd_addr(u8* buf);
-
-  u32 choose_bd_addr_type(u8* buf);
-
-  u32 choose_hci_con_handle(u8* buf);
-
-  u32 choose_l2cap_psm(u8* buf);
-
-  u32 choose_l2cap_cid(u8* buf);
-
-  u32 generate_gap_connect(u8* buf);
-
-  u32 generate_hci_con_complete_event(u8* buf);
-
-  u32 generate_hci_le_con_complete_event(u8* buf);
-
-  u32 generate_gap_disconnect(u8* buf);
-
-  u32 generate_l2cap_create_channel(u8* buf);
-
-  u32 generate_l2cap_register_service(u8* buf);
-
-  u64 rand_next() {
-    u64 xp = rand_seed[0];
-    rand_seed[0] = 15241094284759029579u * rand_seed[1];
-    rand_seed[1] = rand_seed[1] - xp;
-    rand_seed[1] = ROTL(rand_seed[1], 27);
-    return xp;
-  }
-
-  u32 rand_below(u32 limit) {
-    if (limit <= 1)
-      return 0;
-    if (unlikely(!rand_cnt--)) {
-      read(dev_urandom_fd, &rand_seed, sizeof(rand_seed));
-      rand_cnt = (100000 / 2) + (rand_seed[1] % 100000);
-    }
-
-    u64 unbiased_rnd;
-    do {
-      unbiased_rnd = rand_next();
-    } while (unlikely(unbiased_rnd >= (UINT64_MAX - (UINT64_MAX % limit))));
-    return unbiased_rnd % limit;
-  }
-};
+extern "C" bool bt_fuzz_one(u8* item_buf, u32* item_len, u8* hci_trace_buf, u32 hci_trace_len, bool reset);
 
 #endif

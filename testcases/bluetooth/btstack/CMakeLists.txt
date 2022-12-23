@@ -2,105 +2,132 @@ cmake_minimum_required (VERSION 3.5)
 
 #set(CMAKE_C_COMPILER wllvm)
 #set(CMAKE_CXX_COMPILER wllvm++)
-set(PROJ_ROOT /home/xaz/Documents/lightblue/btstack)
+set(BTSTACK_ROOT /home/xaz/Documents/lightblue/btstack)
 
-project(BTstack)
+project(BTstack_FUZZ)
 
-include_directories(${PROJ_ROOT}/3rd-party/lc3-google/include)
-include_directories(${PROJ_ROOT}/3rd-party/micro-ecc)
-include_directories(${PROJ_ROOT}/3rd-party/bluedroid/decoder/include)
-include_directories(${PROJ_ROOT}/3rd-party/bluedroid/encoder/include)
-include_directories(${PROJ_ROOT}/3rd-party/md5)
-include_directories(${PROJ_ROOT}/3rd-party/hxcmod-player)
-include_directories(${PROJ_ROOT}/3rd-party/hxcmod-player/mod)
-include_directories(${PROJ_ROOT}/3rd-party/lwip/core/src/include)
-include_directories(${PROJ_ROOT}/3rd-party/lwip/dhcp-server)
-include_directories(${PROJ_ROOT}/3rd-party/rijndael)
-include_directories(${PROJ_ROOT}/3rd-party/yxml)
-include_directories(${PROJ_ROOT}/3rd-party/tinydir)
-include_directories(${PROJ_ROOT}/src)
-include_directories(${PROJ_ROOT}/platform/posix)
-include_directories(${PROJ_ROOT}/platform/embedded)
-include_directories(${PROJ_ROOT}/platform/lwip)
-include_directories(${PROJ_ROOT}/platform/lwip/port)
 include_directories(.)
 
-file(GLOB SOURCES_SRC       ${PROJ_ROOT}/src/*.c ${PROJ_ROOT}/example/sco_demo_util.c)
-file(GLOB SOURCES_BLE       ${PROJ_ROOT}/src/ble/*.c)
-file(GLOB SOURCES_GATT      ${PROJ_ROOT}/src/ble/gatt-service/*.c)
-file(GLOB SOURCES_CLASSIC   ${PROJ_ROOT}/src/classic/*.c)
-file(GLOB SOURCES_MESH      ${PROJ_ROOT}/src/mesh/*.c)
-file(GLOB SOURCES_BLUEDROID ${PROJ_ROOT}/3rd-party/bluedroid/encoder/srce/*.c ${PROJ_ROOT}/3rd-party/bluedroid/decoder/srce/*.c)
-file(GLOB SOURCES_MD5       ${PROJ_ROOT}/3rd-party/md5/md5.c)
-file(GLOB SOURCES_UECC      ${PROJ_ROOT}/3rd-party/micro-ecc/uECC.c)
-file(GLOB SOURCES_YXML      ${PROJ_ROOT}/3rd-party/yxml/yxml.c)
-file(GLOB SOURCES_HXCMOD    ${PROJ_ROOT}/3rd-party/hxcmod-player/*.c  ${PROJ_ROOT}/3rd-party/hxcmod-player/mods/*.c)
-file(GLOB SOURCES_RIJNDAEL  ${PROJ_ROOT}/3rd-party/rijndael/rijndael.c)
-file(GLOB SOURCES_POSIX     ${PROJ_ROOT}/platform/posix/*.c)
-file(GLOB SOURCES_LIBUSB    ${PROJ_ROOT}/port/libusb/*.c ${PROJ_ROOT}/platform/libusb/*.c)
+include_directories(${BTSTACK_ROOT}/3rd-party/micro-ecc)
+include_directories(${BTSTACK_ROOT}/3rd-party/bluedroid/decoder/include)
+include_directories(${BTSTACK_ROOT}/3rd-party/bluedroid/encoder/include)
+include_directories(${BTSTACK_ROOT}/3rd-party/lc3-google/include)
+include_directories(${BTSTACK_ROOT}/3rd-party/md5)
+include_directories(${BTSTACK_ROOT}/3rd-party/hxcmod-player)
+include_directories(${BTSTACK_ROOT}/3rd-party/hxcmod-player/mod)
+include_directories(${BTSTACK_ROOT}/3rd-party/lwip/core/src/include)
+include_directories(${BTSTACK_ROOT}/3rd-party/lwip/dhcp-server)
+include_directories(${BTSTACK_ROOT}/3rd-party/rijndael)
+include_directories(${BTSTACK_ROOT}/3rd-party/yxml)
+include_directories(${BTSTACK_ROOT}/3rd-party/tinydir)
+include_directories(${BTSTACK_ROOT}/src)
+include_directories(${BTSTACK_ROOT}/chipset/bcm)
+include_directories(${BTSTACK_ROOT}/chipset/csr)
+include_directories(${BTSTACK_ROOT}/chipset/cc256x)
+include_directories(${BTSTACK_ROOT}/chipset/em9301)
+include_directories(${BTSTACK_ROOT}/chipset/realtek)
+include_directories(${BTSTACK_ROOT}/chipset/tc3566x)
+include_directories(${BTSTACK_ROOT}/chipset/stlc2500d)
+include_directories(${BTSTACK_ROOT}/chipset/zephyr)
+include_directories(${BTSTACK_ROOT}/platform/embedded)
+include_directories(${BTSTACK_ROOT}/platform/lwip)
+include_directories(${BTSTACK_ROOT}/platform/lwip/port)
+include_directories(${BTSTACK_ROOT}/platform/posix)
+
+file(GLOB SOURCES_SRC       "${BTSTACK_ROOT}/src/*.c" "${BTSTACK_ROOT}/example/sco_demo_util.c")
+file(GLOB SOURCES_BLE       "${BTSTACK_ROOT}/src/ble/*.c")
+file(GLOB SOURCES_BLUEDROID "${BTSTACK_ROOT}/3rd-party/bluedroid/encoder/srce/*.c" "${BTSTACK_ROOT}/3rd-party/bluedroid/decoder/srce/*.c")
+file(GLOB SOURCES_CLASSIC   "${BTSTACK_ROOT}/src/classic/*.c")
+file(GLOB SOURCES_MESH      "${BTSTACK_ROOT}/src/mesh/*.c")
+file(GLOB SOURCES_GATT      "${BTSTACK_ROOT}/src/ble/gatt-service/*.c")
+file(GLOB SOURCES_UECC      "${BTSTACK_ROOT}/3rd-party/micro-ecc/uECC.c")
+file(GLOB SOURCES_HXCMOD    "${BTSTACK_ROOT}/3rd-party/hxcmod-player/*.c"  "${BTSTACK_ROOT}/3rd-party/hxcmod-player/mods/*.c")
+file(GLOB SOURCES_MD5       "${BTSTACK_ROOT}/3rd-party/md5/md5.c")
+file(GLOB SOURCES_RIJNDAEL  "${BTSTACK_ROOT}/3rd-party/rijndael/rijndael.c")
+file(GLOB SOURCES_YXML      "${BTSTACK_ROOT}/3rd-party/yxml/yxml.c")
+file(GLOB SOURCES_POSIX     "${BTSTACK_ROOT}/platform/posix/*.c")
+file(GLOB SOURCES_BCM       "${BTSTACK_ROOT}/chipset/bcm/*.c")
+file(GLOB SOURCES_CSR       "${BTSTACK_ROOT}/chipset/csr/*.c")
+file(GLOB SOURCES_EM9301    "${BTSTACK_ROOT}/chipset/em9301/*.c")
+file(GLOB SOURCES_STLC2500D "${BTSTACK_ROOT}/chipset/stlc2500d/*.c")
+file(GLOB SOURCES_TC2566X   "${BTSTACK_ROOT}/chipset/tc3566x/*.c")
+file(GLOB SOURCES_REALTEK   "${BTSTACK_ROOT}/chipset/realtek/*.c")
+file(GLOB SOURCES_ZEPHYR    "${BTSTACK_ROOT}/chipset/zephyr/*.c")
+file(GLOB SOURCES_LC3_GOOGLE "${BTSTACK_ROOT}/3rd-party/lc3-google/src/*.c")
+
 
 set(LWIP_CORE_SRC
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/def.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/inet_chksum.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/init.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/ip.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/mem.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/memp.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/netif.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/pbuf.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/tcp.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/tcp_in.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/tcp_out.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/timeouts.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/udp.c
-        )
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/def.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/inet_chksum.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/init.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ip.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/mem.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/memp.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/netif.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/pbuf.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp_in.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/tcp_out.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/timeouts.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/udp.c
+		)
 set (LWIP_IPV4_SRC
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/ipv4/acd.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/ipv4/dhcp.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/ipv4/etharp.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/ipv4/icmp.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4_addr.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4_frag.c
-        )
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/acd.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/dhcp.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/etharp.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/icmp.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4_addr.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/core/ipv4/ip4_frag.c
+		)
 set (LWIP_NETIF_SRC
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/netif/ethernet.c
-        )
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/netif/ethernet.c
+		)
 set (LWIP_HTTPD
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/apps/http/altcp_proxyconnect.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/apps/http/fs.c
-        ${PROJ_ROOT}/3rd-party/lwip/core/src/apps/http/httpd.c
-        )
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/altcp_proxyconnect.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/fs.c
+		${BTSTACK_ROOT}/3rd-party/lwip/core/src/apps/http/httpd.c
+		)
 set (LWIP_DHCPD
-       ${PROJ_ROOT}/3rd-party/lwip/dhcp-server/dhserver.c
-        )
+		${BTSTACK_ROOT}/3rd-party/lwip/dhcp-server/dhserver.c
+		)
 set (LWIP_PORT
-        ${PROJ_ROOT}/platform/lwip/port/sys_arch.c
-        ${PROJ_ROOT}/platform/lwip/bnep_lwip.c
-        )
-
+		${BTSTACK_ROOT}/platform/lwip/port/sys_arch.c
+		${BTSTACK_ROOT}//platform/lwip/bnep_lwip.c
+		)
 set (SOURCES_LWIP ${LWIP_CORE_SRC} ${LWIP_IPV4_SRC} ${LWIP_NETIF_SRC} ${LWIP_HTTPD} ${LWIP_DHCPD} ${LWIP_PORT})
 
-file(GLOB SOURCES_BLE_OFF ${PROJ_ROOT}/src/ble/le_device_db_memory.c)
+file(GLOB SOURCES_BLE_OFF "${BTSTACK_ROOT}/src/ble/le_device_db_memory.c")
 list(REMOVE_ITEM SOURCES_BLE   ${SOURCES_BLE_OFF})
 
-file(GLOB SOURCES_POSIX_OFF ${PROJ_ROOT}/platform/posix/le_device_db_fs.c)
-list(REMOVE_ITEM SOURCES_POSIX ${SOURCES_POSIX_OFF})
+file(GLOB SOURCES_POSIX_OFF "${BTSTACK_ROOT}/platform/posix/le_device_db_fs.c")
+list(REMOVE_ITEM SOURCES_POSIX   ${SOURCES_POSIX_OFF})
 
 set(SOURCES
-        ${SOURCES_MD5}
-        ${SOURCES_YXML}
-        ${SOURCES_BLUEDROID}
-        ${SOURCES_POSIX}
-        ${SOURCES_RIJNDAEL}
-        ${SOURCES_SRC}
-        ${SOURCES_BLE}
-        ${SOURCES_GATT}
-        ${SOURCES_MESH}
-        ${SOURCES_CLASSIC}
-        ${SOURCES_UECC}
-        ${SOURCES_HXCMOD}
-        )
+		${SOURCES_BLE}
+		${SOURCES_BCM}
+		${SOURCES_BLUEDROID}
+		${SOURCES_CLASSIC}
+		${SOURCES_CSR}
+		${SOURCES_EM9301}
+		${SOURCES_GATT}
+		${SOURCES_HXCMOD}
+		${SOURCES_HXCMOD}
+		${SOURCES_LIBUSB}
+		${SOURCES_MD5}
+		${SOURCES_MESH}
+		${SOURCES_PORT}
+		${SOURCES_REALTEK}
+		${SOURCES_RIJNDAEL}
+		${SOURCES_SRC}
+		${SOURCES_CSR}
+		${SOURCES_STLC2500D}
+		${SOURCES_TC2566X}
+		${SOURCES_UECC}
+		${SOURCES_POSIX}
+		${SOURCES_YXML}
+		${SOURCES_ZEPHYR}
+)
 list(SORT SOURCES)
 
 add_compile_options( -g -O0 )

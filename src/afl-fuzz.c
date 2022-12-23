@@ -1856,7 +1856,7 @@ int main(int argc, char **argv_orig, char **envp) {
 
   init_stack_hci(afl->bc_file);
 
-  read_testcases(afl, NULL);
+  // read_testcases(afl, NULL);
   // read_foreign_testcases(afl, 1); for the moment dont do this
   OKF("Loaded a total of %u seeds.", afl->queued_items);
 
@@ -2199,46 +2199,48 @@ afl->disable_trim = 1;
 
   // ensure we have at least one seed that is not disabled.
   u32 entry, valid_seeds = 0;
-  for (entry = 0; entry < afl->queued_items; ++entry)
-    if (!afl->queue_buf[entry]->disabled) { ++valid_seeds; }
+  // for (entry = 0; entry < afl->queued_items; ++entry)
+  //   if (!afl->queue_buf[entry]->disabled) { ++valid_seeds; }
 
-  if (!afl->pending_not_fuzzed || !valid_seeds) {
+  // if (!afl->pending_not_fuzzed || !valid_seeds) {
 
-  #ifdef __linux__
-    if (afl->fsrv.nyx_mode) {
+  // #ifdef __linux__
+  //   if (afl->fsrv.nyx_mode) {
 
-      afl->fsrv.nyx_handlers->nyx_shutdown(afl->fsrv.nyx_runner);
+  //     afl->fsrv.nyx_handlers->nyx_shutdown(afl->fsrv.nyx_runner);
 
-    }
+  //   }
 
-  #endif
-    FATAL("We need at least one valid input seed that does not crash!");
+  // #endif
+  //   FATAL("We need at least one valid input seed that does not crash!");
 
-  }
+  // }
 
-  if (afl->timeout_given == 2) {  // -t ...+ option
+  // if (afl->timeout_given == 2) {  // -t ...+ option
 
-    if (valid_seeds == 1) {
+  //   if (valid_seeds == 1) {
 
-      WARNF(
-          "Only one valid seed is present, auto-calculating the timeout is "
-          "disabled!");
-      afl->timeout_given = 1;
+  //     WARNF(
+  //         "Only one valid seed is present, auto-calculating the timeout is "
+  //         "disabled!");
+  //     afl->timeout_given = 1;
 
-    } else {
+  //   } else {
 
-      u64 max_ms = 0;
+  //     u64 max_ms = 0;
 
-      for (entry = 0; entry < afl->queued_items; ++entry)
-        if (!afl->queue_buf[entry]->disabled)
-          if (afl->queue_buf[entry]->exec_us > max_ms)
-            max_ms = afl->queue_buf[entry]->exec_us;
+  //     for (entry = 0; entry < afl->queued_items; ++entry)
+  //       if (!afl->queue_buf[entry]->disabled)
+  //         if (afl->queue_buf[entry]->exec_us > max_ms)
+  //           max_ms = afl->queue_buf[entry]->exec_us;
 
-      afl->fsrv.exec_tmout = max_ms;
+  //     afl->fsrv.exec_tmout = max_ms;
 
-    }
+  //   }
 
-  }
+  // }
+
+  afl->fsrv.exec_tmout = 3000;
 
   show_init_stats(afl);
 
@@ -2505,7 +2507,7 @@ afl->disable_trim = 1;
 
     do {
 
-      if (likely(!afl->old_seed_selection)) {
+      if (likely(!afl->old_seed_selection && afl->queue_cur)) {
 
         if (unlikely(prev_queued_items < afl->queued_items ||
                      afl->reinit_table)) {

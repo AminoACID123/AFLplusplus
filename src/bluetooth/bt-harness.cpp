@@ -14,21 +14,6 @@
 
 using namespace std;
 
-string core_parameters[] = {
-    CORE_PARAMETER_BD_ADDR,
-    CORE_PARAMETER_HCI_HANDLE,
-    CORE_PARAMETER_BD_ADDR_TYPE,
-    CORE_PARAMETER_CID,
-    CORE_PARAMETER_PSM
-};
-
-string core_operations[] = {
-    CORE_OPERATION_GAP_CONNECT,
-    CORE_OPERATION_GAP_DISCONNECT,       
-    CORE_OPERATION_L2CAP_CREATE_CHANNEL, 
-    CORE_OPERATION_L2CAP_REGISTER_SERVICE
-};
-
 vector<Parameter *> parameter_list;
 vector<Operation *> operation_list;
 // vector<Harness *> harness_list;

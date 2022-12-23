@@ -1221,6 +1221,12 @@
             "inputs": [],
             "outputs": [],
             "exec": ["sm_register_ltk_callback(get_sc_oob_data_callback);"]
-        }             
+        },
+        {
+            "name": "l2cap_create_channel",
+            "inputs": ["bd_addr_t", "data[4]"],
+            "outputs": [],
+            "exec": ["sm_register_ltk_callback(get_sc_oob_data_callback);"]
+        }     
     ]
 }

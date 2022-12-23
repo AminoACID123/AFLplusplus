@@ -441,7 +441,7 @@ afl-as: src/afl-as.c include/afl-as.h $(COMM_HDR) | test_x86
 	$(CC) $(CFLAGS) src/$@.c -o $@ $(LDFLAGS)
 	@ln -sf afl-as as
 
-libaflbluetooth.so: src/bluetooth/bt-fuzz.cpp src/bluetooth/bt-harness.cpp src/bluetooth/bt-stack-analyze.cpp src/bluetooth/cJSON.c
+libaflbluetooth.so: src/bluetooth/bt-fuzz.cpp src/bluetooth/BTFuzzState.cpp src/bluetooth/bt-harness.cpp src/bluetooth/bt-stack-analyze.cpp src/bluetooth/cJSON.c
 	$(CXX) -fPIC -Iinclude -I$(LLVM_INCLUDE_DIR) -I$(LLVM_BIN_INCLUDE_DIR) -L$(LLVM_LIB_DIR) -shared -O0 -g $^ -o $@  $(LLVM_LIBS) -ltinfo
 
 src/afl-performance.o : $(COMM_HDR) src/afl-performance.c include/hash.h

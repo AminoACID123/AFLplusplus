@@ -822,7 +822,7 @@ void read_testcases(afl_state_t *afl, u8 *directory) {
       sprintf(file, "%s/%d",afl->in_dir, i);
       FILE* f = fopen(file, "w");
       u8 buf[BT_MAX_BUFFER_SIZE];
-      generate_random_operation(i, rand_below(afl, RAND_MAX), buf);
+      generate_random_operation(i, buf);
       fwrite(buf, 1, (*(u32*)buf) + 4, f);
       fclose(f);
     }

@@ -318,7 +318,7 @@ void bt_mutator_insert_operation(afl_state_t *afl, u8 **buf, u32 *len) {
   u32 insert_len;
   u32 insert_to = 0;
 
-  generate_random_operation(idx, seed, temp_buf);
+  generate_random_operation(idx, temp_buf);
   insert_len = item->size + sizeof(item->size);
   if(*len + insert_len > MAX_FILE) return;
 

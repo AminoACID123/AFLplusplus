@@ -71,4 +71,23 @@ typedef struct __attribute__((packed)) {
   u8 param[0];
 } hci_evt_hdr_t;
 
+struct item_header{
+    u32 size;
+    u8 flag;
+    u8 data[0];
+}__attribute__((packed));
+
+struct operation_header{
+    u32 size;
+    u8 flag;
+    u32 operation_idx;
+    u32 arg_in_cnt;
+} __attribute__((packed));
+
+struct parameter_header{
+    u32 arg_idx;
+    u32 arg_len;
+    u8  data[0];
+} __attribute__((packed));
+
 #endif
