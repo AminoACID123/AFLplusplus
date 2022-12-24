@@ -36,7 +36,7 @@ int main(int argc, const char * argv[]){
     //     execute_one(buf + 1, len - 1);
     // }
 
-char* buf = __AFL_FUZZ_TESTCASE_BUF;
+unsigned char* buf = __AFL_FUZZ_TESTCASE_BUF;
    int len = __AFL_FUZZ_TESTCASE_LEN;
 
 //char buf[2048];

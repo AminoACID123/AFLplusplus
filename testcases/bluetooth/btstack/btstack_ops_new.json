@@ -156,7 +156,8 @@
         "int get_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_data){return 1;}",
         "void done_callback(u8* hash){}",
         "int get_sc_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_sc_peer_confirm, uint8_t * oob_sc_peer_random){return 1;}",
-        "bool get_ltk_callback(hci_con_handle_t con_handle, uint8_t address_type, bd_addr_t addr, uint8_t * ltk){return true;}"
+        "bool get_ltk_callback(hci_con_handle_t con_handle, uint8_t address_type, bd_addr_t addr, uint8_t * ltk){return true;}",
+        "void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){}"
     ],
     "operations": [
         {
@@ -1224,9 +1225,15 @@
         },
         {
             "name": "l2cap_create_channel",
-            "inputs": ["bd_addr_t", "data[4]"],
+            "inputs": ["bd_addr_t", "psm"],
             "outputs": [],
-            "exec": ["sm_register_ltk_callback(get_sc_oob_data_callback);"]
+            "exec": ["l2cap_create_channel(packet_handler, $i0, *(u16*)$i1, __afl_area3_ptr);"]
+        },
+        {
+            "name": "l2cap_register_service",
+            "inputs": ["psm", "gap_security_level_t"],
+            "outputs": [],
+            "exec": ["l2cap_create_channel(packet_handler, *(u16*)$i0, 100, $i1);"]
         }     
     ]
 }

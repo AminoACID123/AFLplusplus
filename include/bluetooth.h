@@ -1,6 +1,7 @@
-#ifndef BLUETOOTH_H
-#define BLUETOOTH_H
+#ifndef _HAVE_BLUETOOTH_H
+#define _HAVE_BLUETOOTH_H
 #include "types.h"
+
 /* Bluetooth related Macros */
 #define OPERATION 0x06
 #define HCI_COMMAND_DATA_PACKET 0x01
@@ -11,8 +12,10 @@
 
 #define BT_MAX_HCI_EVT_SIZE 255
 #define BT_MAX_PARAM_SIZE 128
-#define BT_MAX_BUFFER_SIZE BT_MAX_PARAM_SIZE * 16
+#define BT_MAX_BUFFER_SIZE 1024*1024
 #define BT_MAX_ITEM_COUNT 64
+
+#define BT_MAX_SHM_SIZE 1024*1024
 
 /**
  * @format 12R
@@ -71,23 +74,23 @@ typedef struct __attribute__((packed)) {
   u8 param[0];
 } hci_evt_hdr_t;
 
-struct item_header{
+typedef struct __attribute__((packed)){
     u32 size;
     u8 flag;
     u8 data[0];
-}__attribute__((packed));
+} item_header ;
 
-struct operation_header{
+typedef struct __attribute__((packed)){
     u32 size;
     u8 flag;
     u32 operation_idx;
     u32 arg_in_cnt;
-} __attribute__((packed));
+} operation_header;
 
-struct parameter_header{
+typedef struct  __attribute__((packed)){
     u32 arg_idx;
     u32 arg_len;
     u8  data[0];
-} __attribute__((packed));
+} parameter_header;
 
 #endif

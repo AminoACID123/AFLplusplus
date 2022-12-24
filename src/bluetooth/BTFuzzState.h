@@ -18,34 +18,6 @@ struct bd_addr_t {u8 bd_addr[6];};
 
 #define ROTL(d, lrot) ((d << (lrot)) | (d >> (8 * sizeof(d) - (lrot))))
 
-#define CORE_OPERATION_NUM 4
-#define CORE_PARAMETER_NUM 5
-
-#define OPSIZE(nr) sizeof(operation_header) + nr * sizeof(parameter_header) -sizeof(u32) 
-
-#define CORE_PARAMETER_BD_ADDR                  "bd_addr_t"
-#define CORE_PARAMETER_BD_ADDR_SIZE             6
-#define CORE_PARAMETER_HCI_HANDLE               "hci_con_handle_t"
-#define CORE_PARAMETER_HCI_HANDLE_SIZE          2
-#define CORE_PARAMETER_BD_ADDR_TYPE             "bd_addr_type_t"
-#define CORE_PARAMETER_BD_ADDR_TYPE_SIZE        1
-#define CORE_PARAMETER_CID                      "cid"
-#define CORE_PARAMETER_CID_SIZE                 2
-#define CORE_PARAMETER_PSM                      "psm"
-#define CORE_PARAMETER_PSM_SIZE                 2
-
-#define CORE_OPERATION_GAP_CONNECT                    "gap_connect"           // bd_addr_t, bd_addr_type_t
-#define CORE_OPERATION_GAP_CONNECT_SIZE               OPSIZE(2) + CORE_PARAMETER_BD_ADDR_SIZE + CORE_PARAMETER_BD_ADDR_TYPE_SIZE
-#define CORE_OPERATION_GAP_CONNECT_CANCEL             "gap_connect_cancel"
-#define CORE_OPERATION_GAP_CONNECT_CANCEL_SIZE        OPSIZE(0)
-#define CORE_OPERATION_GAP_DISCONNECT                 "gap_disconnect"       // hci_con_handle_t
-#define CORE_OPERATION_GAP_DISCONENCT_SIZE            OPSIZE(1) + CORE_PARAMETER_HCI_HANDLE_SIZE
-#define CORE_OPERATION_L2CAP_CREATE_CHANNEL           "l2cap_create_channel"     // bd_addr, psm
-#define CORE_OPERATION_L2CAP_CREATE_CHANNEL_SIZE      OPSIZE(2) + CORE_PARAMETER_BD_ADDR_SIZE + CORE_PARAMETER_PSM_SIZE
-#define CORE_OPERATION_L2CAP_REGISTER_SERVICE         "l2cap_register_service"     //psm
-#define CORE_OPERATION_L2CAP_REGISTER_SERVICE_SIZE    OPSIZE(1) + CORE_PARAMETER_PSM_SIZE
-
-
 #define L2CAP_CID_SIGNALING                        0x0001
 #define L2CAP_CID_CONNECTIONLESS_CHANNEL           0x0002
 #define L2CAP_CID_ATTRIBUTE_PROTOCOL               0x0004
@@ -70,8 +42,7 @@ struct bd_addr_t {u8 bd_addr[6];};
 #define BLUETOOTH_PSM_LE_PSM_IPSP                                                        0x0023
 #define BLUETOOTH_PSM_OTS                                                                0x0025
 
-extern std::string core_parameters[CORE_PARAMETER_NUM];
-extern std::string core_operations[CORE_OPERATION_NUM];
+
 
 class BTFuzzState {
   std::set<bd_addr_t> bd_addr_s;

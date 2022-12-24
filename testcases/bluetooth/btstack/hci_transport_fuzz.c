@@ -1,11 +1,13 @@
 #include "btstack_run_loop.h"
 #include "hci_cmd.h"
 #include "hci_transport.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../../../include/config.h"
+#include "../../../include/bluetooth.h"
 
-extern char* __afl_area2_ptr;
+extern u8* __afl_area2_ptr;
 int log_ptr;
 void (*fuzz_packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size);
 
@@ -43,11 +45,16 @@ static int hci_transport_fuzz_send_packet(uint8_t packet_type, uint8_t * packet,
 
     print_packet(packet_type, packet, size);
 
-    *(int*)(__afl_area2_ptr + log_ptr) = size + 1;
-    log_ptr += 4;
-    __afl_area2_ptr[log_ptr++] = packet_type;
-    memcpy(__afl_area2_ptr + log_ptr, packet, size);
-    log_ptr += size;
+    // *(int*)(__afl_area2_ptr + log_ptr) = size + 1;
+    // log_ptr += 4;
+    // __afl_area2_ptr[log_ptr++] = packet_type;
+    // memcpy(__afl_area2_ptr + log_ptr, packet, size);
+    // log_ptr += size;
+
+    item_header* item = (struct item_header*)__afl_area2_ptr;
+    item->size = size + 1;
+    item->flag = packet_type;
+    memcpy(&item->data[0], packet, size);
 
     static const uint8_t packet_sent_event[] = { HCI_EVENT_TRANSPORT_PACKET_SENT, 0};
     fuzz_packet_handler(HCI_EVENT_PACKET, (uint8_t *) &packet_sent_event[0], sizeof(packet_sent_event));

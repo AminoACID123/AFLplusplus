@@ -94,6 +94,7 @@ static u8 *__afl_area_ptr_backup = __afl_area_initial;
 
 u8        *__afl_area_ptr = __afl_area_initial;
 u8        *__afl_area2_ptr = __afl_area_initial;
+u8        *__afl_area3_ptr = __afl_area_initial;
 u8        *__afl_dictionary;
 u8        *__afl_fuzz_ptr;
 static u32 __afl_fuzz_len_dummy;
@@ -284,11 +285,14 @@ static void __afl_map_shm(void) {
   if (!__afl_area_ptr) {
     __afl_area_ptr = __afl_area_ptr_dummy;
     __afl_area2_ptr = __afl_area_ptr_dummy;
+    __afl_area3_ptr = __afl_area_ptr_dummy;
   }
 
   char *id_str = getenv(SHM_ENV_VAR);
 
   char *id_str2 = getenv(SHM2_ENV_VAR);
+
+  char *id_str3 = getenv(SHM3_ENV_VAR);
 
   if (__afl_final_loc) {
 
@@ -487,6 +491,10 @@ static void __afl_map_shm(void) {
     if(id_str2){
       u32 shm2_id = atoi(id_str2);
       __afl_area2_ptr = (u8 *)shmat(shm2_id, NULL, 0);
+    }
+    if(id_str3){
+      u32 shm3_id = atoi(id_str3);
+      __afl_area3_ptr = (u8 *)shmat(shm3_id, NULL, 0);
     }
 
 
@@ -2326,6 +2334,7 @@ void __afl_coverage_off() {
 
     __afl_area_ptr = __afl_area_ptr_dummy;
     __afl_area2_ptr = __afl_area_ptr_dummy;
+    __afl_area3_ptr = __afl_area_ptr_dummy;  
     __afl_cmp_map = NULL;
 
   }
@@ -2339,6 +2348,7 @@ void __afl_coverage_on() {
 
     __afl_area_ptr = __afl_area_ptr_backup;
     __afl_area2_ptr = __afl_area_ptr_backup;
+    __afl_area3_ptr = __afl_area_ptr_backup;
     if (__afl_cmp_map_backup) { __afl_cmp_map = __afl_cmp_map_backup; }
 
   }

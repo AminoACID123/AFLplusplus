@@ -217,6 +217,9 @@ u32 BTFuzzState::generate_l2cap_create_channel(u8* buf)
 
     pa_hdr1->arg_idx = get_parameter(CORE_PARAMETER_BD_ADDR)->idx;
     pa_hdr1->arg_len = CORE_PARAMETER_BD_ADDR_SIZE;
+    pa_hdr2->arg_idx = get_parameter(CORE_PARAMETER_PSM)->idx;
+    pa_hdr2->arg_len = CORE_PARAMETER_PSM_SIZE;
+    
     return op_hdr->size + sizeof(u32);
 }
 

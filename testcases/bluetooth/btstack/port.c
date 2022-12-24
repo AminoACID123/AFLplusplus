@@ -51,9 +51,9 @@ void execute_api(u8 *buf, u32 size) {
 
   u32 harness_idx = *(u32*)(buf + 1);
 
-  *(u32*)(__afl_area2_ptr + log_ptr) = 1;
-  log_ptr += 4;
-  __afl_area2_ptr[log_ptr++] = OPERATION;
+  // *(u32*)(__afl_area2_ptr + log_ptr) = 1;
+  // log_ptr += 4;
+  // __afl_area2_ptr[log_ptr++] = OPERATION;
 
   u32 arg_in_count, arg_out_count;
 
@@ -100,9 +100,9 @@ void execute_hci(u8* hci_packet_in, u32 size){
         default:
             return;
     }
-    *(u32*)(__afl_area2_ptr + log_ptr) = size;
-    log_ptr += 4;
-    memcpy(__afl_area2_ptr + log_ptr, hci_packet_in, size);
+    // *(u32*)(__afl_area2_ptr + log_ptr) = size;
+    // log_ptr += 4;
+    // memcpy(__afl_area2_ptr + log_ptr, hci_packet_in, size);
     log_ptr += size;
 
     fuzz_packet_handler(hci_packet_in[0], &hci_packet_in[1], packet_len-1);

@@ -83,6 +83,7 @@ typedef struct afl_forkserver {
 
   u8 *trace_bits;                       /* SHM with instrumentation bitmap  */
   u8 *trace_bits2;                      /* SHM showing bluetooth HCI trace  */
+  u8* trace_bits3;
   
   bool start;  /* Is forkserver sending the first item of an input sequence?*/
 

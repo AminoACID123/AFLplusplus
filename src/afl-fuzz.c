@@ -2026,6 +2026,12 @@ int main(int argc, char **argv_orig, char **envp) {
   afl->shm2.map = shmat(afl->shm2.shm_id, NULL, 0);
   afl->fsrv.trace_bits2 = afl->shm2.map;
 
+  afl->shm3.shm_id = shmget(IPC_PRIVATE, 1024, IPC_CREAT | IPC_EXCL | DEFAULT_PERMISSION);
+  shm_str = alloc_printf("%d", afl->shm3.shm_id);
+  setenv(SHM3_ENV_VAR, shm_str, 1);
+  afl->shm3.map = shmat(afl->shm3.shm_id, NULL, 0);
+  afl->fsrv.trace_bits3 = afl->shm3.map;
+
   if (!afl->non_instrumented_mode && !afl->fsrv.qemu_mode &&
       !afl->unicorn_mode && !afl->fsrv.frida_mode && !afl->fsrv.cs_mode &&
       !afl->afl_env.afl_skip_bin_check) {
