@@ -2,11 +2,12 @@
 #define BT_MUTATE_H
 
 #include "../../include/types.h"
-
+#include "Operation.h"
 #include <fcntl.h>
 #include <map>
 #include <set>
 #include <string>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -24,6 +25,7 @@ struct bd_addr_t {u8 bd_addr[6];};
 #define L2CAP_CID_SIGNALING_LE                     0x0005
 #define L2CAP_CID_SECURITY_MANAGER_PROTOCOL        0x0006
 #define L2CAP_CID_BR_EDR_SECURITY_MANAGER          0x0007
+#define FIXED_CID(cid) (cid >= L2CAP_CID_SIGNALING && cid <= L@L2CAP_CID_BR_EDR_SECURITY_MANAGER)
 
 #define BLUETOOTH_PSM_SDP                                                                0x0001
 #define BLUETOOTH_PSM_RFCOMM                                                             0x0003
@@ -41,14 +43,12 @@ struct bd_addr_t {u8 bd_addr[6];};
 #define BLUETOOTH_PSM_3DSP                                                               0x0021
 #define BLUETOOTH_PSM_LE_PSM_IPSP                                                        0x0023
 #define BLUETOOTH_PSM_OTS                                                                0x0025
-
+#define FIXED_PSM(psm) ((psm % 2 == 1) && ((psm <= BLUETOOTH_PSM_TCS_BIN_CORDLESS) || (psm >= BLUETOOTH_PSM_BNEP && psm <= BLUETOOTH_PSM_OTS)))
 
 
 class BTFuzzState {
-  std::set<bd_addr_t> bd_addr_s;
-  bd_addr_type_t bd_addr_type_s[6] = {0, 1, 2, 3, 4, 5};
   std::map<hci_con_handle_t, std::pair<bd_addr_t, bd_addr_type_t>>
-      hci_con_handle_m;
+      con_s;
   std::set<u16> cid_s;
   std::set<u16> psm_s;
 
@@ -58,9 +58,18 @@ class BTFuzzState {
 
   static BTFuzzState* bt;
 
-  BTFuzzState() {
-    dev_urandom_fd = open("/dev/urandom", O_RDONLY);
-    read(dev_urandom_fd, &rand_seed, sizeof(rand_seed));
+  // BTFuzzState() {
+  //   dev_urandom_fd = open("/dev/urandom", O_RDONLY);
+  //   read(dev_urandom_fd, &rand_seed, sizeof(rand_seed));
+  // }
+  BTFuzzState();
+
+  bool connected(bd_addr_t& addr){
+    for(auto con : hci_con_handle_m){
+      if(memcmp(con.second.first.bd_addr, addr.bd_addr, CORE_PARAMETER_BD_ADDR_SIZE)==0)
+        return true;
+    }
+    return false;
   }
 
 public:
@@ -71,31 +80,33 @@ public:
 
   void reset();
 
-  u32 core_parameter_choose(u8* buf, std::string name);
+  Parameter* generate_core_parameter(Parameter*);
 
-  u32 choose_bd_addr(u8* buf);
+  Parameter* generate_bd_addr();
 
-  u32 choose_bd_addr_type(u8* buf);
+  Parameter* generate_bd_addr_type();
 
-  u32 choose_hci_con_handle(u8* buf);
+  Parameter* generate_hci_con_handle();
 
-  u32 choose_l2cap_psm(u8* buf);
+  Parameter* generate_l2cap_psm();
 
-  u32 choose_l2cap_cid(u8* buf);
+  Parameter* generate_l2cap_cid();
 
-  u32 generate_gap_connect(u8* buf);
+  Operation* generate_gap_connect();
 
-  u32 generate_gap_connect_cancel(u8* buf);
+  Operation* generate_gap_connect_cancel();
 
-  u32 generate_hci_con_complete_event(u8* buf);
+  Operation* generate_hci_con_complete_event();
 
-  u32 generate_hci_le_con_complete_event(u8* buf);
+  Operation* generate_hci_le_con_complete_event();
 
-  u32 generate_gap_disconnect(u8* buf);
+  Operation* generate_gap_disconnect();
 
-  u32 generate_l2cap_create_channel(u8* buf);
+  Operation* generate_l2cap_create_channel();
 
-  u32 generate_l2cap_register_service(u8* buf);
+  Operation* generate_l2cap_register_service();
+
+  Operation* generate_random_operation(u32, bool);
 
   u64 rand_next() {
     u64 xp = rand_seed[0];
@@ -118,6 +129,13 @@ public:
       unbiased_rnd = rand_next();
     } while (unlikely(unbiased_rnd >= (UINT64_MAX - (UINT64_MAX % limit))));
     return unbiased_rnd % limit;
+  }
+
+  void rand_fill(u8* buf, u32 size){
+    for(u32 i=0;i<size/sizeof(u32);i++)
+      *((u32*)buf + i) = rand_below(UINT32_MAX);
+    for(u32 i=0;i<size%sizeof(u32);i++)
+      buf[size - i - 1] = rand_below(UINT8_MAX);
   }
 };
 

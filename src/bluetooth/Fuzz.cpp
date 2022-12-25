@@ -1,11 +1,12 @@
-#include "bt-fuzz.h"
+
 
 #include <assert.h>
 
 #include <vector>
 
 #include "../../include/bluetooth.h"
-#include "bt-harness.h"
+#include "BTFuzzState.h"
+#include "Operation.h"
 
 using namespace std;
 

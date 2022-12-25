@@ -1,6 +1,6 @@
 #include "Operation.h"
-#include "CoreOperation.h"
 #include "../../include/bluetooth.h"
+#include <string.h>
 #include <string>
 #include <set>
 
@@ -36,6 +36,21 @@ u32 Operation::size()
     return n;
 }
 
+void Operation::serialize(u8* buf)
+{
+    item_header* item = (item_header*)buf;
+    operation_header* op = (operation_header*)&item->data[0];
+    parameter_header* param = (parameter_header*)&op->data[0];
+    item->size = size();
+    op->flag = OPERATION;
+
+    for(Parameter* p : inputs){
+        param->len = p->bytes;
+        memcpy(param->data, p->data, p->bytes);
+        param = (parameter_header*)&param->data[param->len];
+    }
+}
+
 Parameter *get_parameter(string name)
 {
     if (name.find("data") == 0)
@@ -68,6 +83,13 @@ Operation* get_operation(string name)
     return nullptr;
 }
 
+Operation* get_operation(u32 id)
+{
+    for(Operation& op : operations)
+        if(op.id == id)
+            return &op;
+    return nullptr;
+}
 
 void init_parameters()
 {
@@ -98,8 +120,24 @@ void init_operations()
     operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_PSM));    
 
     //psm, gap_security_level
-    operations.push_back(Operation(CORE_OPERATION_L2CAP_CREATE_CHANNEL, true));
+    operations.push_back(Operation(CORE_OPERATION_L2CAP_REGISTER_SERVICE, true));
     operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_PSM)); 
     operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_SECURITY_LEVEL));       
+}
+
+Operation* deserialize(u8* buf)
+{
+    item_header* item = (item_header*)buf;
+    operation_header* oph = (operation_header*)item->data;
+    parameter_header* ph = (parameter_header*)oph->data;
+    Operation* op = get_operation(oph->id);
+    if(!op) return nullptr;
+
+    for(Parameter* p : op->inputs){
+        p->bytes = ph->len;
+        memcpy(p->data, ph->data, p->bytes);
+        ph++;
+    }
+    return op;
 }
 
