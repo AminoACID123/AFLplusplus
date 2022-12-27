@@ -32,64 +32,74 @@
  */
 #define HCI_EVENT_COMMAND_STATUS 0x0Fu
 
-struct hci_event_header {
-  u8 opcode;
-  u8 parameter_len;
-  u8 paramters[0];
-} __attribute__((packed));
-
-struct hci_event_command_complete {
-  u8  num_hci_command_packets;
-  u16 command_opcode;
-  u8  return_parameters[0];
-} __attribute__((packed));
-
-struct hci_event_command_status {
-  u8  status;
-  u8  num_hci_command_packets;
-  u16 command_opcode;
-} __attribute__((packed));
-
-typedef struct __attribute__((packed)) {
-  u32 size;
-  u8  flag;  // Operation, HCI_EVT, ACL_DATA
-  u8  payload[0];
-} item_hdr_t;
-
-typedef struct __attribute__((packed)) {
-  u32 param_idx;
-  u32 param_len;
-  u8  data[0];
-} parameter_t;
-
-typedef struct __attribute__((packed)) {
-  u32       op_idx;
-  u32       param_cnt;
-  u8        param[0];
-} operation_hdr_t;
-
-typedef struct __attribute__((packed)) {
-  u8 opcode;
-  u8 len;
-  u8 param[0];
-} hci_evt_header;
-
 typedef struct __attribute__((packed)){
     u32 size;
-    u8 flag;
     u8 data[0];
-} item_header ;
+} item_t ;
 
 typedef struct __attribute__((packed)){
     u8 flag;
     u32 id;
     u32 params;
     u8 data[0];
-} operation_header;
+} operation_t;
 
-typedef struct  __attribute__((packed)){
+typedef struct  __attribute__((packed)) {
     u32 len;
     u8  data[0];
-} parameter_header;
+} parameter_t;
+
+typedef struct __attribute__((packed)) {
+  u8 flag;
+  u8 opcode;
+  u8 len;
+  u8 param[0];
+} hci_event_t;
+
+typedef struct __attribute__((packed)) {
+  u8 flag;
+  u16 opcode;
+  u8 len;
+  u8 param[0];
+} hci_command_t;
+
+typedef struct __attribute__((packed)) {
+  u8 flag;
+  u16 handle;
+  u16 len;
+  u8 data[0];
+} hci_acl_t;
+
+typedef struct __attribute__((packed)) {
+  u8  pkts;
+  u16 opcode;
+  u8  param[0];
+} hci_event_command_complete;
+
+typedef struct __attribute__((packed)) {
+  u8  status;
+  u8  pkts;
+  u16 opcode;
+} hci_event_command_status ;
+
+
+#define BT_ItemForEach(item, array, size) for(item=(item_t*)array;(u8*)item-(u8*)array<size;item=(item_t*)&item->data[item->size])
+
+static inline u32 bt_item_nr(u8* buf, u32 size){
+  u32 n = 0;
+  item_t* pItem;
+  BT_ItemForEach(pItem, buf, size){n++;}
+  return n;
+}
+
+static inline item_t* bt_item_at(u8* buf, u32 size, u32 i){
+  item_t* pItem;
+  BT_ItemForEach(pItem, buf, size){
+    if(i-- == 0)
+      return pItem;
+  }
+  return NULL;
+}
+
 
 #endif

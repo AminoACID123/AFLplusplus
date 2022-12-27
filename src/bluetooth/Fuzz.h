@@ -10,6 +10,6 @@ extern "C" inline void bt_fuzz_reset_state()
     BTFuzzState::get()->reset();
 }
 
-extern "C" bool bt_fuzz_one(u8* item_buf, u32* item_len, u8* hci_trace_buf, u32 hci_trace_len, bool reset);
+extern "C" u32 bt_fuzz_one(u8* items, u32 size, u8* out1, u8* out2, bool reset, u8* state);
 
 #endif

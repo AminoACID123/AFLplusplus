@@ -64,141 +64,131 @@ extern "C" void reset_bt_fuzz_state()
 
 BTFuzzState::BTFuzzState()
 {
-    dev_urandom_fd = open("/dev/urandom", O_RDONLY);
-    read(dev_urandom_fd, &rand_seed, sizeof(rand_seed));
+    reset();
+}
+
+u32 BTFuzzState::serialize(u8* buf)
+{
+    item_t* pItem = (item_t*)buf;
+    // Serialize Connection States
+    pItem->size = sizeof(hci_con) * vCon.size();
+    memcpy(pItem->data, vCon.data(), pItem->size);
+
+    // Serialize Cids
+    pItem = (item_t*)&pItem->data[pItem->size];
+    pItem->size = sizeof(u16) * vCid.size();
+    memcpy(pItem->data, vCid.data(), pItem->size);
+
+    // Serialize Psms
+    pItem = (item_t*)&pItem->data[pItem->size];
+    pItem->size = sizeof(u16) * vPsm.size();
+    memcpy(pItem->data, vPsm.data(), pItem->size);
+
+    return &pItem->data[pItem->size] - buf;
+}
+
+void BTFuzzState::deserialize(u8* buf)
+{
+    reset();
+    // Deserialize Connection States
+    item_t* pItem = (item_t*)buf;
+    hci_con* pCon = (hci_con*)pItem->data;
+    while((u8*)pCon - pItem->data < pItem->size){
+        vCon.push_back(*pCon);
+        pCon++;
+    }
+
+    // Deserialize Cids
+    pItem = (item_t*)&pItem->data[pItem->size];
+    u16 * pCid = (u16*)pItem->data;
+    while((u8*)pCid - pItem->data < pItem->size){
+        vCid.push_back(*pCid);
+        sCid.insert(*pCid);
+        pCid++;
+    }
+
+    // Deserialize Psms
+    pItem = (item_t*)&pItem->data[pItem->size];
+    u16 * pPsm = (u16*)pItem->data;
+    while((u8*)pPsm - pItem->data < pItem->size){
+        vPsm.push_back(*pPsm);
+        sPsm.insert(*pPsm);
+        pPsm++;
+    }
 }
 
 void BTFuzzState::reset(){
-    con_s.clear();
-    psm_s.clear();
-    psm_s.insert(psm_fixed.begin(), psm_fixed.end());
-    cid_s.clear();
-    cid_s.insert(cid_fixed.begin(), cid_fixed.end());
-}
+    vCon.clear();
+    if(Parameter* pCon = get_parameter(CORE_PARAMETER_HCI_HANDLE)){
+        pCon->domain.clear();
+    }
 
-Parameter* BTFuzzState::generate_core_parameter(Parameter* p){
-    if(p->name == CORE_PARAMETER_HCI_HANDLE)
-        return generate_hci_con_handle();
-    else if(p->name == CORE_PARAMETER_PSM)
-        return generate_l2cap_psm();
-    else if(p->name == CORE_PARAMETER_CID)
-        return generate_l2cap_cid();
-    else
-        return p;
-}
+    sPsm.clear();
+    vPsm.clear();
+    sPsm.insert(psm_fixed.begin(), psm_fixed.end());
+    vPsm.insert(vPsm.begin(), psm_fixed.begin(), psm_fixed.end());
+    if(Parameter* pPsm = get_parameter(CORE_PARAMETER_PSM)){
+        pPsm->domain.clear();
+        for(u16 psm : sPsm){
+            pPsm->domain.insert(bytes2vec(psm));
+        }
+    }
 
-Parameter* BTFuzzState::generate_hci_con_handle()
-{
-    if(con_s.empty())
-        return nullptr;
-
-    u32 n = rand_below(con_s.size());
-    Parameter* p = get_parameter(CORE_PARAMETER_HCI_HANDLE);
-    auto iter = con_s.begin();
-    for(;n>0;n--) ++iter;
-    *(u16*)p->data = iter->first;
-    return p;
-}
-
-Parameter* BTFuzzState::generate_l2cap_psm()
-{
-    u32 n = rand_below(psm_s.size());
-    Parameter* p = get_parameter(CORE_PARAMETER_PSM);
-    auto iter = psm_s.begin();
-    for(;n>0;n--) ++iter;
-    *(u16*)p->data = *iter;
-    return p;
-}
-
-Parameter* BTFuzzState::generate_l2cap_cid()
-{
-    u32 n = rand_below(psm_s.size());
-    Parameter* p = get_parameter(CORE_PARAMETER_CID);
-    auto iter = psm_s.begin();
-    for(;n>0;n--) ++iter;
-    *(u16*)p->data = *iter;
-    return p;
-}
-
-Operation* BTFuzzState::generate_gap_connect()
-{
-    // bd_addr, bd_addr_type
-    Operation* op = get_operation(CORE_OPERATION_GAP_CONNECT);
-    Parameter* bd_addr = op->param(0);
-    Parameter* bd_addr_type = op->param(1);    
-    memcpy(bd_addr->data, addr.bd_addr, CORE_PARAMETER_BD_ADDR_SIZE);
-    memcpy(bd_addr_type->data, &type, CORE_PARAMETER_BD_ADDR_TYPE_SIZE);
-    return op;
-}
-
-Operation* BTFuzzState::generate_gap_connect_cancel()
-{
-    return get_operation(CORE_OPERATION_GAP_CONNECT_CANCEL);
-}
-
-u32 BTFuzzState::generate_hci_con_complete_event(u8* buf)
-{
-
-}
-
-u32 BTFuzzState::generate_hci_le_con_complete_event(u8* buf)
-{
-
-}
-
-Operation* BTFuzzState::generate_gap_disconnect()
-{
-    Operation* op = get_operation(CORE_OPERATION_GAP_DISCONNECT);
-    return generate_hci_con_handle() ? op : nullptr;
-}
-
-Operation* BTFuzzState::generate_l2cap_create_channel()
-{  
-    // bd_addr, psm
-    Operation* op = get_operation(CORE_OPERATION_L2CAP_CREATE_CHANNEL);
-    generate_bd_addr();
-    generate_l2cap_psm();
-    return op;
-}
-
-Operation* BTFuzzState::generate_l2cap_register_service()
-{
-    //psm, security_level
-    u16 psm;
-    u8 level = rand_below(security_level.size());
-    Operation* op = get_operation(CORE_OPERATION_L2CAP_REGISTER_SERVICE);
-    Parameter* pPsm = op->param(0);
-    Parameter* pLevel = op->param(1);
-
-    while(psm_s.find(psm) != psm_s.end()) 
-        psm = rand_below(UINT16_MAX);
-
-    *(u16*)pPsm->data = psm;
-    *pLevel->data = level;
-    psm_s.emplace(psm);
-    return op;
-}
-
-Operation* BTFuzzState::generate_random_operation(u32 id, bool sema)
-{
-    Operation* op = get_operation(id);
-    for (Parameter *p : op->inputs)
-    {
-       j if(sema && generate_core_parameter(p) == nullptr)
-            return nullptr;
-        else if(p->isEnum)
-            p->data[0] = rand_below(p->enum_domain.size());
-        else if(!p->domain.empty()){
-            u32 i = rand_below(p->domain.size());
-            memcpy(p->data, p->domain[i].data(), p->bytes);
-        }else{
-            if(p->max_bytes == p->min_bytes)
-                p->bytes = p->max_bytes;
-            else
-                p->bytes = p->min_bytes + rand_below(p->max_bytes-p->min_bytes);
-            rand_fill(p->data, p->bytes);
+    sCid.clear();
+    vCid.clear();
+    sCid.insert(cid_fixed.begin(), cid_fixed.end());
+    vCid.insert(vCid.begin(), cid_fixed.begin(), cid_fixed.end());
+    if(Parameter* pCid = get_parameter(CORE_PARAMETER_CID)){
+        pCid->domain.clear();
+        for(u16 cid : sCid){
+            pCid->domain.insert(bytes2vec(cid));
         }
     }
 }
 
+/// @brief Given an input item sequence and its corresponding output, append one new item to the sequence
+/// @param items Input item sequence
+/// @param size Size of \param items
+/// @param out1 HCI output buffer
+/// @param out2 API return values
+u32 BTFuzzState::step_one(u8* items, u32 size, u8* hci, u8* rt)
+{
 
+}
+
+void BTFuzzState::handle_cmd(hci_command_t* cmd)
+{
+
+}
+
+void BTFuzzState::handle_evt(hci_event_t* evt)
+{
+    
+}
+
+void BTFuzzState::handle_op(operation_t* op)
+{
+    Operation* pOp = get_operation(op->id);
+    if(pOp->name == CORE_OPERATION_L2CAP_CREATE_CHANNEL)
+        handle_op_l2cap_create_channel(op);
+}
+
+void BTFuzzState::handle_evt_con_complete(hci_event_t* evt)
+{
+
+}
+
+void BTFuzzState::handle_evt_le_con_complete(hci_event_t* evt)
+{
+
+}
+
+void BTFuzzState::handle_op_l2cap_register_service(operation_t* op)
+{
+
+}
+
+void BTFuzzState::handle_op_l2cap_create_channel(operation_t* op)
+{
+
+}

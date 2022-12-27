@@ -94,7 +94,7 @@ void parse_parameters(cJSON *file)
             param.bytes = 1;
             cJSON_ArrayForEach(value, domain)
             {
-                param.enum_domain.push_back(value->valuestring);
+                param.enum_domain.insert(value->valuestring);
             }
         }
         else
@@ -106,21 +106,13 @@ void parse_parameters(cJSON *file)
                 {
                     temp.push_back(_byte->valueint);
                 }
-                param.domain.push_back(temp);
+                param.domain.insert(temp);
             }
             param.bytes = cJSON_GetObjectItem(item, "bytes")->valueint;
         }
-        if (Parameter *p = get_parameter(param.name))
-        {
-            if (param.isEnum)
-                p->enum_domain.insert(p->enum_domain.begin(), param.enum_domain.begin(), param.enum_domain.end());
-        }
-        else
-            parameters.push_back(param);
-    }
-
-    for(Parameter param : parameters)
         param.id = i++;
+        parameters.push_back(param);
+    }
 }
 
 void parse_operations(cJSON *file)
@@ -252,12 +244,12 @@ void payload3(FILE *f)
             u32 c = 0;
             fprintf(f, "%s e%d(u8 i) {\n", param.name.c_str(), param.id);
             fprintf(f, "switch(i) {\n");
-            for (string &e : param.enum_domain)
+            for (string e : param.enum_domain)
             {
                 fprintf(f, "case %d: return %s;break;\n", c, e.c_str());
                 c++;
             }
-            fprintf(f, "default: return %s;\n", param.enum_domain[0].c_str());
+            fprintf(f, "default: return %s;\n", param.enum_domain.begin()->c_str());
             fprintf(f, "}\n}\n");
         }
     }

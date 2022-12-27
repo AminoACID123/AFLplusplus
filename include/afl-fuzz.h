@@ -764,6 +764,8 @@ typedef struct afl_state {
    * is too large) */
   struct queue_entry **q_testcase_cache;
 
+  bool bt;
+
   #define STAGE_API 0
   #define STAGE_FULL 1
 

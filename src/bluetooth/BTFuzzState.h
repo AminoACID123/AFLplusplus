@@ -12,12 +12,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-typedef u8 bd_addr_type_t;
-typedef u16 hci_con_handle_t;
-
-struct bd_addr_t {u8 bd_addr[6];};
-
-#define ROTL(d, lrot) ((d << (lrot)) | (d >> (8 * sizeof(d) - (lrot))))
 
 #define L2CAP_CID_SIGNALING                        0x0001
 #define L2CAP_CID_CONNECTIONLESS_CHANNEL           0x0002
@@ -47,30 +41,26 @@ struct bd_addr_t {u8 bd_addr[6];};
 
 
 class BTFuzzState {
-  std::map<hci_con_handle_t, std::pair<bd_addr_t, bd_addr_type_t>>
-      con_s;
-  std::set<u16> cid_s;
-  std::set<u16> psm_s;
 
-  s32 dev_urandom_fd;
-  u64 rand_seed[3];
-  u32 rand_cnt;
+  struct hci_con{
+    u8 addr[6];
+    u8 type;
+  }__attribute__((packed));
+
+  std::set<u16> sCid;
+  std::set<u16> sPsm;
+
+  std::vector<hci_con> vCon;
+  std::vector<u16> vCid;
+  std::vector<u16> vPsm;
+
+  bool sema;
 
   static BTFuzzState* bt;
 
-  // BTFuzzState() {
-  //   dev_urandom_fd = open("/dev/urandom", O_RDONLY);
-  //   read(dev_urandom_fd, &rand_seed, sizeof(rand_seed));
-  // }
   BTFuzzState();
 
-  bool connected(bd_addr_t& addr){
-    for(auto con : hci_con_handle_m){
-      if(memcmp(con.second.first.bd_addr, addr.bd_addr, CORE_PARAMETER_BD_ADDR_SIZE)==0)
-        return true;
-    }
-    return false;
-  }
+  void update();
 
 public:
   static BTFuzzState* get(){
@@ -78,65 +68,30 @@ public:
     return bt;
   }
 
+  u32 serialize(u8*);
+
+  void deserialize(u8*);
+
   void reset();
 
-  Parameter* generate_core_parameter(Parameter*);
+  void enable_sema(bool s) { sema = s;}
 
-  Parameter* generate_bd_addr();
+  u32 step_one(u8*, u32, u8*, u8*);
 
-  Parameter* generate_bd_addr_type();
+  void handle_cmd(hci_command_t*);
 
-  Parameter* generate_hci_con_handle();
+  void handle_evt(hci_event_t*);
 
-  Parameter* generate_l2cap_psm();
+  void handle_op(operation_t*);
 
-  Parameter* generate_l2cap_cid();
+  void handle_evt_con_complete(hci_event_t*);
 
-  Operation* generate_gap_connect();
+  void handle_evt_le_con_complete(hci_event_t*);
 
-  Operation* generate_gap_connect_cancel();
+  void handle_op_l2cap_register_service(operation_t*);
 
-  Operation* generate_hci_con_complete_event();
+  void handle_op_l2cap_create_channel(operation_t*);
 
-  Operation* generate_hci_le_con_complete_event();
-
-  Operation* generate_gap_disconnect();
-
-  Operation* generate_l2cap_create_channel();
-
-  Operation* generate_l2cap_register_service();
-
-  Operation* generate_random_operation(u32, bool);
-
-  u64 rand_next() {
-    u64 xp = rand_seed[0];
-    rand_seed[0] = 15241094284759029579u * rand_seed[1];
-    rand_seed[1] = rand_seed[1] - xp;
-    rand_seed[1] = ROTL(rand_seed[1], 27);
-    return xp;
-  }
-
-  u32 rand_below(u32 limit) {
-    if (limit <= 1)
-      return 0;
-    if (unlikely(!rand_cnt--)) {
-      read(dev_urandom_fd, &rand_seed, sizeof(rand_seed));
-      rand_cnt = (100000 / 2) + (rand_seed[1] % 100000);
-    }
-
-    u64 unbiased_rnd;
-    do {
-      unbiased_rnd = rand_next();
-    } while (unlikely(unbiased_rnd >= (UINT64_MAX - (UINT64_MAX % limit))));
-    return unbiased_rnd % limit;
-  }
-
-  void rand_fill(u8* buf, u32 size){
-    for(u32 i=0;i<size/sizeof(u32);i++)
-      *((u32*)buf + i) = rand_below(UINT32_MAX);
-    for(u32 i=0;i<size%sizeof(u32);i++)
-      buf[size - i - 1] = rand_below(UINT8_MAX);
-  }
 };
 
 #endif

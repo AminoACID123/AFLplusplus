@@ -6,6 +6,7 @@
 
 #include "../../include/bluetooth.h"
 #include "../../include/types.h"
+#include "Util.h"
 
 struct Parameter
 {
@@ -22,15 +23,13 @@ struct Parameter
 
     u32 offset;
 
-    std::vector<std::vector<u8>> domain;
-    std::vector<std::string> enum_domain;
+    std::set<std::vector<u8>> domain;
+    std::set<std::string> enum_domain;
 
     Parameter(){}
     Parameter(std::string _name, s32 _bytes):name(_name), bytes(_bytes){}
 
-    bool operator < (Parameter& other) const {
-        return name < other.name;
-    }
+    bool generate();
 };
 
 struct Operation
@@ -47,15 +46,18 @@ struct Operation
 
     void serialize(u8*);
 
-    Parameter* param(u32 i){
-        assert(i < inputs.size());
-        return inputs[i];
-    }
-
     Operation() {}
     Operation(std::string _name, bool _isCore): name(_name), isCore(_isCore){}
+
+    bool generate() {
+        bool res = true;
+        for(Parameter* p : inputs)
+           res = res && p->generate();
+        return res;
+    }
 };
 
+#define PARAMETER_BYTEARRAY  "data"
 
 #define CORE_PARAMETER_HCI_HANDLE               "hci_con_handle_t"
 #define CORE_PARAMETER_HCI_HANDLE_SIZE          2
@@ -95,10 +97,9 @@ Parameter *get_parameter(std::string name);
 Operation *get_operation(std::string name);
 Operation *get_operation(u32 id);
 
+void deseralize(u8*);
+
 void init_parameters();
 void init_operations();
-
-void define_operation(char* name, ...);
-void define_parameter(char* name, ...);
 
 #endif /* E5CFB89A_8548_4207_AE2F_2E5BE70F3909 */

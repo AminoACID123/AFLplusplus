@@ -1,4 +1,5 @@
 #include "Operation.h"
+#include "Util.h"
 #include "../../include/bluetooth.h"
 #include <string.h>
 #include <string>
@@ -20,17 +21,19 @@ set<string> core_operations =
 
 set<string> core_parameters = 
 {
-    CORE_PARAMETER_BD_ADDR,
     CORE_PARAMETER_HCI_HANDLE,
-    CORE_PARAMETER_BD_ADDR_TYPE,
     CORE_PARAMETER_CID,
-    CORE_PARAMETER_PSM,
-    CORE_PARAMETER_SECURITY_LEVEL
+    CORE_PARAMETER_PSM
 };
+
+extern "C" u32 bt_operation_nr()
+{
+    return operations.size();
+}
 
 u32 Operation::size()
 {
-    u32 n = sizeof(operation_header) + inputs.size() * sizeof(parameter_header);
+    u32 n = sizeof(operation_t) + inputs.size() * sizeof(parameter_t);
     for(Parameter* i : inputs)
         n += i->bytes;
     return n;
@@ -38,16 +41,16 @@ u32 Operation::size()
 
 void Operation::serialize(u8* buf)
 {
-    item_header* item = (item_header*)buf;
-    operation_header* op = (operation_header*)&item->data[0];
-    parameter_header* param = (parameter_header*)&op->data[0];
+    item_t* item = (item_t*)buf;
+    operation_t* op = (operation_t*)&item->data[0];
+    parameter_t* param = (parameter_t*)&op->data[0];
     item->size = size();
     op->flag = OPERATION;
 
     for(Parameter* p : inputs){
         param->len = p->bytes;
         memcpy(param->data, p->data, p->bytes);
-        param = (parameter_header*)&param->data[param->len];
+        param = (parameter_t*)&param->data[param->len];
     }
 }
 
@@ -93,51 +96,56 @@ Operation* get_operation(u32 id)
 
 void init_parameters()
 {
-    parameters.push_back(Parameter(CORE_PARAMETER_BD_ADDR, CORE_PARAMETER_BD_ADDR_SIZE));
     parameters.push_back(Parameter(CORE_PARAMETER_HCI_HANDLE, CORE_PARAMETER_HCI_HANDLE_SIZE));
-    parameters.push_back(Parameter(CORE_PARAMETER_BD_ADDR_TYPE, CORE_PARAMETER_BD_ADDR_TYPE_SIZE));
     parameters.push_back(Parameter(CORE_PARAMETER_CID, CORE_PARAMETER_CID_SIZE));
     parameters.push_back(Parameter(CORE_PARAMETER_PSM, CORE_PARAMETER_PSM_SIZE));
-    parameters.push_back(Parameter(CORE_PARAMETER_SECURITY_LEVEL, CORE_PARAMETER_SECURITY_LEVEL_SIZE));
 }
 
 void init_operations()
 {
     // bd_addr_t, bd_addr_type_t
     operations.push_back(Operation(CORE_OPERATION_GAP_CONNECT, true));
-    operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_BD_ADDR));
-    operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_BD_ADDR_TYPE));          
-    
     operations.push_back(Operation(CORE_OPERATION_GAP_CONNECT, true));
 
     // hci_con_handle_t
     operations.push_back(Operation(CORE_OPERATION_GAP_DISCONNECT, true));
-    operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_HCI_HANDLE));
 
     // bd_addr, psm
     operations.push_back(Operation(CORE_OPERATION_L2CAP_CREATE_CHANNEL, true));
-    operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_BD_ADDR));
-    operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_PSM));    
 
     //psm, gap_security_level
-    operations.push_back(Operation(CORE_OPERATION_L2CAP_REGISTER_SERVICE, true));
-    operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_PSM)); 
-    operations.back().inputs.push_back(get_parameter(CORE_PARAMETER_SECURITY_LEVEL));       
+    operations.push_back(Operation(CORE_OPERATION_L2CAP_REGISTER_SERVICE, true));    
 }
 
 Operation* deserialize(u8* buf)
 {
-    item_header* item = (item_header*)buf;
-    operation_header* oph = (operation_header*)item->data;
-    parameter_header* ph = (parameter_header*)oph->data;
-    Operation* op = get_operation(oph->id);
+    item_t* pItem = (item_t*)buf;
+    operation_t* pOp = (operation_t*)pItem->data;
+    parameter_t* pParam = (parameter_t*)pOp->data;
+    Operation* op = get_operation(pOp->id);
     if(!op) return nullptr;
 
     for(Parameter* p : op->inputs){
-        p->bytes = ph->len;
-        memcpy(p->data, ph->data, p->bytes);
-        ph++;
+        p->bytes = pParam->len;
+        memcpy(p->data, pParam->data, p->bytes);
+        pParam++;
     }
     return op;
 }
 
+bool Parameter::generate()
+{
+    bool res = true;
+    bytes = (max_bytes == min_bytes) ? max_bytes : min_bytes + rand_below(max_bytes - min_bytes);
+    if(isEnum){
+        data[0] = rand_below(domain.size());
+    }else if(!domain.empty()){
+        u32 n = rand_below(domain.size());
+        auto v = set_at(domain, n);
+        memcpy(data, v.data(), bytes);
+    }else{
+        rand_fill(data, bytes);
+        res = (name == PARAMETER_BYTEARRAY);
+    }
+    return res;
+}

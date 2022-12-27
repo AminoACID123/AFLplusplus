@@ -544,6 +544,8 @@ int main(int argc, char **argv_orig, char **envp) {
 
   afl->shmem_testcase_mode = 1;  // we always try to perform shmem fuzzing
 
+  afl->bt = 1;
+
   while (
       (opt = getopt(
            argc, argv,
@@ -1856,7 +1858,8 @@ int main(int argc, char **argv_orig, char **envp) {
 
   init_stack_hci(afl->bc_file);
 
-  // read_testcases(afl, NULL);
+  if(!afl->bt)
+    read_testcases(afl, NULL);
   // read_foreign_testcases(afl, 1); for the moment dont do this
   OKF("Loaded a total of %u seeds.", afl->queued_items);
 

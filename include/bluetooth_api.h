@@ -1,34 +1,11 @@
 #include "types.h"
 
-/*******************
-* Operation API Begin*
-********************/
-void parse_operation(const char* in_file, const char* out_file); 
+void init_stack_hci(const char* bc_file)
 
-u32 generate_random_operation(u32 idx, u8* buf);
+void parse_operation(const char *in_file, const char *out_file);
 
-void generate_seeds(const char* dir);
+u32 bt_fuzz_one(u8* items, u32 size, u8* out1, u8* out2, bool reset, u8* state);
 
-u32 get_total_operation();
+u32 bt_serialize_state(u8* buf);
 
-/******************
-* Operation API End *
-*******************/
-
-/***************
-* Packet API Begin*
-****************/
-bool reply_with_status(u16 opcode);
-
-bool reply_with_complete(u16 opcode);
-
-u32 get_total_hci();
-
-u32 get_total_hci_le();
-
-void generate_random_event(u32 seed, u8* evt, u8* le_evt);
-
-void init_stack_hci(const char *bc);
-/**************
-* HCI API End *
-***************/
+void bt_deserialize_state(u8* buf);

@@ -16,15 +16,15 @@ typedef uint32_t u32;
 
 #define BT_HCI_EVT_LE_META_EVENT 0x3e
 
-set<u8> _stack_evts;
-set<u8> _stack_le_evts;
-set<u16> _stack_status_cmds;
-set<u16> _stack_complete_cmds;
+set<u8> sEvt;
+set<u8> sLeEvt;
+set<u16> sStatusCmd;
+set<u16> sCompleteCmd;
 
-vector<u8> stack_evts;
-vector<u8> stack_le_evts;
-vector<u16> stack_status_cmds;
-vector<u16> stack_complete_cmds;
+vector<u8> vEvt;
+vector<u8> vLeEvt;
+vector<u16> vStatusCmd;
+vector<u16> vCompleteCmd;
 
 set<u8> hci_evts = {
     0x01, /*BT_HCI_EVT_INQUIRY_COMPLETE*/
@@ -130,37 +130,13 @@ set<u8> hci_evts = {
     0x1f, /*BT_HCI_EVT_LE_REQ_PEER_SCA_COMPLETE*/
 };
 
-extern "C" bool reply_with_status(u16 opcode)
+extern "C" u32 bt_hci_event_nr()
 {
-    return _stack_status_cmds.find(opcode) != _stack_status_cmds.end();
+    return sEvt.size();
 }
 
-extern "C" bool reply_with_complete(u16 opcode)
-{
-    return _stack_complete_cmds.find(opcode) != _stack_complete_cmds.end();
-}
-
-extern "C" void generate_status_reply(u8* buf, u16 opcode){
-
-}
-
-extern "C" void generate_complete_reply(u8* buf, u16 opcode)
-{
-
-}
-
-extern "C" u32 get_total_hci() {
-    return stack_evts.size();
-}
-
-extern "C" u32 get_total_hci_le() {
-    return stack_le_evts.size();
-}
-
-extern "C" void generate_random_event(u32 seed, u8* evt, u8* le_evt) {
-   *evt =  stack_evts[(seed >> 16) % stack_evts.size()];
-   if(*evt == BT_HCI_EVT_LE_META_EVENT)
-    *le_evt = stack_le_evts[seed % stack_le_evts.size()];
+extern "C" u32 bt_hci_le_event_nr() {
+    return sLeEvt.size();
 }
 
 static void parse_status_evt_handler_btstack(Module *m)
@@ -176,7 +152,7 @@ static void parse_status_evt_handler_btstack(Module *m)
                 for (auto c : sw->cases())
                 {
                     u16 opcode = c.getCaseValue()->getZExtValue();
-                    _stack_status_cmds.insert(opcode);
+                    sStatusCmd.insert(opcode);
                 }
                 return;
             }
@@ -197,7 +173,7 @@ static void parse_complete_evt_handler_btstack(Module *m)
                 for (auto c : sw->cases())
                 {
                     u16 opcode = c.getCaseValue()->getZExtValue();
-                    _stack_complete_cmds.insert(opcode);
+                    sCompleteCmd.insert(opcode);
                 }
                 return;
             }
@@ -215,7 +191,7 @@ static void parse_le_evt_handler_btstack(BasicBlock *BB)
             for (SwitchInst::CaseHandle &c : sw->cases())
             {
                 u8 opcode = c.getCaseValue()->getZExtValue();
-                _stack_le_evts.insert(opcode);
+                sLeEvt.insert(opcode);
             }
             return;
         }
@@ -239,7 +215,7 @@ void parse_event_handler_btstack(Module *m)
                 {
                     u8 opcode = c.getCaseValue()->getZExtValue();
                     if(hci_evts.find(opcode) != hci_evts.end())
-                        _stack_evts.insert(opcode);
+                        sEvt.insert(opcode);
                     if (opcode == BT_HCI_EVT_LE_META_EVENT)
                     {
                         BasicBlock *bb_le = c.getCaseSuccessor();
@@ -274,17 +250,6 @@ void dump_stack_evts()
 */
 
 
-extern "C" bool complete_reply(u16 cmd)
-{
-    return _stack_complete_cmds.find(cmd) != _stack_complete_cmds.end();
-}
-
-extern "C" bool status_reply(u16 cmd)
-{
-    return _stack_status_cmds.find(cmd) != _stack_status_cmds.end();
-}
-
-
 extern "C" void init_stack_hci(const char *bc)
 {
     SMDiagnostic Err;
@@ -292,10 +257,10 @@ extern "C" void init_stack_hci(const char *bc)
     unique_ptr<Module> M = parseIRFile(bc, Err, *cxt);
     parse_event_handler_btstack(M.get());
 
-    std::copy(_stack_evts.begin(), _stack_evts.end(), std::back_inserter(stack_evts));
-    std::copy(_stack_le_evts.begin(), _stack_le_evts.end(), std::back_inserter(stack_le_evts));
-    std::copy(_stack_status_cmds.begin(), _stack_status_cmds.end(), std::back_inserter(stack_status_cmds)); 
-    std::copy(_stack_complete_cmds.begin(), _stack_complete_cmds.end(), std::back_inserter(stack_status_cmds));  
+    std::copy(vEvt.begin(), vEvt.end(), std::back_inserter(sEvt));
+    std::copy(vLeEvt.begin(), vLeEvt.end(), std::back_inserter(sLeEvt));
+    std::copy(vStatusCmd.begin(), vStatusCmd.end(), std::back_inserter(sStatusCmd)); 
+    std::copy(vCompleteCmd.begin(), vCompleteCmd.end(), std::back_inserter(sCompleteCmd));  
 }
 
 /*
