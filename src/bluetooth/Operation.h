@@ -44,7 +44,7 @@ struct Operation
 
     u32 size();
 
-    void serialize(u8*);
+    u32 serialize(u8*);
 
     Operation() {}
     Operation(std::string _name, bool _isCore): name(_name), isCore(_isCore){}

@@ -51,6 +51,7 @@ class BTFuzzState {
   std::set<u16> sPsm;
 
   std::vector<hci_con> vCon;
+  std::vector<hci_con> vCon_pend;
   std::vector<u16> vCid;
   std::vector<u16> vPsm;
 
@@ -64,7 +65,7 @@ class BTFuzzState {
 
 public:
   static BTFuzzState* get(){
-    if(!bt) bt = new BTFuzzState();
+    if(!bt){ bt = new BTFuzzState();}
     return bt;
   }
 
@@ -77,6 +78,8 @@ public:
   void enable_sema(bool s) { sema = s;}
 
   u32 step_one(u8*, u32, u8*, u8*);
+
+  u32 generate(u8*);
 
   void handle_cmd(hci_command_t*);
 

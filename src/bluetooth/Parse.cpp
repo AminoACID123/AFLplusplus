@@ -91,7 +91,7 @@ void parse_parameters(cJSON *file)
         cJSON *domain = cJSON_GetObjectItem(item, "domain");
         if (param.isEnum)
         {
-            param.bytes = 1;
+            param.bytes = param.max_bytes = param.min_bytes = 1;
             cJSON_ArrayForEach(value, domain)
             {
                 param.enum_domain.insert(value->valuestring);
@@ -108,7 +108,7 @@ void parse_parameters(cJSON *file)
                 }
                 param.domain.insert(temp);
             }
-            param.bytes = cJSON_GetObjectItem(item, "bytes")->valueint;
+            param.bytes = param.max_bytes = param.min_bytes = cJSON_GetObjectItem(item, "bytes")->valueint;
         }
         param.id = i++;
         parameters.push_back(param);
@@ -127,16 +127,11 @@ void parse_operations(cJSON *file)
         cJSON *outputs = cJSON_GetObjectItem(op, "outputs");
         cJSON *exec = cJSON_GetObjectItem(op, "exec");
         Operation operation;
+        operation.id = i++;
         operation.name = cJSON_GetObjectItem(op, "name")->valuestring;
         cJSON_ArrayForEach(str, exec)
         {
             operation.exec.push_back(str->valuestring);
-        }
-
-        if(Operation* op = get_operation(operation.name))
-        {
-            op->exec.insert(op->exec.begin(), operation.exec.begin(), operation.exec.end());
-            continue;
         }
 
         cJSON_ArrayForEach(input, inputs)
@@ -194,14 +189,12 @@ void payload1(FILE *f)
         fprintf(f, "#include \"%s\"\n", header.c_str());
 
     // fprintf(f, "#define NUM_PARAM %ld\n", parameters.size() + 1);
-    // for (Operation *op : operations)
-    // {
-    //     if (op->inputs.size() > max_in)
-    //         max_in = op->inputs.size();
-    //     if (op->outputs.size() > max_out)
-    //         max_out = op->outputs.size();
-    // }
-    // fprintf(f, "#define MAX_INPUT %d\n", max_in * 2);
+    for (Operation op : operations)
+    {
+        if (op.inputs.size() > max_in)
+            max_in = op.inputs.size();
+    }
+    fprintf(f, "#define MAX_INPUT %d\n", max_in * 2);
     // fprintf(f, "#define MAX_OUTPUT %d\n", max_out);
 
     fprintf(f, "typedef uint8_t u8;\n");
@@ -215,8 +208,6 @@ Write Global Variables
 void payload2(FILE *f)
 {
     fprintf(f, "void *arg_in[MAX_INPUT];\n"
-               "void *arg_out[MAX_OUTPUT];\n"
-               "void *context[NUM_PARAM];\n"
                "extern u8* __afl_area3_ptr;\n");
     //            "u32   context_len[NUM_PARAM] = { ");
     // fprintf(f, "1");
@@ -243,13 +234,13 @@ void payload3(FILE *f)
         {
             u32 c = 0;
             fprintf(f, "%s e%d(u8 i) {\n", param.name.c_str(), param.id);
-            fprintf(f, "switch(i) {\n");
+            fprintf(f, "  switch(i) {\n");
             for (string e : param.enum_domain)
             {
-                fprintf(f, "case %d: return %s;break;\n", c, e.c_str());
+                fprintf(f, "    case %d: return %s;break;\n", c, e.c_str());
                 c++;
             }
-            fprintf(f, "default: return %s;\n", param.enum_domain.begin()->c_str());
+            fprintf(f, "    default: return %s;\n", param.enum_domain.begin()->c_str());
             fprintf(f, "}\n}\n");
         }
     }
@@ -344,9 +335,6 @@ void generate_harness(const char *file)
 
 extern "C" void parse_operation(const char *in_file, const char *out_file)
 {
-    init_parameters();
-    init_operations();
-
     cJSON *file = load_from_file(in_file);
     parse_headers(file);
     parse_static_functions(file);

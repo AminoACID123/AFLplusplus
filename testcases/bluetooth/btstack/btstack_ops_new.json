@@ -474,7 +474,7 @@
         },
         {
             "name": "gap_scan_response_set_data",
-            "inputs": ["data[0: 255]"],
+            "inputs": ["data[0:255]"],
             "outputs": [],
             "exec": ["gap_scan_response_set_data($s0, $i0);"]
         },
@@ -564,7 +564,7 @@
         },
         {
             "name": "gap_extended_advertising_set_adv_data",
-            "inputs": ["advertising_handle", "data[0:65535]"],
+            "inputs": ["advertising_handle", "data[0:128]"],
             "outputs": [],
             "exec": [
                 "gap_extended_advertising_set_adv_data(*$i0, $s1, $i1);"
@@ -572,7 +572,7 @@
         },
         {
             "name": "gap_extended_advertising_set_scan_response_data",
-            "inputs": ["advertising_handle", "data[0:65535]"],
+            "inputs": ["advertising_handle", "data[0:128]"],
             "outputs": [],
             "exec": [
                 "gap_extended_advertising_set_scan_response_data(*$i0, $s1, $i1);"
@@ -580,7 +580,7 @@
         },
         {
             "name": "gap_periodic_advertising_set_data",
-            "inputs": ["advertising_handle", "data[0:65535]"],
+            "inputs": ["advertising_handle", "data[0:128]"],
             "outputs": [],
             "exec": [
                 "gap_periodic_advertising_set_data(*$i0, $s1, $i1);"
@@ -1233,7 +1233,7 @@
             "name": "l2cap_register_service",
             "inputs": ["psm", "gap_security_level_t"],
             "outputs": [],
-            "exec": ["l2cap_create_channel(packet_handler, *(u16*)$i0, 100, $i1);"]
+            "exec": ["l2cap_register_service(packet_handler, *(u16*)$i0, 100, $i1);"]
         }     
     ]
 }

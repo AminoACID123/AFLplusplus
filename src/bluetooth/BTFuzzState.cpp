@@ -3,6 +3,7 @@
 #include "../../include/types.h"
 #include "Operation.h"
 #include "BTFuzzState.h"
+#include "Hci.h"
 
 #include <assert.h>
 #include <iostream>
@@ -14,19 +15,6 @@
 using namespace std;
 
 BTFuzzState* BTFuzzState::bt = nullptr;
-
-string core_parameters[] = {
-    CORE_PARAMETER_HCI_HANDLE,
-    CORE_PARAMETER_CID,
-    CORE_PARAMETER_PSM
-};
-
-string core_operations[] = {
-    CORE_OPERATION_GAP_CONNECT,
-    CORE_OPERATION_GAP_DISCONNECT,       
-    CORE_OPERATION_L2CAP_CREATE_CHANNEL, 
-    CORE_OPERATION_L2CAP_REGISTER_SERVICE
-};
 
 std::vector<u16> psm_fixed = {
     BLUETOOTH_PSM_SDP,
@@ -89,7 +77,6 @@ u32 BTFuzzState::serialize(u8* buf)
 
 void BTFuzzState::deserialize(u8* buf)
 {
-    reset();
     // Deserialize Connection States
     item_t* pItem = (item_t*)buf;
     hci_con* pCon = (hci_con*)pItem->data;
@@ -153,12 +140,46 @@ void BTFuzzState::reset(){
 /// @param out2 API return values
 u32 BTFuzzState::step_one(u8* items, u32 size, u8* hci, u8* rt)
 {
+    item_t* pItem = (item_t*)items;
+    item_t* pHci = (item_t*)hci;
+    BT_ItemForEach2(pHci, hci) {
+        switch (pHci->data[0])
+        {
+            case HCI_COMMAND_DATA_PACKET:
+                handle_cmd((hci_command_t*)pHci->data);
+                break;
+            default:
+                break;
+        }
+    }
+    BT_ItemForEach3(pItem, items, size);
+    return generate((u8*)pItem);
+}
 
+u32 BTFuzzState::generate(u8* buf)
+{
+    u32 r = rand_below(100);
+    if(r <= 100){
+        Operation* op = get_operation(rand_below(operations.size()));
+        op->generate();
+        return op->serialize(buf);
+    }
 }
 
 void BTFuzzState::handle_cmd(hci_command_t* cmd)
 {
-
+    switch (cmd->opcode)
+    {
+        case BT_HCI_CMD_CREATE_CONN:
+            /* code */
+            break;
+        case BT_HCI_CMD_CREATE_CONN_CANCEL:
+            break;
+        case BT_HCI_CMD_DISCONNECT:
+            break;
+        default:
+            break;
+    }
 }
 
 void BTFuzzState::handle_evt(hci_event_t* evt)

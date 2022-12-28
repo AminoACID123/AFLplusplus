@@ -26,8 +26,11 @@ extern "C" void bt_enable_sema(bool sema)
 extern "C" u32 bt_fuzz_one(u8* items, u32 size, u8* out1, u8* out2, bool reset, u8* state)
 {
   BTFuzzState* bt = BTFuzzState::get();
-  if(reset)
-    bt->deserialize(state);
+  if(reset){
+    bt->reset();
+    if(state)
+      bt->deserialize(state);
+  }
   bt->step_one(items, size, out1, out2);
 }
 
@@ -39,4 +42,9 @@ extern "C" u32 bt_serialize_state(u8* buf)
 extern "C" void bt_deserialize_state(u8* buf)
 {
   BTFuzzState::get()->deserialize(buf);
+}
+
+extern "C" void bt_rand_init(s32 fd)
+{
+  rand_init(fd);
 }

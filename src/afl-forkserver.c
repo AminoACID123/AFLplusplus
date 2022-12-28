@@ -1473,6 +1473,7 @@ afl_fsrv_run_target(afl_forkserver_t *fsrv, u32 timeout,
 
     memset(fsrv->trace_bits, 0, fsrv->map_size);
     memset(fsrv->trace_bits2, 0, fsrv->map_size);
+    memset(fsrv->trace_bits3, 0, fsrv->map_size);
     MEM_BARRIER();
 
   }

@@ -8,7 +8,7 @@
 #include "../../../include/bluetooth.h"
 
 extern u8* __afl_area2_ptr;
-int log_ptr;
+extern item_t* pHCIItem;
 void (*fuzz_packet_handler)(uint8_t packet_type, uint8_t *packet, uint16_t size);
 
 static int hci_transport_fuzz_set_baudrate(uint32_t baudrate)
@@ -50,11 +50,13 @@ static int hci_transport_fuzz_send_packet(uint8_t packet_type, uint8_t * packet,
     // __afl_area2_ptr[log_ptr++] = packet_type;
     // memcpy(__afl_area2_ptr + log_ptr, packet, size);
     // log_ptr += size;
-
-    item_header* item = (struct item_header*)__afl_area2_ptr;
-    item->size = size + 1;
-    item->flag = packet_type;
-    memcpy(&item->data[0], packet, size);
+    if(pHCIItem){
+        pHCIItem->size = size + 1;
+        pHCIItem->data[0] = packet_type;
+        memcpy(&pHCIItem->data[1], packet, size);
+        pHCIItem = (item_t*)&pHCIItem->data[pHCIItem->size];
+        pHCIItem->size = 0;
+    }
 
     static const uint8_t packet_sent_event[] = { HCI_EVENT_TRANSPORT_PACKET_SENT, 0};
     fuzz_packet_handler(HCI_EVENT_PACKET, (uint8_t *) &packet_sent_event[0], sizeof(packet_sent_event));

@@ -15,9 +15,9 @@ static u32 rand_cnt;
 
 #define ROTL(d, lrot) ((d << (lrot)) | (d >> (8 * sizeof(d) - (lrot))))
 
-void rand_init()
+void rand_init(s32 fd)
 {
-    dev_urandom_fd = open("/dev/urandom", O_RDONLY);
+    dev_urandom_fd = fd;
     read(dev_urandom_fd, &rand_seed, sizeof(rand_seed));
 }
 

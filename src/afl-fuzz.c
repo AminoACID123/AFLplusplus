@@ -549,7 +549,7 @@ int main(int argc, char **argv_orig, char **envp) {
   while (
       (opt = getopt(
            argc, argv,
-           "+Ab:B:c:CdDe:E:hi:j:k:q:I:f:F:g:G:l:L:m:M:nNOo:p:RQs:S:t:T:UV:WXx:YZ")) >
+           "+Ab:B:c:CdDe:E:hri:j:k:q:I:f:F:g:G:l:L:m:M:nNOo:p:RQs:S:t:T:UV:WXx:YZ")) >
       0) {
 
     switch (opt) {
@@ -559,9 +559,15 @@ int main(int argc, char **argv_orig, char **envp) {
       
       case 'k':
         afl->out_harness = optarg;
+        break;
+
+      case 'r':
+        bt_enable_sema(true);
+        break;
 
       case 'q':
         afl->bc_file = optarg;
+        break;
 
       case 'g':
         afl->min_length = atoi(optarg);
@@ -1806,6 +1812,8 @@ int main(int argc, char **argv_orig, char **envp) {
 
   setup_dirs_fds(afl);
 
+  bt_rand_init(afl->fsrv.dev_urandom_fd);
+
   #ifdef HAVE_AFFINITY
   bind_to_free_cpu(afl);
   #endif                                                   /* HAVE_AFFINITY */
@@ -2029,11 +2037,13 @@ int main(int argc, char **argv_orig, char **envp) {
   afl->shm2.map = shmat(afl->shm2.shm_id, NULL, 0);
   afl->fsrv.trace_bits2 = afl->shm2.map;
 
-  afl->shm3.shm_id = shmget(IPC_PRIVATE, 1024, IPC_CREAT | IPC_EXCL | DEFAULT_PERMISSION);
+  afl->shm3.shm_id = shmget(IPC_PRIVATE, afl->fsrv.map_size == MAP_SIZE ? afl->fsrv.map_size + 8 : afl->fsrv.map_size,
+      IPC_CREAT | IPC_EXCL | DEFAULT_PERMISSION);
   shm_str = alloc_printf("%d", afl->shm3.shm_id);
   setenv(SHM3_ENV_VAR, shm_str, 1);
   afl->shm3.map = shmat(afl->shm3.shm_id, NULL, 0);
   afl->fsrv.trace_bits3 = afl->shm3.map;
+  
 
   if (!afl->non_instrumented_mode && !afl->fsrv.qemu_mode &&
       !afl->unicorn_mode && !afl->fsrv.frida_mode && !afl->fsrv.cs_mode &&

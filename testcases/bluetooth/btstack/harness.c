@@ -1,109 +1,101 @@
 #include "ble/sm.h"
 #include "gap.h"
 #include "stdlib.h"
-#define NUM_PARAM 19
 #define MAX_INPUT 14
-#define MAX_OUTPUT 1
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 void *arg_in[MAX_INPUT];
-void *arg_out[MAX_OUTPUT];
-void *context[NUM_PARAM];
-u32   context_len[NUM_PARAM] = { 1, 1, 6, 16, 16, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2};
-
+extern u8* __afl_area3_ptr;
 le_advertising_set_t le_adv_set;
 static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}
 int get_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_data){return 1;}
 void done_callback(u8* hash){}
 int get_sc_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_sc_peer_confirm, uint8_t * oob_sc_peer_random){return 1;}
 bool get_ltk_callback(hci_con_handle_t con_handle, uint8_t address_type, bd_addr_t addr, uint8_t * ltk){return true;}
-io_capability_t e5(u8 i) {
-switch(i) {
-case 0: return IO_CAPABILITY_DISPLAY_ONLY;break;
-case 1: return IO_CAPABILITY_DISPLAY_YES_NO;break;
-case 2: return IO_CAPABILITY_KEYBOARD_ONLY;break;
-case 3: return IO_CAPABILITY_NO_INPUT_NO_OUTPUT;break;
-case 4: return IO_CAPABILITY_KEYBOARD_DISPLAY;break;
-default: return IO_CAPABILITY_DISPLAY_ONLY;
+void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){}
+io_capability_t e4(u8 i) {
+  switch(i) {
+    case 0: return IO_CAPABILITY_DISPLAY_ONLY;break;
+    case 1: return IO_CAPABILITY_DISPLAY_YES_NO;break;
+    case 2: return IO_CAPABILITY_KEYBOARD_DISPLAY;break;
+    case 3: return IO_CAPABILITY_KEYBOARD_ONLY;break;
+    case 4: return IO_CAPABILITY_NO_INPUT_NO_OUTPUT;break;
+    default: return IO_CAPABILITY_DISPLAY_ONLY;
 }
 }
-bd_addr_type_t e6(u8 i) {
-switch(i) {
-case 0: return BD_ADDR_TYPE_LE_PUBLIC;break;
-case 1: return BD_ADDR_TYPE_LE_RANDOM;break;
-case 2: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC;break;
-case 3: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM;break;
-case 4: return BD_ADDR_TYPE_SCO;break;
-case 5: return BD_ADDR_TYPE_ACL;break;
-default: return BD_ADDR_TYPE_LE_PUBLIC;
+bd_addr_type_t e5(u8 i) {
+  switch(i) {
+    case 0: return BD_ADDR_TYPE_ACL;break;
+    case 1: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC;break;
+    case 2: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM;break;
+    case 3: return BD_ADDR_TYPE_LE_PUBLIC;break;
+    case 4: return BD_ADDR_TYPE_LE_RANDOM;break;
+    case 5: return BD_ADDR_TYPE_SCO;break;
+    default: return BD_ADDR_TYPE_ACL;
 }
 }
-hci_service_type_t e8(u8 i) {
-switch(i) {
-case 0: return HCI_SERVICE_TYPE_NO_TRAFFIC;break;
-case 1: return HCI_SERVICE_TYPE_BEST_EFFORT;break;
-case 2: return HCI_SERVICE_TYPE_GUARANTEED;break;
-default: return HCI_SERVICE_TYPE_NO_TRAFFIC;
+hci_service_type_t e7(u8 i) {
+  switch(i) {
+    case 0: return HCI_SERVICE_TYPE_BEST_EFFORT;break;
+    case 1: return HCI_SERVICE_TYPE_GUARANTEED;break;
+    case 2: return HCI_SERVICE_TYPE_NO_TRAFFIC;break;
+    default: return HCI_SERVICE_TYPE_BEST_EFFORT;
 }
 }
-gap_security_mode_t e10(u8 i) {
-switch(i) {
-case 0: return GAP_SECURITY_MODE_1;break;
-case 1: return GAP_SECURITY_MODE_2;break;
-case 2: return GAP_SECURITY_MODE_3;break;
-case 3: return GAP_SECURITY_MODE_4;break;
-default: return GAP_SECURITY_MODE_1;
+gap_security_mode_t e9(u8 i) {
+  switch(i) {
+    case 0: return GAP_SECURITY_MODE_1;break;
+    case 1: return GAP_SECURITY_MODE_2;break;
+    case 2: return GAP_SECURITY_MODE_3;break;
+    case 3: return GAP_SECURITY_MODE_4;break;
+    default: return GAP_SECURITY_MODE_1;
 }
 }
-gap_random_address_type_t e11(u8 i) {
-switch(i) {
-case 0: return GAP_RANDOM_ADDRESS_TYPE_STATIC;break;
-case 1: return GAP_RANDOM_ADDRESS_NON_RESOLVABLE;break;
-case 2: return GAP_RANDOM_ADDRESS_RESOLVABLE;break;
-default: return GAP_RANDOM_ADDRESS_TYPE_STATIC;
+gap_random_address_type_t e10(u8 i) {
+  switch(i) {
+    case 0: return GAP_RANDOM_ADDRESS_NON_RESOLVABLE;break;
+    case 1: return GAP_RANDOM_ADDRESS_RESOLVABLE;break;
+    case 2: return GAP_RANDOM_ADDRESS_TYPE_STATIC;break;
+    default: return GAP_RANDOM_ADDRESS_NON_RESOLVABLE;
 }
 }
-gap_security_level_t e12(u8 i) {
-switch(i) {
-case 0: return LEVEL_0;break;
-case 1: return LEVEL_1;break;
-case 2: return LEVEL_2;break;
-case 3: return LEVEL_3;break;
-default: return LEVEL_0;
+gap_security_level_t e11(u8 i) {
+  switch(i) {
+    case 0: return LEVEL_0;break;
+    case 1: return LEVEL_1;break;
+    case 2: return LEVEL_2;break;
+    case 3: return LEVEL_3;break;
+    default: return LEVEL_0;
 }
 }
-link_key_type_t e13(u8 i) {
-switch(i) {
-case 0: return COMBINATION_KEY;break;
-case 1: return LOCAL_UNIT_KEY;break;
-case 2: return REMOTE_UNIT_KEY;break;
-case 3: return DEBUG_COMBINATION_KEY;break;
-case 4: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
-case 5: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
-case 6: return CHANGED_COMBINATION_KEY;break;
-case 7: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
-case 8: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
-default: return COMBINATION_KEY;
+link_key_type_t e12(u8 i) {
+  switch(i) {
+    case 0: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
+    case 1: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
+    case 2: return CHANGED_COMBINATION_KEY;break;
+    case 3: return COMBINATION_KEY;break;
+    case 4: return DEBUG_COMBINATION_KEY;break;
+    case 5: return LOCAL_UNIT_KEY;break;
+    case 6: return REMOTE_UNIT_KEY;break;
+    case 7: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
+    case 8: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
+    default: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;
 }
 }
-page_scan_type_t e14(u8 i) {
-switch(i) {
-case 0: return PAGE_SCAN_MODE_STANDARD;break;
-case 1: return PAGE_SCAN_MODE_INTERLACED;break;
-default: return PAGE_SCAN_MODE_STANDARD;
+page_scan_type_t e13(u8 i) {
+  switch(i) {
+    case 0: return PAGE_SCAN_MODE_INTERLACED;break;
+    case 1: return PAGE_SCAN_MODE_STANDARD;break;
+    default: return PAGE_SCAN_MODE_INTERLACED;
 }
 }
-hci_role_t e15(u8 i) {
-switch(i) {
-case 0: return HCI_ROLE_MASTER;break;
-case 1: return HCI_ROLE_SLAVE;break;
-default: return HCI_ROLE_MASTER;
+hci_role_t e14(u8 i) {
+  switch(i) {
+    case 0: return HCI_ROLE_MASTER;break;
+    case 1: return HCI_ROLE_SLAVE;break;
+    default: return HCI_ROLE_MASTER;
 }
-}
-void harness_init() {
-  for (int i = 0; i < NUM_PARAM; i++)
-    context[i] = malloc(sizeof(char) * context_len[i]);
 }
 void operation0() {
   u8* _i0 = arg_in[0];
@@ -112,7 +104,7 @@ void operation0() {
 }
 
 void operation1() {
-  u8* _o0 = context[2];
+  u8* _o0 = __afl_area3_ptr + 0;
   gap_local_bd_addr(_o0);
 }
 
@@ -137,7 +129,7 @@ void operation4() {
 void operation5() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  hci_role_t _i1 = e15(*(u8*)arg_in[2]);
+  hci_role_t _i1 = e14(*(u8*)arg_in[2]);
   gap_request_role(_i0, _i1);
 }
 
@@ -196,7 +188,7 @@ void operation14() {
 }
 
 void operation15() {
-  gap_security_mode_t _i0 = e10(*(u8*)arg_in[0]);
+  gap_security_mode_t _i0 = e9(*(u8*)arg_in[0]);
   gap_set_security_mode(_i0);
 }
 
@@ -205,7 +197,7 @@ void operation16() {
 }
 
 void operation17() {
-  gap_security_level_t _i0 = e12(*(u8*)arg_in[0]);
+  gap_security_level_t _i0 = e11(*(u8*)arg_in[0]);
   gap_set_security_level(_i0);
 }
 
@@ -224,7 +216,7 @@ void operation20() {
 }
 
 void operation21() {
-  gap_security_level_t _i0 = e12(*(u8*)arg_in[0]);
+  gap_security_level_t _i0 = e11(*(u8*)arg_in[0]);
   gap_set_minimal_service_security_level(_i0);
 }
 
@@ -281,17 +273,17 @@ void operation30() {
 }
 
 void operation31() {
-  link_key_type_t _i0 = e13(*(u8*)arg_in[0]);
+  link_key_type_t _i0 = e12(*(u8*)arg_in[0]);
   gap_security_level_for_link_key_type(_i0);
 }
 
 void operation32() {
-  link_key_type_t _i0 = e13(*(u8*)arg_in[0]);
+  link_key_type_t _i0 = e12(*(u8*)arg_in[0]);
   gap_secure_connection_for_link_key_type(_i0);
 }
 
 void operation33() {
-  link_key_type_t _i0 = e13(*(u8*)arg_in[0]);
+  link_key_type_t _i0 = e12(*(u8*)arg_in[0]);
   gap_authenticated_for_link_key_type(_i0);
 }
 
@@ -304,12 +296,12 @@ void operation34() {
 void operation35() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  gap_security_level_t _i1 = e12(*(u8*)arg_in[2]);
+  gap_security_level_t _i1 = e11(*(u8*)arg_in[2]);
   gap_request_security_level(*(hci_con_handle_t*)_i0, _i1);
 }
 
 void operation36() {
-  gap_security_level_t _i0 = e12(*(u8*)arg_in[0]);
+  gap_security_level_t _i0 = e11(*(u8*)arg_in[0]);
   gap_mitm_protection_required_for_security_level(_i0);
 }
 
@@ -322,7 +314,7 @@ void operation37() {
 }
 
 void operation38() {
-  page_scan_type_t _i0 = e14(*(u8*)arg_in[0]);
+  page_scan_type_t _i0 = e13(*(u8*)arg_in[0]);
   gap_set_page_scan_type(_i0);
 }
 
@@ -363,7 +355,7 @@ void operation43() {
 }
 
 void operation44() {
-  gap_random_address_type_t _i0 = e11(*(u8*)arg_in[0]);
+  gap_random_address_type_t _i0 = e10(*(u8*)arg_in[0]);
   gap_random_address_set_mode(_i0);
 }
 
@@ -424,8 +416,8 @@ void operation51() {
 void operation52() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  bd_addr_type_t _i1 = e6(*(u8*)arg_in[2]);
-  bd_addr_type_t _i2 = e6(*(u8*)arg_in[4]);
+  bd_addr_type_t _i1 = e5(*(u8*)arg_in[2]);
+  bd_addr_type_t _i2 = e5(*(u8*)arg_in[4]);
   u8* _i3 = arg_in[6];
   u32 _s3 = *(u32*)arg_in[7];
   u8* _i4 = arg_in[8];
@@ -451,8 +443,8 @@ void operation52() {
 void operation53() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  bd_addr_type_t _i1 = e6(*(u8*)arg_in[2]);
-  bd_addr_type_t _i2 = e6(*(u8*)arg_in[4]);
+  bd_addr_type_t _i1 = e5(*(u8*)arg_in[2]);
+  bd_addr_type_t _i2 = e5(*(u8*)arg_in[4]);
   u8* _i3 = arg_in[6];
   u32 _s3 = *(u32*)arg_in[7];
   u8* _i4 = arg_in[8];
@@ -614,14 +606,14 @@ void operation71() {
 }
 
 void operation72() {
-  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e5(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_whitelist_add(_i0, _i1);
 }
 
 void operation73() {
-  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e5(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_whitelist_remove(_i0, _i1);
@@ -634,7 +626,7 @@ void operation74() {
 void operation75() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  bd_addr_type_t _i1 = e6(*(u8*)arg_in[2]);
+  bd_addr_type_t _i1 = e5(*(u8*)arg_in[2]);
   gap_connect(_i0, _i1);
 }
 
@@ -647,14 +639,14 @@ void operation77() {
 }
 
 void operation78() {
-  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e5(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_auto_connection_start(_i0, _i1);
 }
 
 void operation79() {
-  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e5(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_auto_connection_stop(_i0, _i1);
@@ -854,7 +846,7 @@ void operation107() {
   u32 _s0 = *(u32*)arg_in[1];
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
-  link_key_type_t _i2 = e13(*(u8*)arg_in[4]);
+  link_key_type_t _i2 = e12(*(u8*)arg_in[4]);
   gap_send_link_key_response(_i0, _i1, _i2);
 }
 
@@ -893,7 +885,7 @@ void operation110() {
 void operation111() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  hci_service_type_t _i1 = e8(*(u8*)arg_in[2]);
+  hci_service_type_t _i1 = e7(*(u8*)arg_in[2]);
   u8* _i2 = arg_in[4];
   u32 _s2 = *(u32*)arg_in[5];
   u8* _i3 = arg_in[6];
@@ -930,7 +922,7 @@ void operation115() {
 }
 
 void operation116() {
-  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e5(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   gap_delete_bonding(_i0, _i1);
@@ -977,7 +969,7 @@ void operation123() {
 }
 
 void operation124() {
-  io_capability_t _i0 = e5(*(u8*)arg_in[0]);
+  io_capability_t _i0 = e4(*(u8*)arg_in[0]);
   sm_set_io_capabilities(_i0);
 }
 
@@ -1072,7 +1064,7 @@ void operation137() {
 }
 
 void operation138() {
-  bd_addr_type_t _i0 = e6(*(u8*)arg_in[0]);
+  bd_addr_type_t _i0 = e5(*(u8*)arg_in[0]);
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
   sm_address_resolution_lookup(_i0, _i1);
@@ -1112,6 +1104,21 @@ void operation144() {
 
 void operation145() {
   sm_register_ltk_callback(get_sc_oob_data_callback);
+}
+
+void operation146() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  l2cap_create_channel(packet_handler, _i0, *(u16*)_i1, __afl_area3_ptr);
+}
+
+void operation147() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gap_security_level_t _i1 = e11(*(u8*)arg_in[2]);
+  l2cap_register_service(packet_handler, *(u16*)_i0, 100, _i1);
 }
 
 typedef void (*fun_ptr)();
@@ -1261,6 +1268,8 @@ fun_ptr FUZZ_LIST[] = {
   &operation142,
   &operation143,
   &operation144,
-  &operation145
+  &operation145,
+  &operation146,
+  &operation147
 };
 

@@ -24,6 +24,8 @@
  */
 
 #include "afl-fuzz.h"
+#include "bluetooth.h"
+#include "bluetooth_api.h"
 #include <string.h>
 #include <limits.h>
 #include "cmplog.h"
@@ -380,6 +382,18 @@ u8 fuzz_one_original(afl_state_t *afl) {
 
   u8  a_collect[MAX_AUTO_EXTRA];
   u32 a_len = 0;
+
+  static u8 bt_in[BT_MAX_BUFFER_SIZE];
+  u32 bt_len;
+
+  if(!afl->queue_cur){
+    memset(afl->fsrv.trace_bits2, 0, afl->fsrv.map_size);
+    memset(afl->fsrv.trace_bits3, 0, afl->fsrv.map_size);
+    bt_len = bt_fuzz_one(bt_in, 0, afl->fsrv.trace_bits2, afl->fsrv.trace_bits3, true, NULL);
+    common_fuzz_stuff(afl, bt_in, bt_len);
+    s32 fd = open("test", O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_PERMISSION);
+    write(fd, bt_in, bt_len);
+  }
 
 #ifdef IGNORE_FINDS
 

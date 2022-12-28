@@ -257,10 +257,10 @@ extern "C" void init_stack_hci(const char *bc)
     unique_ptr<Module> M = parseIRFile(bc, Err, *cxt);
     parse_event_handler_btstack(M.get());
 
-    std::copy(vEvt.begin(), vEvt.end(), std::back_inserter(sEvt));
-    std::copy(vLeEvt.begin(), vLeEvt.end(), std::back_inserter(sLeEvt));
-    std::copy(vStatusCmd.begin(), vStatusCmd.end(), std::back_inserter(sStatusCmd)); 
-    std::copy(vCompleteCmd.begin(), vCompleteCmd.end(), std::back_inserter(sCompleteCmd));  
+    std::copy(sEvt.begin(), sEvt.end(), std::back_inserter(vEvt));
+    std::copy(sLeEvt.begin(), sLeEvt.end(), std::back_inserter(vLeEvt));
+    std::copy(sStatusCmd.begin(), sStatusCmd.end(), std::back_inserter(vStatusCmd)); 
+    std::copy(sCompleteCmd.begin(), sCompleteCmd.end(), std::back_inserter(vCompleteCmd));  
 }
 
 /*

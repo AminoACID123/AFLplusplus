@@ -24,12 +24,13 @@ extern void* arg_in[];
 item_t* pItem;
 item_t* pItem_end;
 
+item_t* pHCIItem;
+
 typedef void (*fun_ptr)();
 extern fun_ptr FUZZ_LIST[];
 
 
 void execute_api(operation_t *op) {
-
   u32 id = op->id;
   parameter_t* pParam = (parameter_t*)op->data;
 
@@ -62,16 +63,19 @@ bool execute_one(){
   if(pItem == pItem_end)
     return false;
 
+  pHCIItem = (item_t*)__afl_area2_ptr;
+
   if(pItem->data[0] == OPERATION)
     execute_api(pItem->data);
   else 
     execute_hci(pItem->data);
-  pItem = (item_t*)pItem->data[pItem->size];
+  pItem = (item_t*)&pItem->data[pItem->size];
   return true;
 }
 
 void stack_execute(u8* buf, u32 size){
   pItem = (item_t*)buf;
   pItem_end = (item_t*)(buf + size);
+  pHCIItem = (item_t*)__afl_area2_ptr;
   btstack_run_loop_execute();
 }

@@ -39,19 +39,22 @@ u32 Operation::size()
     return n;
 }
 
-void Operation::serialize(u8* buf)
+u32 Operation::serialize(u8* buf)
 {
     item_t* item = (item_t*)buf;
     operation_t* op = (operation_t*)&item->data[0];
     parameter_t* param = (parameter_t*)&op->data[0];
     item->size = size();
     op->flag = OPERATION;
+    op->id = id;
+    op->params = inputs.size();
 
     for(Parameter* p : inputs){
         param->len = p->bytes;
         memcpy(param->data, p->data, p->bytes);
         param = (parameter_t*)&param->data[param->len];
     }
+    return item->size + sizeof(u32);
 }
 
 Parameter *get_parameter(string name)
@@ -62,8 +65,10 @@ Parameter *get_parameter(string name)
         param->isEnum = false;
         if (name.find(':') != name.npos)
             sscanf(name.c_str(), "data[%d:%d]", &param->min_bytes, &param->max_bytes);
-        else if (name.find('[') != name.npos)
-            sscanf(name.c_str(), "data[%d]", &param->bytes);
+        else if (name.find('[') != name.npos){
+            sscanf(name.c_str(), "data[%d]", &param->min_bytes);
+            param->max_bytes = param->min_bytes;
+        }
         else{
             param->min_bytes = 0;
             param->max_bytes = BT_MAX_PARAM_SIZE;

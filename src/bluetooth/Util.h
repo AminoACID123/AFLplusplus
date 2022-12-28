@@ -8,21 +8,22 @@
 template<typename T>
 std::vector<u8> bytes2vec(T data)
 {
+  u8* p = (u8*)&data; 
   std::vector<u8> res;
-  for(u8* p=&data;p-data<sizeof(T);p++)
+  for(;p-(u8*)&data<sizeof(T);p++)
     res.push_back(*p);
   return res;
 }
 
 template<typename T>
-T& set_at(std::set<T> s, u32 i)
+T set_at(std::set<T> s, u32 i)
 {
   auto iter = s.begin();
   while(i>0){ ++iter; --i;}
   return *iter;
 }
 
-void rand_init();
+void rand_init(s32);
 
 u32 rand_below(u32 limit);
 
