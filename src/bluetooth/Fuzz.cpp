@@ -7,6 +7,7 @@
 #include "../../include/bluetooth.h"
 #include "BTFuzzState.h"
 #include "Operation.h"
+#include "Hci.h"
 
 using namespace std;
 
@@ -47,4 +48,9 @@ extern "C" void bt_deserialize_state(u8* buf)
 extern "C" void bt_rand_init(s32 fd)
 {
   rand_init(fd);
+}
+
+extern "C" u32 bt_init_corpus_count()
+{
+  return 2 *(operations.size() + sEvt.size() + sLeEvt.size());
 }

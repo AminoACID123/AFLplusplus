@@ -387,12 +387,17 @@ u8 fuzz_one_original(afl_state_t *afl) {
   u32 bt_len;
 
   if(!afl->queue_cur){
-    memset(afl->fsrv.trace_bits2, 0, afl->fsrv.map_size);
-    memset(afl->fsrv.trace_bits3, 0, afl->fsrv.map_size);
-    bt_len = bt_fuzz_one(bt_in, 0, afl->fsrv.trace_bits2, afl->fsrv.trace_bits3, true, NULL);
-    common_fuzz_stuff(afl, bt_in, bt_len);
-    s32 fd = open("test", O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_PERMISSION);
-    write(fd, bt_in, bt_len);
+    u32 n = bt_init_corpus_count();
+    for(u32 i=0;i<n;++i)
+    {
+        memset(afl->fsrv.trace_bits2, 0, afl->fsrv.map_size);
+        memset(afl->fsrv.trace_bits3, 0, afl->fsrv.map_size);
+        bt_len = bt_fuzz_one(bt_in, 0, afl->fsrv.trace_bits2, afl->fsrv.trace_bits3, true, NULL);
+        common_fuzz_stuff(afl, bt_in, bt_len);
+    }
+
+    // s32 fd = open("test", O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_PERMISSION);
+    // write(fd, bt_in, bt_len);
   }
 
 #ifdef IGNORE_FINDS
