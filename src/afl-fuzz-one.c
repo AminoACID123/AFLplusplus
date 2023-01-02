@@ -385,20 +385,26 @@ u8 fuzz_one_original(afl_state_t *afl) {
 
   static u8 bt_in[BT_MAX_BUFFER_SIZE];
   u32 bt_len;
-
+  u32 bt_queued = afl->queued_items;
+  
   if(!afl->queue_cur){
     u32 n = bt_init_corpus_count();
     for(u32 i=0;i<n;++i)
     {
         memset(afl->fsrv.trace_bits2, 0, afl->fsrv.map_size);
         memset(afl->fsrv.trace_bits3, 0, afl->fsrv.map_size);
-        bt_len = bt_fuzz_one(bt_in, 0, afl->fsrv.trace_bits2, afl->fsrv.trace_bits3, true, NULL);
+        bt_len = bt_fuzz_one(bt_in);
         common_fuzz_stuff(afl, bt_in, bt_len);
+        // char* fn = alloc_printf("test%d", i);
+        // s32 fd = open(fn, O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_PERMISSION);
+        // write(fd, bt_in, bt_len);
     }
-
-    // s32 fd = open("test", O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_PERMISSION);
-    // write(fd, bt_in, bt_len);
+    afl->current_entry = 0;
+    afl->queue_cur = afl->queue_buf[afl->current_entry]; 
+    return 0;
   }
+
+
 
 #ifdef IGNORE_FINDS
 
@@ -568,6 +574,20 @@ u8 fuzz_one_original(afl_state_t *afl) {
 
     goto abandon_entry;
 
+  }
+
+  if(afl->bt){
+    memcpy(bt_in, in_buf, len);
+    bt_restore_state(afl->queue_cur->bt_state_buf);
+    for(u32 i=0;i<100;i++){
+      bt_len = len + bt_fuzz_one(bt_in + len);
+      common_fuzz_stuff(afl, bt_in, bt_len);
+      if(bt_queued < afl->queued_items){
+        bt_queued = afl->queued_items;
+        bt_restore_state(afl->queue_cur->bt_state_buf);
+      }
+    }
+    return 0;
   }
 
   if (unlikely(afl->shm.cmplog_mode &&

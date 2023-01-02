@@ -153,6 +153,7 @@ struct queue_entry {
 
   u8 *fname;                            /* File name for the test case      */
   u32 len;                              /* Input length                     */
+  u32 state_len;
   u32 id;                               /* entry number in queue_buf        */
 
   u8 colorized,                         /* Do not run redqueen stage again  */
@@ -187,6 +188,7 @@ struct queue_entry {
       weight;
 
   u8 *testcase_buf;                     /* The testcase buffer, if loaded.  */
+  u8 *bt_state_buf;
 
   u8             *cmplog_colorinput;    /* the result buf of colorization   */
   struct tainted *taint;                /* Taint information from CmpLog    */

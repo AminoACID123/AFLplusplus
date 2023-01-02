@@ -2043,7 +2043,7 @@ int main(int argc, char **argv_orig, char **envp) {
   setenv(SHM3_ENV_VAR, shm_str, 1);
   afl->shm3.map = shmat(afl->shm3.shm_id, NULL, 0);
   afl->fsrv.trace_bits3 = afl->shm3.map;
-  
+  bt_set_buf(afl->fsrv.trace_bits2, afl->fsrv.trace_bits3);
 
   if (!afl->non_instrumented_mode && !afl->fsrv.qemu_mode &&
       !afl->unicorn_mode && !afl->fsrv.frida_mode && !afl->fsrv.cs_mode &&

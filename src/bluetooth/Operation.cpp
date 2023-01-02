@@ -122,20 +122,14 @@ void init_operations()
     operations.push_back(Operation(CORE_OPERATION_L2CAP_REGISTER_SERVICE, true));    
 }
 
-Operation* deserialize(u8* buf)
+void Operation::deserialize(operation_t* pOp)
 {
-    item_t* pItem = (item_t*)buf;
-    operation_t* pOp = (operation_t*)pItem->data;
     parameter_t* pParam = (parameter_t*)pOp->data;
-    Operation* op = get_operation(pOp->id);
-    if(!op) return nullptr;
-
-    for(Parameter* p : op->inputs){
+    for(Parameter* p : inputs){
         p->bytes = pParam->len;
         memcpy(p->data, pParam->data, p->bytes);
-        pParam++;
+        pParam = (parameter_t*)&pParam->data[pParam->len];
     }
-    return op;
 }
 
 bool Parameter::generate()

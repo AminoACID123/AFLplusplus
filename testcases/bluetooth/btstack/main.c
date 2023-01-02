@@ -32,13 +32,13 @@ int main(int argc, const char * argv[]){
     //     execute_one(buf + 1, len - 1);
     // }
 
-// unsigned char* buf = __AFL_FUZZ_TESTCASE_BUF;
-//   int len = __AFL_FUZZ_TESTCASE_LEN;
+unsigned char* buf = __AFL_FUZZ_TESTCASE_BUF;
+   int len = __AFL_FUZZ_TESTCASE_LEN;
 
-char buf[2048];
+// char buf[2048];
 
- FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/test","rb");
-int len = fread(buf, 1, 2048, f);
+ //FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/test0","rb");
+//int len = fread(buf, 1, 2048, f);
 
     stack_execute(buf, len);
 

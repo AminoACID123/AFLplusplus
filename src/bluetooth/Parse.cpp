@@ -80,6 +80,7 @@ void parse_static_functions(cJSON *file)
 void parse_parameters(cJSON *file)
 {
     s32 i = 0;
+    u32 offset = 0;
     cJSON *item, *value, *_byte;
     cJSON *root = cJSON_GetObjectItem(file, "parameters");
 
@@ -110,6 +111,7 @@ void parse_parameters(cJSON *file)
             }
             param.bytes = param.max_bytes = param.min_bytes = cJSON_GetObjectItem(item, "bytes")->valueint;
         }
+        
         param.id = i++;
         parameters.push_back(param);
     }

@@ -19,7 +19,7 @@
 #define L2CAP_CID_SIGNALING_LE                     0x0005
 #define L2CAP_CID_SECURITY_MANAGER_PROTOCOL        0x0006
 #define L2CAP_CID_BR_EDR_SECURITY_MANAGER          0x0007
-#define FIXED_CID(cid) (cid >= L2CAP_CID_SIGNALING && cid <= L@L2CAP_CID_BR_EDR_SECURITY_MANAGER)
+#define FIXED_CID(cid) (cid >= L2CAP_CID_SIGNALING && cid <= L2CAP_CID_BR_EDR_SECURITY_MANAGER)
 
 #define BLUETOOTH_PSM_SDP                                                                0x0001
 #define BLUETOOTH_PSM_RFCOMM                                                             0x0003
@@ -57,6 +57,9 @@ class BTFuzzState {
 
   bool sema;
 
+  u8* hci;
+  u8* rt;
+
   static BTFuzzState* bt;
 
   BTFuzzState();
@@ -75,11 +78,17 @@ public:
 
   void reset();
 
+  void sync();
+
   void enable_sema(bool s) { sema = s;}
 
-  u32 step_one(u8*, u32, u8*, u8*);
+  void set_buffers(u8* _hci, u8* _rt) {hci=_hci; rt=_rt;}
 
-  u32 generate(u8*);
+  u32 step_one(u8*, u32);
+
+  u32 fuzz_one(u8*);
+
+  void handle_item(item_t*);
 
   void handle_cmd(hci_command_t*);
 
