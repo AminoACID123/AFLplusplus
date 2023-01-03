@@ -149,7 +149,7 @@
             "domain": []
         }
     ],
-    "headers" : ["stdlib.h", "gap.h", "ble/sm.h"],
+    "headers" : ["stdlib.h", "gap.h", "ble/sm.h", "l2cap.h"],
     "static_functions" : [
         "le_advertising_set_t le_adv_set;",
         "static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}",
@@ -1227,7 +1227,7 @@
             "name": "l2cap_create_channel",
             "inputs": ["bd_addr_t", "psm"],
             "outputs": [],
-            "exec": ["l2cap_create_channel(packet_handler, $i0, *(u16*)$i1, __afl_area3_ptr);"]
+            "exec": ["l2cap_create_channel(packet_handler, $i0, *(u16*)$i1, 255, (u16*)__afl_area3_ptr);"]
         },
         {
             "name": "l2cap_register_service",

@@ -1283,7 +1283,7 @@ void queue_testcase_retake_mem(afl_state_t *afl, struct queue_entry *q, u8 *in,
 
 /* Add a new queue entry directly to the cache */
 
-void queue_testcase_store_mem(afl_state_t *afl, struct queue_entry *q, u8 *mem);
+void queue_testcase_store_mem(afl_state_t *afl, struct queue_entry *q, u8 *mem, u8* smem);
 
 #if TESTCASE_CACHE == 1
   #error define of TESTCASE_CACHE must be zero or larger than 1

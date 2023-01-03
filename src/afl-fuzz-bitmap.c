@@ -24,6 +24,8 @@
  */
 
 #include "afl-fuzz.h"
+#include "bluetooth.h"
+#include "bluetooth_api.h"
 #include <limits.h>
 #if !defined NAME_MAX
   #define NAME_MAX _XOPEN_NAME_MAX
@@ -512,7 +514,21 @@ save_if_interesting(afl_state_t *afl, void *mem, u32 len, u8 fault) {
     if (unlikely(fd < 0)) { PFATAL("Unable to create '%s'", queue_fn); }
     ck_write(fd, mem, len, queue_fn);
     close(fd);
+
+    bt_step_one(mem, len);
+
+    static u8 bt_state[BT_MAX_BUFFER_SIZE];
+    u32 bt_state_len;
+    char* sfname = alloc_printf("%s:%s", queue_fn, "state");
+    s32 sfd = open(sfname, O_WRONLY | O_CREAT | O_EXCL, DEFAULT_PERMISSION);
+    if (unlikely(sfd < 0)) { PFATAL("Unable to create '%s'", sfname); }
+    bt_state_len  = bt_serialize_state(bt_state);
+    ck_write(sfd, bt_state, bt_state_len, sfname);
+    free(sfname);
+    close(sfd);
+
     add_to_queue(afl, queue_fn, len, 0);
+    afl->queue_top->state_len = bt_state_len;
 
 #ifdef INTROSPECTION
     if (afl->custom_mutators_count && afl->current_custom_fuzz) {
@@ -575,7 +591,7 @@ save_if_interesting(afl_state_t *afl, void *mem, u32 len, u8 fault) {
 
     if (likely(afl->q_testcase_max_cache_size)) {
 
-      queue_testcase_store_mem(afl, afl->queue_top, mem);
+      queue_testcase_store_mem(afl, afl->queue_top, mem, bt_state);
 
     }
 

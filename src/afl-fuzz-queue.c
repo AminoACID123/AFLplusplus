@@ -23,6 +23,8 @@
  */
 
 #include "afl-fuzz.h"
+#include "bluetooth.h"
+#include "bluetooth_api.h"
 #include <limits.h>
 #include <ctype.h>
 #include <math.h>
@@ -527,6 +529,7 @@ void add_to_queue(afl_state_t *afl, u8 *fname, u32 len, u8 passed_det) {
   q->passed_det = passed_det;
   q->trace_mini = NULL;
   q->testcase_buf = NULL;
+  q->bt_state_buf = NULL;
   q->mother = afl->queue_cur;
 
 #ifdef INTROSPECTION
@@ -1168,10 +1171,15 @@ inline u8 *queue_testcase_get(afl_state_t *afl, struct queue_entry *q) {
     }
 
     int fd = open(q->fname, O_RDONLY);
+    char* sfname = alloc_printf("%s:%s", q->fname, "state");
+    int sfd = open(sfname, O_RDONLY);
 
     if (unlikely(fd < 0)) { PFATAL("Unable to open '%s'", q->fname); }
+    if (unlikely(sfd < 0)) { PFATAL("Unable to open '%s'",  sfname); }
 
     ck_read(fd, buf, len, q->fname);
+    ck_read(sfd, q->bt_state_buf, q->state_len, sfname);
+    free(sfname);
     close(fd);
     return buf;
 
@@ -1264,7 +1272,7 @@ inline u8 *queue_testcase_get(afl_state_t *afl, struct queue_entry *q) {
 
     if (unlikely(fd < 0)) { PFATAL("Unable to open '%s'", q->fname); }
 
-    q->testcase_buf = malloc(len);
+    q->testcase_buf = malloc(len);    
 
     if (unlikely(!q->testcase_buf)) {
 
@@ -1272,9 +1280,23 @@ inline u8 *queue_testcase_get(afl_state_t *afl, struct queue_entry *q) {
 
     }
 
-    ck_read(fd, q->testcase_buf, len, q->fname);
-    close(fd);
+    q->bt_state_buf = malloc(q->state_len);
 
+    if (unlikely(!q->bt_state_buf)) {
+
+      PFATAL("Unable to malloc with len %u", len);
+
+    }
+
+    char* sfname= alloc_printf("%s:%s", q->fname, "state");
+    int sfd = open(sfname, O_RDONLY);
+    if (unlikely(sfd < 0)) { PFATAL("Unable to open '%s'", sfname); }
+
+    ck_read(fd, q->testcase_buf, len, q->fname);
+    ck_read(sfd, q->bt_state_buf, q->state_len, sfname);
+    close(fd);
+    close(sfd);
+    free(sfname);
     /* Register testcase as cached */
     afl->q_testcase_cache[tid] = q;
     afl->q_testcase_cache_size += len;
@@ -1298,7 +1320,7 @@ inline u8 *queue_testcase_get(afl_state_t *afl, struct queue_entry *q) {
 /* Adds the new queue entry to the cache. */
 
 inline void queue_testcase_store_mem(afl_state_t *afl, struct queue_entry *q,
-                                     u8 *mem) {
+                                     u8 *mem, u8 *smem) {
 
   u32 len = q->len;
 
@@ -1333,6 +1355,8 @@ inline void queue_testcase_store_mem(afl_state_t *afl, struct queue_entry *q,
 
   q->testcase_buf = malloc(len);
 
+  q->bt_state_buf = malloc(q->state_len);
+
   if (unlikely(!q->testcase_buf)) {
 
     PFATAL("Unable to malloc '%s' with len %u", q->fname, len);
@@ -1340,6 +1364,8 @@ inline void queue_testcase_store_mem(afl_state_t *afl, struct queue_entry *q,
   }
 
   memcpy(q->testcase_buf, mem, len);
+
+  memcpy(q->bt_state_buf, smem, q->state_len);
 
   /* Register testcase as cached */
   afl->q_testcase_cache[tid] = q;

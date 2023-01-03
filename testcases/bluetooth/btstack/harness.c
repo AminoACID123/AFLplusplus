@@ -1,5 +1,6 @@
 #include "ble/sm.h"
 #include "gap.h"
+#include "l2cap.h"
 #include "stdlib.h"
 #define MAX_INPUT 14
 typedef uint8_t u8;
@@ -1111,7 +1112,7 @@ void operation146() {
   u32 _s0 = *(u32*)arg_in[1];
   u8* _i1 = arg_in[2];
   u32 _s1 = *(u32*)arg_in[3];
-  l2cap_create_channel(packet_handler, _i0, *(u16*)_i1, __afl_area3_ptr);
+  l2cap_create_channel(packet_handler, _i0, *(u16*)_i1, 255, (u16*)__afl_area3_ptr);
 }
 
 void operation147() {

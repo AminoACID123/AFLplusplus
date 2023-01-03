@@ -58,6 +58,11 @@ u32 BTFuzzState::serialize(u8 *buf)
 
 void BTFuzzState::deserialize(u8 *buf)
 {
+    if(!buf){
+        reset();
+        return;
+    }
+
     // Deserialize Connection States
     item_t *pItem = (item_t *)buf;
     hci_con *pCon = (hci_con *)pItem->data;
@@ -86,6 +91,8 @@ void BTFuzzState::deserialize(u8 *buf)
         sPsm.insert(*pPsm);
         pPsm++;
     }
+
+    sync();
 }
 
 void BTFuzzState::reset()
@@ -115,17 +122,13 @@ void BTFuzzState::sync()
     {
         pPsm->domain.clear();
         for (u16 psm : sPsm)
-        {
             pPsm->domain.insert(bytes2vec(psm));
-        }
     }
     if (Parameter *pCid = get_parameter(CORE_PARAMETER_CID))
     {
         pCid->domain.clear();
         for (u16 cid : sCid)
-        {
             pCid->domain.insert(bytes2vec(cid));
-        }
     }
 }
 
@@ -161,11 +164,21 @@ u32 BTFuzzState::step_one(u8 *items, u32 size)
             break;
         }
     }
+    
 }
 
 u32 BTFuzzState::fuzz_one(u8 *buf)
 {
     u32 r = rand_below(100);
+
+    if(r <= 30 && sema)
+    {
+
+    }else
+    {
+
+    }
+
     if (r <= 100)
     {
         Operation *op = get_operation(rand_below(operations.size()));
@@ -215,7 +228,7 @@ void BTFuzzState::handle_op_l2cap_create_channel(operation_t *op)
 {
     u16 *cid = (u16 *)rt;
     vCid.push_back(*cid);
-    sPsm.insert(*cid);
+    sCid.insert(*cid);
 }
 
 void BTFuzzState::handle_op_l2cap_register_service(operation_t *op)

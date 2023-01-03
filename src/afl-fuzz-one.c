@@ -389,6 +389,9 @@ u8 fuzz_one_original(afl_state_t *afl) {
   
   if(!afl->queue_cur){
     u32 n = bt_init_corpus_count();
+    afl->stage_short = "BTInit";
+    afl->stage_max = n;
+    afl->stage_name = "BT Init";
     for(u32 i=0;i<n;++i)
     {
         memset(afl->fsrv.trace_bits2, 0, afl->fsrv.map_size);
@@ -577,6 +580,9 @@ u8 fuzz_one_original(afl_state_t *afl) {
   }
 
   if(afl->bt){
+    afl->stage_short = "BTSema";
+    afl->stage_max = 100;
+    afl->stage_name = "BT Sema";
     memcpy(bt_in, in_buf, len);
     bt_restore_state(afl->queue_cur->bt_state_buf);
     for(u32 i=0;i<100;i++){
