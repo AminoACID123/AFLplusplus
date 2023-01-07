@@ -37,7 +37,7 @@ unsigned char* buf = __AFL_FUZZ_TESTCASE_BUF;
 
 //char buf[2048];
 
- //FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/out/default/queue/id:000000,src:000000,time:1,execs:1,op:BTInit,pos:0,+cov","rb");
+// FILE* f =fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack/out/default/crashes/id:000002,sig:11,src:000022,time:161,execs:1687,op:BTSema,pos:0","rb");
 //int len = fread(buf, 1, 2048, f);
 
     stack_execute(buf, len);

@@ -474,7 +474,7 @@
         },
         {
             "name": "gap_scan_response_set_data",
-            "inputs": ["data[0:255]"],
+            "inputs": ["data[1:255]"],
             "outputs": [],
             "exec": ["gap_scan_response_set_data($s0, $i0);"]
         },
@@ -564,7 +564,7 @@
         },
         {
             "name": "gap_extended_advertising_set_adv_data",
-            "inputs": ["advertising_handle", "data[0:128]"],
+            "inputs": ["advertising_handle", "data[1:128]"],
             "outputs": [],
             "exec": [
                 "gap_extended_advertising_set_adv_data(*$i0, $s1, $i1);"
@@ -572,7 +572,7 @@
         },
         {
             "name": "gap_extended_advertising_set_scan_response_data",
-            "inputs": ["advertising_handle", "data[0:128]"],
+            "inputs": ["advertising_handle", "data[1:128]"],
             "outputs": [],
             "exec": [
                 "gap_extended_advertising_set_scan_response_data(*$i0, $s1, $i1);"
@@ -580,7 +580,7 @@
         },
         {
             "name": "gap_periodic_advertising_set_data",
-            "inputs": ["advertising_handle", "data[0:128]"],
+            "inputs": ["advertising_handle", "data[1:128]"],
             "outputs": [],
             "exec": [
                 "gap_periodic_advertising_set_data(*$i0, $s1, $i1);"

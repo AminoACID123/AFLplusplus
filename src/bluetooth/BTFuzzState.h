@@ -39,21 +39,55 @@
 #define BLUETOOTH_PSM_OTS                                                                0x0025
 #define FIXED_PSM(psm) ((psm % 2 == 1) && ((psm <= BLUETOOTH_PSM_TCS_BIN_CORDLESS) || (psm >= BLUETOOTH_PSM_BNEP && psm <= BLUETOOTH_PSM_OTS)))
 
+#define Classic 0
+#define LE 1
 
 class BTFuzzState {
 
-  struct hci_con{
+  struct bd_addr{
     u8 addr[6];
-    u8 type;
+    bool operator < (const bd_addr& other) const{
+      for(u32 i=0;i<6;i++)
+        if(addr[i] < other.addr[i])
+          return true;
+      return false;
+    }
   }__attribute__((packed));
 
-  std::set<u16> sCid;
-  std::set<u16> sPsm;
+  struct hci_con{
+    u16 handle;
+    u8 type;
+    bd_addr addr;
+    bool operator < (const hci_con& other) const{
+      if(handle < other.handle)
+        return true;
+      if(type < other.type)
+        return type;
+      return memcmp(addr.addr, other.addr.addr, 6) < 0;
+    }
+  }__attribute__((packed));
 
+
+  u16 max_handle;
+
+  std::set<hci_con> sCon;
   std::vector<hci_con> vCon;
-  std::vector<hci_con> vCon_pend;
+
+  std::set<u16> sCid;
   std::vector<u16> vCid;
+
+  std::set<u16> sPsm;
   std::vector<u16> vPsm;
+
+  hci_con pending_le_con;
+
+  std::set<hci_con> sPending_con;
+  std::vector<hci_con> vPending_con;
+
+  std::set<u16> sPending_discon;
+
+  std::vector<std::vector<u8>> vPending_cmd;
+  std::set<std::vector<u8>> sPending_cmd;
 
   bool sema;
 

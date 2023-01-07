@@ -15,6 +15,16 @@ extern std::vector<u8> vLeEvt;
 extern std::vector<u16> vStatusCmd;
 extern std::vector<u16> vCompleteCmd;
 
+ typedef enum {
+    BD_ADDR_TYPE_LE_PUBLIC = 0,
+    BD_ADDR_TYPE_LE_RANDOM = 1,
+    BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC = 2,
+    BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM = 3,
+    BD_ADDR_TYPE_SCO       = 0xfc,
+    BD_ADDR_TYPE_ACL       = 0xfd,
+    BD_ADDR_TYPE_UNKNOWN   = 0xfe,  // also used as 'invalid'
+} bd_addr_type_t;
+
 
 #define BT_HCI_CMD_BIT(_byte, _bit) ((8 * _byte) + _bit)
 

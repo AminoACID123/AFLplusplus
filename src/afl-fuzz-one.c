@@ -398,6 +398,10 @@ u8 fuzz_one_original(afl_state_t *afl) {
         memset(afl->fsrv.trace_bits3, 0, afl->fsrv.map_size);
         bt_len = bt_fuzz_one(bt_in);
         common_fuzz_stuff(afl, bt_in, bt_len);
+        if(bt_queued < afl->queued_items){
+          bt_queued = afl->queued_items;
+          bt_restore_state(NULL);
+        }
         // char* fn = alloc_printf("test%d", i);
         // s32 fd = open(fn, O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_PERMISSION);
         // write(fd, bt_in, bt_len);
@@ -586,6 +590,7 @@ u8 fuzz_one_original(afl_state_t *afl) {
     memcpy(bt_in, in_buf, len);
     bt_restore_state(afl->queue_cur->bt_state_buf);
     for(u32 i=0;i<100;i++){
+      afl->stage_cur = i;
       bt_len = len + bt_fuzz_one(bt_in + len);
       common_fuzz_stuff(afl, bt_in, bt_len);
       if(bt_queued < afl->queued_items){

@@ -1181,6 +1181,7 @@ inline u8 *queue_testcase_get(afl_state_t *afl, struct queue_entry *q) {
     ck_read(sfd, q->bt_state_buf, q->state_len, sfname);
     free(sfname);
     close(fd);
+    close(sfd);
     return buf;
 
   }

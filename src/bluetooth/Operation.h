@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "../../include/bluetooth.h"
 #include "../../include/types.h"
@@ -53,7 +54,7 @@ struct Operation
     bool generate() {
         bool res = true;
         for(Parameter* p : inputs)
-           res = res && p->generate();
+           res = p->generate() && res;
         return res;
     }
 };

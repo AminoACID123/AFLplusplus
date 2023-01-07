@@ -1,6 +1,8 @@
 #include "Operation.h"
 #include "Util.h"
 #include "../../include/bluetooth.h"
+#include "assert.h"
+#include <iostream>
 #include <string.h>
 #include <string>
 #include <set>
@@ -70,7 +72,7 @@ Parameter *get_parameter(string name)
             param->max_bytes = param->min_bytes;
         }
         else{
-            param->min_bytes = 0;
+            param->min_bytes = 1;
             param->max_bytes = BT_MAX_PARAM_SIZE;
         }
         return param;
@@ -135,7 +137,8 @@ void Operation::deserialize(operation_t* pOp)
 bool Parameter::generate()
 {
     bool res = true;
-    bytes = (max_bytes == min_bytes) ? max_bytes : min_bytes + rand_below(max_bytes - min_bytes);
+    bytes = (max_bytes == min_bytes) ? max_bytes : (min_bytes + rand_below(max_bytes - min_bytes));
+    assert(bytes!=0);
     if(isEnum){
         data[0] = rand_below(domain.size());
     }else if(!domain.empty()){
