@@ -1050,3 +1050,40 @@ common_fuzz_stuff(afl_state_t *afl, u8 *out_buf, u32 len) {
 
 }
 
+
+u8 __attribute__((hot))
+bt_common_fuzz_stuff(afl_state_t *afl, u8 *out_buf, u32 len, bool end) {
+
+  u8 fault;
+
+  if (unlikely(len = write_to_testcase(afl, (void **)&out_buf, len, 0)) == 0) {
+
+    return 0;
+
+  }
+
+  fault = fuzz_run_target(afl, &afl->fsrv, afl->fsrv.exec_tmout);
+
+  if (afl->stop_soon) { return 1; }
+
+  if (fault == FSRV_RUN_TMOUT) {
+      ++afl->cur_skipped_items;
+      return 1;
+  }
+
+  if(fault != afl->crash_mode || end){
+    afl->queued_discovered += save_if_interesting(afl, out_buf, len, fault);
+    return 1;
+  }
+  
+
+  if (!(afl->stage_cur % afl->stats_update_freq) ||
+      afl->stage_cur + 1 == afl->stage_max) {
+
+    show_stats(afl);
+
+  }
+
+  return 0;
+
+}

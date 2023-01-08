@@ -515,7 +515,7 @@ save_if_interesting(afl_state_t *afl, void *mem, u32 len, u8 fault) {
     ck_write(fd, mem, len, queue_fn);
     close(fd);
 
-    bt_step_one(mem, len);
+    // bt_step_one(mem, len);
 
     static u8 bt_state[BT_MAX_BUFFER_SIZE];
     u32 bt_state_len;

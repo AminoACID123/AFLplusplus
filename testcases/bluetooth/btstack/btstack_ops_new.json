@@ -446,7 +446,7 @@
             "name": "gap_random_address_set_update_period",
             "inputs": ["data[4]"],
             "outputs": [],
-            "exec": ["gap_random_address_set_update_period(*(u32*)$i0);"]
+            "exec": ["gap_random_address_set_update_period((*(u32*)$i0)%3+1);"]
         },
         {
             "name": "gap_random_address_set",

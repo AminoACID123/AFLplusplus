@@ -5,6 +5,9 @@
 #include <set>
 #include <vector>
 
+#define VTOR(x) v##x
+#define SET(x) s##x
+
 template<typename T>
 std::vector<u8> bytes2vec(T data)
 {

@@ -387,29 +387,32 @@ u8 fuzz_one_original(afl_state_t *afl) {
   u32 bt_len;
   u32 bt_queued = afl->queued_items;
   
-  if(!afl->queue_cur){
-    u32 n = bt_init_corpus_count();
-    afl->stage_short = "BTInit";
-    afl->stage_max = n;
-    afl->stage_name = "BT Init";
-    for(u32 i=0;i<n;++i)
-    {
-        memset(afl->fsrv.trace_bits2, 0, afl->fsrv.map_size);
-        memset(afl->fsrv.trace_bits3, 0, afl->fsrv.map_size);
-        bt_len = bt_fuzz_one(bt_in);
-        common_fuzz_stuff(afl, bt_in, bt_len);
-        if(bt_queued < afl->queued_items){
-          bt_queued = afl->queued_items;
-          bt_restore_state(NULL);
-        }
-        // char* fn = alloc_printf("test%d", i);
-        // s32 fd = open(fn, O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_PERMISSION);
-        // write(fd, bt_in, bt_len);
-    }
-    afl->current_entry = 0;
-    afl->queue_cur = afl->queue_buf[afl->current_entry]; 
-    return 0;
-  }
+  if(!afl->queue_cur)
+    goto bt_fuzz_stage;
+
+  // if(!afl->queue_cur){
+  //   u32 n = bt_init_corpus_count();
+  //   afl->stage_short = "BTInit";
+  //   afl->stage_max = n;
+  //   afl->stage_name = "BT Init";
+  //   for(u32 i=0;i<n;++i)
+  //   {
+  //       memset(afl->fsrv.trace_bits2, 0, afl->fsrv.map_size);
+  //       memset(afl->fsrv.trace_bits3, 0, afl->fsrv.map_size);
+  //       bt_len = bt_fuzz_one(bt_in);
+  //       common_fuzz_stuff(afl, bt_in, bt_len);
+  //       if(bt_queued < afl->queued_items){
+  //         bt_queued = afl->queued_items;
+  //         bt_restore_state(NULL);
+  //       }
+  //       // char* fn = alloc_printf("test%d", i);
+  //       // s32 fd = open(fn, O_WRONLY | O_CREAT | O_TRUNC, DEFAULT_PERMISSION);
+  //       // write(fd, bt_in, bt_len);
+  //   }
+  //   afl->current_entry = 0;
+  //   afl->queue_cur = afl->queue_buf[afl->current_entry]; 
+  //   return 0;
+  // }
 
 
 
@@ -565,7 +568,8 @@ u8 fuzz_one_original(afl_state_t *afl) {
 
   }
 
-  memcpy(out_buf, in_buf, len);
+  if(!afl->bt)
+    memcpy(out_buf, in_buf, len);
 
   /*********************
    * PERFORMANCE SCORE *
@@ -583,21 +587,40 @@ u8 fuzz_one_original(afl_state_t *afl) {
 
   }
 
+bt_fuzz_stage:
+
   if(afl->bt){
     afl->stage_short = "BTSema";
-    afl->stage_max = 100;
-    afl->stage_name = "BT Sema";
-    memcpy(bt_in, in_buf, len);
-    bt_restore_state(afl->queue_cur->bt_state_buf);
-    for(u32 i=0;i<100;i++){
-      afl->stage_cur = i;
-      bt_len = len + bt_fuzz_one(bt_in + len);
-      common_fuzz_stuff(afl, bt_in, bt_len);
-      if(bt_queued < afl->queued_items){
-        bt_queued = afl->queued_items;
+    afl->stage_max = 10;
+    afl->stage_name = "BT Semantics";
+
+    if(afl->queue_cur){
+      memcpy(bt_in, in_buf, len);
+      bt_len = len;
+    }else
+      bt_len = 0;
+
+    for(afl->stage_cur=0;afl->stage_cur<afl->stage_max;++afl->stage_cur){
+      u32 steps = rand_below(afl, BT_MAX_STEPS - 1) + 1;
+      if(!afl->queue_cur){
+        bt_restore_state(NULL);
+        bt_len = 0;
+      }else{
         bt_restore_state(afl->queue_cur->bt_state_buf);
+        bt_len = len;
+      }
+
+      for(u32 j=0;j<steps;j++){
+        bt_len += bt_fuzz_one(bt_in + bt_len);
+        bt_common_fuzz_stuff(afl, bt_in, bt_len, j == steps -1);
       }
     }
+
+  if(!afl->queue_cur){
+     afl->current_entry = 0;
+     afl->queue_cur = afl->queue_buf[afl->current_entry]; 
+  }
+
     return 0;
   }
 

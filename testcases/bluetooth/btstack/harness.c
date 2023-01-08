@@ -367,7 +367,7 @@ void operation45() {
 void operation46() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  gap_random_address_set_update_period(*(u32*)_i0);
+  gap_random_address_set_update_period((*(u32*)_i0)%3+1);
 }
 
 void operation47() {

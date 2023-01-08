@@ -2,6 +2,7 @@
 #define BT_MUTATE_H
 
 #include "../../include/types.h"
+#include "Util.h"
 #include "Operation.h"
 #include <fcntl.h>
 #include <map>
@@ -69,25 +70,19 @@ class BTFuzzState {
 
 
   u16 max_handle;
-
-  std::set<hci_con> sCon;
-  std::vector<hci_con> vCon;
-
-  std::set<u16> sCid;
-  std::vector<u16> vCid;
-
-  std::set<u16> sPsm;
-  std::vector<u16> vPsm;
-
   hci_con pending_le_con;
+  std::set<hci_con> pcon;
+  std::set<hci_con> con;
+  std::set<u16> cid;
+  std::set<u16> psm;
+  std::set<u16> pdiscon;
+  std::set<std::vector<u8>> pcmd;
 
-  std::set<hci_con> sPending_con;
-  std::vector<hci_con> vPending_con;
-
-  std::set<u16> sPending_discon;
-
-  std::vector<std::vector<u8>> vPending_cmd;
-  std::set<std::vector<u8>> sPending_cmd;
+  std::vector<hci_con> VTOR(con);
+  std::vector<u16> VTOR(cid);
+  std::vector<u16> VTOR(psm);
+  std::vector<hci_con> VTOR(pcon);
+  std::vector<std::vector<u8>> VTOR(pcmd);
 
   bool sema;
 
@@ -121,6 +116,10 @@ public:
   u32 step_one(u8*, u32);
 
   u32 fuzz_one(u8*);
+
+  u32 fuzz_one_sema(u8*);
+
+  u32 fuzz_one_rand(u8*);
 
   void handle_item(item_t*);
 
