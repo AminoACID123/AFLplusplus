@@ -9,7 +9,7 @@
 #define SET(x) s##x
 
 template<typename T>
-std::vector<u8> bytes2vec(T data)
+std::vector<u8>&& bytes2vec(T data)
 {
   u8* p = (u8*)&data; 
   std::vector<u8> res;
@@ -19,7 +19,7 @@ std::vector<u8> bytes2vec(T data)
 }
 
 template<typename T>
-T set_at(std::set<T> s, u32 i)
+T set_at(std::set<T>& s, u32 i)
 {
   auto iter = s.begin();
   while(i>0){ ++iter; --i;}

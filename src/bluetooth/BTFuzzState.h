@@ -1,6 +1,7 @@
 #ifndef BT_MUTATE_H
 #define BT_MUTATE_H
 
+#include "assert.h"
 #include "../../include/types.h"
 #include "Util.h"
 #include "Operation.h"
@@ -12,131 +13,165 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <vector>
 
-
-#define L2CAP_CID_SIGNALING                        0x0001
-#define L2CAP_CID_CONNECTIONLESS_CHANNEL           0x0002
-#define L2CAP_CID_ATTRIBUTE_PROTOCOL               0x0004
-#define L2CAP_CID_SIGNALING_LE                     0x0005
-#define L2CAP_CID_SECURITY_MANAGER_PROTOCOL        0x0006
-#define L2CAP_CID_BR_EDR_SECURITY_MANAGER          0x0007
-#define FIXED_CID(cid) (cid >= L2CAP_CID_SIGNALING && cid <= L2CAP_CID_BR_EDR_SECURITY_MANAGER)
-
-#define BLUETOOTH_PSM_SDP                                                                0x0001
-#define BLUETOOTH_PSM_RFCOMM                                                             0x0003
-#define BLUETOOTH_PSM_TCS_BIN                                                            0x0005
-#define BLUETOOTH_PSM_TCS_BIN_CORDLESS                                                   0x0007
-#define BLUETOOTH_PSM_BNEP                                                               0x000F
-#define BLUETOOTH_PSM_HID_CONTROL                                                        0x0011
-#define BLUETOOTH_PSM_HID_INTERRUPT                                                      0x0013
-#define BLUETOOTH_PSM_UPNP                                                               0x0015
-#define BLUETOOTH_PSM_AVCTP                                                              0x0017
-#define BLUETOOTH_PSM_AVDTP                                                              0x0019
-#define BLUETOOTH_PSM_AVCTP_BROWSING                                                     0x001B
-#define BLUETOOTH_PSM_UDI_C_PLANE                                                        0x001D
-#define BLUETOOTH_PSM_ATT                                                                0x001F
-#define BLUETOOTH_PSM_3DSP                                                               0x0021
-#define BLUETOOTH_PSM_LE_PSM_IPSP                                                        0x0023
-#define BLUETOOTH_PSM_OTS                                                                0x0025
-#define FIXED_PSM(psm) ((psm % 2 == 1) && ((psm <= BLUETOOTH_PSM_TCS_BIN_CORDLESS) || (psm >= BLUETOOTH_PSM_BNEP && psm <= BLUETOOTH_PSM_OTS)))
-
-#define Classic 0
-#define LE 1
 
 class BTFuzzState {
 
-  struct bd_addr{
-    u8 addr[6];
-    bool operator < (const bd_addr& other) const{
-      for(u32 i=0;i<6;i++)
-        if(addr[i] < other.addr[i])
-          return true;
-      return false;
-    }
-  }__attribute__((packed));
+  // struct bd_addr{
+  //   u8 addr[6];
+  //   bool operator < (const bd_addr& other) const{
+  //     for(u32 i=0;i<6;i++)
+  //       if(addr[i] < other.addr[i])
+  //         return true;
+  //     return false;
+  //   }
+  // }__attribute__((packed));
 
   struct hci_con{
+    u8 valid;
     u16 handle;
     u8 type;
-    bd_addr addr;
-    bool operator < (const hci_con& other) const{
-      if(handle < other.handle)
-        return true;
-      if(type < other.type)
-        return type;
-      return memcmp(addr.addr, other.addr.addr, 6) < 0;
+    u8 addr[6];
+    hci_con(u8 t, u8* a)
+    {
+      type = t;
+      memcpy(addr, a, 6);
     }
   }__attribute__((packed));
 
-
   u16 max_handle;
-  hci_con pending_le_con;
-  std::set<hci_con> pcon;
-  std::set<hci_con> con;
-  std::set<u16> cid;
-  std::set<u16> psm;
-  std::set<u16> pdiscon;
-  std::set<std::vector<u8>> pcmd;
+  // hci_con pending_le_con;
+  // std::set<hci_con> pcon;
+  // std::set<hci_con> con;
+  // std::set<u16> cid;
+  // std::set<u16> psm;
+  // std::set<u16> pdiscon;
+  // std::set<std::vector<u8>> pcmd;
 
-  std::vector<hci_con> VTOR(con);
-  std::vector<u16> VTOR(cid);
-  std::vector<u16> VTOR(psm);
-  std::vector<hci_con> VTOR(pcon);
-  std::vector<std::vector<u8>> VTOR(pcmd);
 
-  bool sema;
-
-  u8* hci;
-  u8* rt;
-
-  static BTFuzzState* bt;
-
-  BTFuzzState();
-
-  void update();
+  std::vector<hci_con> pcons;
+  std::vector<hci_con> cons;
+  std::vector<u16> pdiscon;
+  std::vector<u16> cid;
+  std::vector<u16> psm;
+  std::vector<std::vector<u8>> pcmd;
 
 public:
-  static BTFuzzState* get(){
-    if(!bt){ bt = new BTFuzzState();}
-    return bt;
+
+  BTFuzzState(){
+
   }
 
-  u32 serialize(u8*);
+  inline std::vector<hci_con>& get_connections()
+  {
+    return cons;
+  }
 
-  void deserialize(u8*);
+  inline hci_con& get_connection(u16 handle)
+  {
+    for(hci_con& c : cons){
+      if(c.handle == handle)
+        return c;
+    }
+    assert(false && "Connection not exist");
+  }
 
-  void reset();
+  inline void add_pending_con(u8 type, u8* addr)
+  {
+    pcons.push_back(hci_con(type, addr));
+  }
 
-  void sync();
+  inline void remove_pending_con(u8* addr)
+  {
+    for(auto it = pcons.begin(),eit=pcons.end();it!=eit;++it)
+    {
+      if(memcmp(addr, it->addr, 6) == 0)
+        pcon.erase(it);
+        return;
+    }
+  }
 
-  void enable_sema(bool s) { sema = s;}
+  inline void add_con(hci_con& c)
+  {
+    cons.push_back(c);
+  }
 
-  void set_buffers(u8* _hci, u8* _rt) {hci=_hci; rt=_rt;}
+  inline void remove_con(u16 handle)
+  {
+    for(auto it = cons.begin(),eit=cons.end();it!=eit;++it){
+      if(it->handle == handle){
+        con.erase(it);
+        return;
+      }
+    }
+  }
 
-  u32 step_one(u8*, u32);
+  inline void add_pending_discon(u16 handle)
+  {
+    for(auto it=pdiscon.begin(),eit=pdiscon.end();it!=eit;++it){
+      if(*it == handle)
+        return;
+    }
+    pdiscon.push_back(handle);
+  }
 
-  u32 fuzz_one(u8*);
+  inline void remove_pending_discon(u16 handle)
+  {
+    for(auto it=pdiscon.begin(),eit=pdiscon.end();it!=eit;++it){
+      if(*it == handle){
+        pdiscon.erase(it);
+        return;
+      }
+    }
+  }
 
-  u32 fuzz_one_sema(u8*);
+  static inline bool is_le(u8 addr_type)
+  {
+    return addr_type == BD_ADDR_TYPE_LE_RANDOM || addr_type == BD_ADDR_TYPE_LE_PUBLIC
+        || addr_type == BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC
+        || addr_type == BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM;
+  }
 
-  u32 fuzz_one_rand(u8*);
+  inline void remove_pending_le_con()
+  {
+    for(auto it=pcons.begin(),eit=pcons.end();it!=eit;++it)
+    {
+      if(is_le(it->type)){
+        pcon.erase(it);
+        return;
+      }
+    }
+  }
+  inline void add_pending_cmd(hci_command_t* cmd)
+  {
+    pcmd.push_back(vector<u8>());
+    pcmd.back().insert(pcmd.back().end(), (u8*)cmd, &cmd->param[cmd->len]);
+  }
 
-  void handle_item(item_t*);
+  inline void remove_pending_cmd(u32 i)
+  {
+    pcmd.erase(pcmd.begin() + i);
+  }
 
-  void handle_cmd(hci_command_t*);
+  inline hci_command_t* get_pending_cmd(u32 i)
+  {
+    return (hci_command_t*)pcmd[i].data();
+  }
 
-  void handle_evt(hci_event_t*);
+  inline void add_psm(u16 _psm)
+  {
+    for(u16 p : psm)
+      if(p == _psm) return;
+    psm.push_back(_psm);
+  }
 
-  void handle_op(operation_t*);
-
-  void handle_evt_con_complete(hci_event_t*);
-
-  void handle_evt_le_con_complete(hci_event_t*);
-
-  void handle_op_l2cap_register_service(operation_t*);
-
-  void handle_op_l2cap_create_channel(operation_t*);
-
+  inline void add_cid(u16 _cid)
+  {
+    for(u16 c : cid)
+      if(c == _cid) return;
+    cid.push_back(_cid);
+  }
 };
 
 #endif
