@@ -1,7 +1,9 @@
 #ifndef D9164AF1_4E22_4376_82E6_9C574FB08463
 #define D9164AF1_4E22_4376_82E6_9C574FB08463
 
+#include "../../include/bluetooth.h"
 #include "../../include/types.h"
+#include "Item.h"
 #include <set>
 #include <vector>
 
@@ -15,46 +17,48 @@ extern std::vector<u8> vLeEvt;
 extern std::vector<u16> vStatusCmd;
 extern std::vector<u16> vCompleteCmd;
 
-#define L2CAP_CID_SIGNALING                        0x0001
-#define L2CAP_CID_CONNECTIONLESS_CHANNEL           0x0002
-#define L2CAP_CID_ATTRIBUTE_PROTOCOL               0x0004
-#define L2CAP_CID_SIGNALING_LE                     0x0005
-#define L2CAP_CID_SECURITY_MANAGER_PROTOCOL        0x0006
-#define L2CAP_CID_BR_EDR_SECURITY_MANAGER          0x0007
-#define FIXED_CID(cid) (cid >= L2CAP_CID_SIGNALING && cid <= L2CAP_CID_BR_EDR_SECURITY_MANAGER)
+#define L2CAP_CID_SIGNALING 0x0001
+#define L2CAP_CID_CONNECTIONLESS_CHANNEL 0x0002
+#define L2CAP_CID_ATTRIBUTE_PROTOCOL 0x0004
+#define L2CAP_CID_SIGNALING_LE 0x0005
+#define L2CAP_CID_SECURITY_MANAGER_PROTOCOL 0x0006
+#define L2CAP_CID_BR_EDR_SECURITY_MANAGER 0x0007
+#define FIXED_CID(cid)                                                         \
+  (cid >= L2CAP_CID_SIGNALING && cid <= L2CAP_CID_BR_EDR_SECURITY_MANAGER)
 
-#define BLUETOOTH_PSM_SDP                                                                0x0001
-#define BLUETOOTH_PSM_RFCOMM                                                             0x0003
-#define BLUETOOTH_PSM_TCS_BIN                                                            0x0005
-#define BLUETOOTH_PSM_TCS_BIN_CORDLESS                                                   0x0007
-#define BLUETOOTH_PSM_BNEP                                                               0x000F
-#define BLUETOOTH_PSM_HID_CONTROL                                                        0x0011
-#define BLUETOOTH_PSM_HID_INTERRUPT                                                      0x0013
-#define BLUETOOTH_PSM_UPNP                                                               0x0015
-#define BLUETOOTH_PSM_AVCTP                                                              0x0017
-#define BLUETOOTH_PSM_AVDTP                                                              0x0019
-#define BLUETOOTH_PSM_AVCTP_BROWSING                                                     0x001B
-#define BLUETOOTH_PSM_UDI_C_PLANE                                                        0x001D
-#define BLUETOOTH_PSM_ATT                                                                0x001F
-#define BLUETOOTH_PSM_3DSP                                                               0x0021
-#define BLUETOOTH_PSM_LE_PSM_IPSP                                                        0x0023
-#define BLUETOOTH_PSM_OTS                                                                0x0025
-#define FIXED_PSM(psm) ((psm % 2 == 1) && ((psm <= BLUETOOTH_PSM_TCS_BIN_CORDLESS) || (psm >= BLUETOOTH_PSM_BNEP && psm <= BLUETOOTH_PSM_OTS)))
+#define BLUETOOTH_PSM_SDP 0x0001
+#define BLUETOOTH_PSM_RFCOMM 0x0003
+#define BLUETOOTH_PSM_TCS_BIN 0x0005
+#define BLUETOOTH_PSM_TCS_BIN_CORDLESS 0x0007
+#define BLUETOOTH_PSM_BNEP 0x000F
+#define BLUETOOTH_PSM_HID_CONTROL 0x0011
+#define BLUETOOTH_PSM_HID_INTERRUPT 0x0013
+#define BLUETOOTH_PSM_UPNP 0x0015
+#define BLUETOOTH_PSM_AVCTP 0x0017
+#define BLUETOOTH_PSM_AVDTP 0x0019
+#define BLUETOOTH_PSM_AVCTP_BROWSING 0x001B
+#define BLUETOOTH_PSM_UDI_C_PLANE 0x001D
+#define BLUETOOTH_PSM_ATT 0x001F
+#define BLUETOOTH_PSM_3DSP 0x0021
+#define BLUETOOTH_PSM_LE_PSM_IPSP 0x0023
+#define BLUETOOTH_PSM_OTS 0x0025
+#define FIXED_PSM(psm)                                                         \
+  ((psm % 2 == 1) &&                                                           \
+   ((psm <= BLUETOOTH_PSM_TCS_BIN_CORDLESS) ||                                 \
+    (psm >= BLUETOOTH_PSM_BNEP && psm <= BLUETOOTH_PSM_OTS)))
 
 #define Classic 0
 #define LE 1
 
-
- typedef enum {
-    BD_ADDR_TYPE_LE_PUBLIC = 0,
-    BD_ADDR_TYPE_LE_RANDOM = 1,
-    BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC = 2,
-    BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM = 3,
-    BD_ADDR_TYPE_SCO       = 0xfc,
-    BD_ADDR_TYPE_ACL       = 0xfd,
-    BD_ADDR_TYPE_UNKNOWN   = 0xfe,  // also used as 'invalid'
+typedef enum {
+  BD_ADDR_TYPE_LE_PUBLIC = 0,
+  BD_ADDR_TYPE_LE_RANDOM = 1,
+  BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC = 2,
+  BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM = 3,
+  BD_ADDR_TYPE_SCO = 0xfc,
+  BD_ADDR_TYPE_ACL = 0xfd,
+  BD_ADDR_TYPE_UNKNOWN = 0xfe, // also used as 'invalid'
 } bd_addr_type_t;
-
 
 #define BT_HCI_CMD_BIT(_byte, _bit) ((8 * _byte) + _bit)
 
@@ -4132,6 +4136,116 @@ struct bt_sdp_hdr {
   u16 plen;
 } __attribute__((packed));
 
+class Event : public Item {
+protected:
+  hci_event_t *pEvt;
 
+public:
+  Event() = default;
+  Event(u8 *buf) : Item(buf) {
+    pEvt = (hci_event_t *)pItem->data;
+    pEvt->flag = HCI_EVENT_PACKET;
+  }
+  Event(u8 *buf, u8 opcode) : Item(buf) {
+    pEvt = (hci_event_t *)pItem->data;
+    pEvt->flag = HCI_EVENT_PACKET;
+    pEvt->opcode = opcode;
+    pEvt->len = UINT8_MAX;
+    pItem->size = sizeof(hci_event_t) + pEvt->len;
+  }
+
+  hci_event_t* data() { return pEvt; }
+};
+
+
+class CmdStatusEvent : public Event {
+  bt_hci_evt_cmd_status* pStatus;
+
+public:
+  CmdStatusEvent(u8* buf, u8 status, u8 ncmd, u16 opcode): Event(buf) {
+    pEvt->opcode = BT_HCI_EVT_CMD_STATUS;
+    pEvt->len = sizeof(bt_hci_evt_cmd_status);
+    pStatus = (bt_hci_evt_cmd_status*)pEvt->param;
+    pItem->size = sizeof(hci_event_t) + pEvt->len;
+    pStatus->ncmd = ncmd;
+    pStatus->opcode = opcode;
+    pStatus->status = status;   
+  }
+
+  bt_hci_evt_cmd_status* data() { return pStatus; }
+};
+
+class CmdCompleteEvent: public Event {
+  bt_hci_evt_cmd_complete* pComp;
+
+public:
+  CmdCompleteEvent(u8* buf, u8 ncmd, u16 opcode) : Event(buf){
+    pEvt->opcode= BT_HCI_EVT_CMD_COMPLETE;
+    pEvt->len = 255;
+    pComp = (bt_hci_evt_cmd_complete*)pEvt->param;
+    pComp->ncmd = ncmd;
+    pComp->opcode = opcode;
+    pItem->size = sizeof(hci_event_t) + pEvt->len;
+  }
+
+  bt_hci_evt_cmd_complete* data() {return pComp; }
+};
+
+class ConnCompleteEvent : public Event {
+  bt_hci_evt_conn_complete *pComp;
+
+public:
+  ConnCompleteEvent(u8 *buf) : Event(buf) {
+    pEvt->opcode = BT_HCI_EVT_CONN_COMPLETE;
+    pEvt->len = sizeof(bt_hci_evt_conn_complete);
+    pComp = (bt_hci_evt_conn_complete *)pEvt->param;
+    pItem->size = sizeof(hci_event_t) + pEvt->len;
+  }
+
+  bt_hci_evt_conn_complete* data() { return pComp; }
+};
+
+class ConnRequestEvent : public Event {
+  bt_hci_evt_conn_request *pReq;
+
+public:
+  ConnRequestEvent(u8 *buf) : Event(buf) {
+    pEvt->opcode = BT_HCI_EVT_CONN_REQUEST;
+    pEvt->len = sizeof(bt_hci_evt_conn_request);
+    pReq = (bt_hci_evt_conn_request *)pEvt->param;
+    pItem->size = sizeof(hci_event_t) + pEvt->len;
+  }
+   
+  bt_hci_evt_conn_request* data() { return pReq; }
+};
+
+class DisconnCompleteEvent : public Event {
+  bt_hci_evt_disconnect_complete *pComp;
+
+public:
+  DisconnCompleteEvent(u8 *buf) : Event(buf) {
+    pEvt->opcode = BT_HCI_EVT_DISCONNECT_COMPLETE;
+    pEvt->len = sizeof(bt_hci_evt_disconnect_complete);
+    pComp = (bt_hci_evt_disconnect_complete *)pEvt->param;
+    pItem->size = sizeof(hci_event_t) + pEvt->len;
+  }
+
+  bt_hci_evt_disconnect_complete* data() { return pComp; }
+};
+
+class LeConnCompleteEvent : public Event {
+  bt_hci_evt_le_conn_complete *pComp;
+
+public:
+  LeConnCompleteEvent(u8 *buf) : Event(buf) {
+    pEvt->opcode = BT_HCI_EVT_LE_META_EVENT;
+    pEvt->len = sizeof(bt_hci_evt_le_conn_complete) + 1;
+    pEvt->param[0] = BT_HCI_EVT_LE_CONN_COMPLETE;
+    pComp = (bt_hci_evt_le_conn_complete *)&pEvt->param[1];
+    pItem->size = sizeof(hci_event_t) + pEvt->len;
+  }
+  
+  bt_hci_evt_le_conn_complete* data() { return pComp; }
+};
 
 #endif /* D9164AF1_4E22_4376_82E6_9C574FB08463 */

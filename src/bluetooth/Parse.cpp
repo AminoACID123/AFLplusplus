@@ -95,7 +95,7 @@ void parse_parameters(cJSON *file)
             param.bytes = param.max_bytes = param.min_bytes = 1;
             cJSON_ArrayForEach(value, domain)
             {
-                param.enum_domain.insert(value->valuestring);
+                param.enum_domain.push_back(value->valuestring);
             }
         }
         else
@@ -107,7 +107,7 @@ void parse_parameters(cJSON *file)
                 {
                     temp.push_back(_byte->valueint);
                 }
-                param.domain.insert(temp);
+                param.domain.push_back(temp);
             }
             param.bytes = param.max_bytes = param.min_bytes = cJSON_GetObjectItem(item, "bytes")->valueint;
         }
@@ -128,25 +128,25 @@ void parse_operations(cJSON *file)
         cJSON *inputs = cJSON_GetObjectItem(op, "inputs");
         cJSON *outputs = cJSON_GetObjectItem(op, "outputs");
         cJSON *exec = cJSON_GetObjectItem(op, "exec");
-        Operation operation;
-        operation.id = i++;
-        operation.name = cJSON_GetObjectItem(op, "name")->valuestring;
+        // Operation operation;
+        // operation.id = i++;
+        // operation.name = cJSON_GetObjectItem(op, "name")->valuestring;
+        operations.push_back(Operation(i++, cJSON_GetObjectItem(op, "name")->valuestring));
         cJSON_ArrayForEach(str, exec)
         {
-            operation.exec.push_back(str->valuestring);
+            operations.back().Exec().push_back(str->valuestring);
         }
 
         cJSON_ArrayForEach(input, inputs)
         {
-            operation.inputs.push_back(get_parameter(input->valuestring));
+            operations.back().Inputs().push_back(get_parameter(input->valuestring));
         }
 
         cJSON_ArrayForEach(output, outputs)
         {
-            operation.outputs.push_back(get_parameter(output->valuestring));
+            operations.back().Outputs().push_back(get_parameter(output->valuestring));
         }
 
-        operations.push_back(operation);
     }
 }
 
@@ -191,10 +191,10 @@ void payload1(FILE *f)
         fprintf(f, "#include \"%s\"\n", header.c_str());
 
     // fprintf(f, "#define NUM_PARAM %ld\n", parameters.size() + 1);
-    for (Operation op : operations)
+    for (Operation& op : operations)
     {
-        if (op.inputs.size() > max_in)
-            max_in = op.inputs.size();
+        if (op.Inputs().size() > max_in)
+            max_in = op.Inputs().size();
     }
     fprintf(f, "#define MAX_INPUT %d\n", max_in * 2);
     // fprintf(f, "#define MAX_OUTPUT %d\n", max_out);
@@ -260,9 +260,9 @@ void payload4(FILE *f)
     {
         Operation op = operations[i];
         fprintf(f, "void operation%d() {\n", i);
-        for (u32 j = 0; j < op.inputs.size(); j++)
+        for (u32 j = 0; j < op.Inputs().size(); j++)
         {
-            Parameter *param = op.inputs[j];
+            Parameter *param = op.Inputs()[j];
             if (!param->isEnum)
             {
                 fprintf(f, "  u8* _i%d = arg_in[%d];\n", j, j * 2);
@@ -273,11 +273,11 @@ void payload4(FILE *f)
                 fprintf(f, "  %s _i%d = e%d(*(u8*)arg_in[%d]);\n", param->name.c_str(), j, param->id, j * 2);
             }
         }
-        for (u32 j = 0; j < op.outputs.size(); j++)
+        for (u32 j = 0; j < op.Outputs().size(); j++)
         {
-            fprintf(f, "  u8* _o%d = __afl_area3_ptr + %d;\n", j, op.outputs[j]->offset);
+            fprintf(f, "  u8* _o%d = __afl_area3_ptr + %d;\n", j, op.Outputs()[j]->offset);
         }
-        for (string &e : op.exec)
+        for (string &e : op.Exec())
         {
             for (int k = 0; k < e.length(); k++)
             {

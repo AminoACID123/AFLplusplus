@@ -78,4 +78,5 @@ void stack_execute(u8* buf, u32 size){
   pItem_end = (item_t*)(buf + size);
   pHCIItem = (item_t*)__afl_area2_ptr;
   btstack_run_loop_execute();
+  
 }

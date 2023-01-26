@@ -9,13 +9,11 @@
 #define SET(x) s##x
 
 template<typename T>
-std::vector<u8>&& bytes2vec(T data)
+void bytes2vec(std::vector<u8> vec, T data)
 {
   u8* p = (u8*)&data; 
-  std::vector<u8> res;
   for(;p-(u8*)&data<sizeof(T);p++)
-    res.push_back(*p);
-  return res;
+    vec.push_back(*p);
 }
 
 template<typename T>

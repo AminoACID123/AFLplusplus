@@ -7,6 +7,7 @@
 
 #include "../../include/bluetooth.h"
 #include "../../include/types.h"
+#include "Item.h"
 #include "Util.h"
 
 struct Parameter
@@ -20,12 +21,12 @@ struct Parameter
     u32 bytes;
     u32 min_bytes;
     u32 max_bytes;
-    u8 data[BT_MAX_PARAM_SIZE];
+    u8* data;
 
     u32 offset;
 
-    std::set<std::vector<u8>> domain;
-    std::set<std::string> enum_domain;
+    std::vector<std::vector<u8>> domain;
+    std::vector<std::string> enum_domain;
 
     Parameter(){}
     Parameter(std::string _name, s32 _bytes):name(_name), bytes(_bytes){}
@@ -33,7 +34,7 @@ struct Parameter
     bool generate();
 };
 
-struct Operation
+class Operation : public Item
 {
     s32 id;
     std::string name;
@@ -43,20 +44,29 @@ struct Operation
     std::vector<std::string> exec;
     void dump();
 
-    u32 size();
-
-    u32 serialize(u8*);
+    // u32 serialize(u8*);
     void deserialize(operation_t*);
 
-    Operation() {}
-    Operation(std::string _name, bool _isCore): name(_name), isCore(_isCore){}
+    operation_t* pOp;
 
-    bool generate() {
-        bool res = true;
-        for(Parameter* p : inputs)
-           res = p->generate() && res;
-        return res;
-    }
+public:
+    Operation() = default;
+    Operation(u32 _id, std::string _name): id(_id),  name(_name){}
+    Operation* arrange_bytes(u8* buf);
+
+    s32 ID() { return id;}
+    std::string& Name() {return name;}
+
+    std::vector<Parameter *>& Inputs() { return inputs; }
+    std::vector<Parameter *>& Outputs() { return outputs; }
+    std::vector<std::string>& Exec() { return exec; }
+
+    // bool generate() {
+    //     bool res = true;
+    //     for(Parameter* p : inputs)
+    //        res = p->generate() && res;
+    //     return res;
+    // }
 };
 
 #define PARAMETER_BYTEARRAY  "data"

@@ -1071,7 +1071,7 @@ bt_common_fuzz_stuff(afl_state_t *afl, u8 *out_buf, u32 len, bool end) {
       return 1;
   }
 
-  if(fault != afl->crash_mode || end){
+  if(fault != afl->crash_mode ){
     afl->queued_discovered += save_if_interesting(afl, out_buf, len, fault);
     return 1;
   }

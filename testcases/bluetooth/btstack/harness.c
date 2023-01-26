@@ -19,29 +19,29 @@ io_capability_t e4(u8 i) {
   switch(i) {
     case 0: return IO_CAPABILITY_DISPLAY_ONLY;break;
     case 1: return IO_CAPABILITY_DISPLAY_YES_NO;break;
-    case 2: return IO_CAPABILITY_KEYBOARD_DISPLAY;break;
-    case 3: return IO_CAPABILITY_KEYBOARD_ONLY;break;
-    case 4: return IO_CAPABILITY_NO_INPUT_NO_OUTPUT;break;
+    case 2: return IO_CAPABILITY_KEYBOARD_ONLY;break;
+    case 3: return IO_CAPABILITY_NO_INPUT_NO_OUTPUT;break;
+    case 4: return IO_CAPABILITY_KEYBOARD_DISPLAY;break;
     default: return IO_CAPABILITY_DISPLAY_ONLY;
 }
 }
 bd_addr_type_t e5(u8 i) {
   switch(i) {
-    case 0: return BD_ADDR_TYPE_ACL;break;
-    case 1: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC;break;
-    case 2: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM;break;
-    case 3: return BD_ADDR_TYPE_LE_PUBLIC;break;
-    case 4: return BD_ADDR_TYPE_LE_RANDOM;break;
-    case 5: return BD_ADDR_TYPE_SCO;break;
-    default: return BD_ADDR_TYPE_ACL;
+    case 0: return BD_ADDR_TYPE_LE_PUBLIC;break;
+    case 1: return BD_ADDR_TYPE_LE_RANDOM;break;
+    case 2: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC;break;
+    case 3: return BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM;break;
+    case 4: return BD_ADDR_TYPE_SCO;break;
+    case 5: return BD_ADDR_TYPE_ACL;break;
+    default: return BD_ADDR_TYPE_LE_PUBLIC;
 }
 }
 hci_service_type_t e7(u8 i) {
   switch(i) {
-    case 0: return HCI_SERVICE_TYPE_BEST_EFFORT;break;
-    case 1: return HCI_SERVICE_TYPE_GUARANTEED;break;
-    case 2: return HCI_SERVICE_TYPE_NO_TRAFFIC;break;
-    default: return HCI_SERVICE_TYPE_BEST_EFFORT;
+    case 0: return HCI_SERVICE_TYPE_NO_TRAFFIC;break;
+    case 1: return HCI_SERVICE_TYPE_BEST_EFFORT;break;
+    case 2: return HCI_SERVICE_TYPE_GUARANTEED;break;
+    default: return HCI_SERVICE_TYPE_NO_TRAFFIC;
 }
 }
 gap_security_mode_t e9(u8 i) {
@@ -55,10 +55,10 @@ gap_security_mode_t e9(u8 i) {
 }
 gap_random_address_type_t e10(u8 i) {
   switch(i) {
-    case 0: return GAP_RANDOM_ADDRESS_NON_RESOLVABLE;break;
-    case 1: return GAP_RANDOM_ADDRESS_RESOLVABLE;break;
-    case 2: return GAP_RANDOM_ADDRESS_TYPE_STATIC;break;
-    default: return GAP_RANDOM_ADDRESS_NON_RESOLVABLE;
+    case 0: return GAP_RANDOM_ADDRESS_TYPE_STATIC;break;
+    case 1: return GAP_RANDOM_ADDRESS_NON_RESOLVABLE;break;
+    case 2: return GAP_RANDOM_ADDRESS_RESOLVABLE;break;
+    default: return GAP_RANDOM_ADDRESS_TYPE_STATIC;
 }
 }
 gap_security_level_t e11(u8 i) {
@@ -72,23 +72,23 @@ gap_security_level_t e11(u8 i) {
 }
 link_key_type_t e12(u8 i) {
   switch(i) {
-    case 0: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
-    case 1: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
-    case 2: return CHANGED_COMBINATION_KEY;break;
-    case 3: return COMBINATION_KEY;break;
-    case 4: return DEBUG_COMBINATION_KEY;break;
-    case 5: return LOCAL_UNIT_KEY;break;
-    case 6: return REMOTE_UNIT_KEY;break;
-    case 7: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
-    case 8: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
-    default: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;
+    case 0: return COMBINATION_KEY;break;
+    case 1: return LOCAL_UNIT_KEY;break;
+    case 2: return REMOTE_UNIT_KEY;break;
+    case 3: return DEBUG_COMBINATION_KEY;break;
+    case 4: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
+    case 5: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192;break;
+    case 6: return CHANGED_COMBINATION_KEY;break;
+    case 7: return UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
+    case 8: return AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256;break;
+    default: return COMBINATION_KEY;
 }
 }
 page_scan_type_t e13(u8 i) {
   switch(i) {
-    case 0: return PAGE_SCAN_MODE_INTERLACED;break;
-    case 1: return PAGE_SCAN_MODE_STANDARD;break;
-    default: return PAGE_SCAN_MODE_INTERLACED;
+    case 0: return PAGE_SCAN_MODE_STANDARD;break;
+    case 1: return PAGE_SCAN_MODE_INTERLACED;break;
+    default: return PAGE_SCAN_MODE_STANDARD;
 }
 }
 hci_role_t e14(u8 i) {

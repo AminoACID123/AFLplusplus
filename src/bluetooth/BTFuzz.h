@@ -25,7 +25,7 @@ class BTFuzz {
   static BTFuzz* bt;
   BTFuzzState init_state;
   BTFuzzState cur_state;
-
+  std::string opStr;
   BTFuzz(){}
 
 public:
@@ -35,11 +35,19 @@ public:
     return bt;
   }
 
-  void reset(u8*);
+  const char* get_op() {return opStr.c_str();}
 
-  void restore() {cur_state = init_state;}
+  u32 serialize_state(u8*);
+
+  void deserialize_state(u8*);
+
+  // void sync_state();
+
+  void restore_state();
 
   void enable_sema(bool s) { sema = s;}
+
+  bool sema_enabled() { return sema;}
 
   void set_buffers(u8* _hci, u8* _rt) {hci=_hci; rt=_rt;}
 
