@@ -12,8 +12,8 @@
 
 #define BT_MAX_HCI_EVT_SIZE 255
 #define BT_MAX_PARAM_SIZE 256
-#define BT_MAX_BUFFER_SIZE (8*1024*1024)
-#define BT_MAX_ITEM_COUNT 16
+#define BT_MAX_BUFFER_SIZE (1024 * 1024)
+#define BT_MAX_ITEM_COUNT 32
 #define BT_RT_BUFFER_SIZE 256
 #define BT_MAX_STEPS 8
 
@@ -61,7 +61,7 @@ typedef struct __attribute__((packed)) {
 
 
 
-#define BT_ItemForEach3(item, array, size) for(item=(item_t*)array;(u8*)item-(u8*)array<size;item=(item_t*)&item->data[item->size])
+#define BT_ItemForEach3(item, array, s) for(item=(item_t*)array;(u8*)item-(u8*)array<s;item=(item_t*)&item->data[item->size])
 
 #define BT_ItemForEach2(item, array) for(item=(item_t*)array;item->size!=0;item=(item_t*)&item->data[item->size])
 

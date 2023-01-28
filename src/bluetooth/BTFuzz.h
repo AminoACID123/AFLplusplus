@@ -35,6 +35,8 @@ public:
     return bt;
   }
 
+  void sync_hci();
+
   const char* get_op() {return opStr.c_str();}
 
   u32 serialize_state(u8*);

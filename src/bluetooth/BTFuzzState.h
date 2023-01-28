@@ -94,17 +94,39 @@ public:
     pcmd.back().assign(item->data, &item->data[item->size]);
   }
   
-  inline void choose_con_handle(u16* out){
-    u32 i = rand_below(con.size());
-    *out = con[i].handle;
+  inline bool choose_con_handle(u16* out, u8 type){
+    if(con.empty())
+      return false;
+    if(type == DUAL){
+      u32 i = rand_below(con.size());
+      *out = con[i].handle;
+      return true;  
+    }else{
+      std::vector<hci_con> temp;
+      for(hci_con& c : con){
+        if((is_le(c.type) && type == LE) || (!is_le(c.type) && type == CLASSIC))
+          temp.push_back(c);
+      }
+      if(temp.empty())
+        return false;
+      u32 i = rand_below(temp.size());
+      *out = temp[i].handle;
+      return true;
+    }
   }
 
-  inline void choose_cid(u16* out){
+  inline bool choose_cid(u16* out){
+    if(cid.empty())
+      return false;
     *out = cid[rand_below(cid.size())];
+    return true;
   }
 
-  inline void choose_psm(u16* out){
+  inline bool choose_psm(u16* out){
+    if(psm.empty())
+      return false;
     *out = psm[rand_below(psm.size())];
+    return true;
   }
 
   inline void reset()
@@ -126,6 +148,13 @@ public:
     assert(false && "Connection not exist");
   }
 
+  inline bool has_connection(u16 handle) {
+    for(hci_con& c : con)
+      if(c.handle == handle)
+        return true;
+    return false;
+  }
+
   inline void add_pending_con(u8 type, u8 *addr) {
     pcon.push_back(hci_con(type, addr));
   }
@@ -139,9 +168,9 @@ public:
   }
 
   inline void add_con(hci_con &c) { 
-    Parameter* _handle = get_parameter(CORE_PARAMETER_HCI_HANDLE);
-    _handle->domain.push_back(std::vector<u8>());
-    bytes2vec(_handle->domain.back(), c.handle);
+    // Parameter* _handle = get_parameter(CORE_PARAMETER_HCI_HANDLE);
+    // _handle->domain.push_back(std::vector<u8>());
+    // bytes2vec(_handle->domain.back(), c.handle);
     con.push_back(c);
   }
 
@@ -149,15 +178,15 @@ public:
     for (auto it = con.begin(), eit = con.end(); it != eit; ++it) {
       if (it->handle == handle) {
         con.erase(it);
-        Parameter* pHandle = get_parameter(CORE_PARAMETER_HCI_HANDLE);
-        for(auto it=pHandle->domain.begin(),eit=pHandle->domain.end();it!=eit;++it)
-        {
-           u16 h = (*it)[0] | ((*it)[1] << 8);
-           if(h == handle){
-            pHandle->domain.erase(it);
-            return;
-           }
-        }
+        // Parameter* pHandle = get_parameter(CORE_PARAMETER_HCI_HANDLE);
+        // for(auto it=pHandle->domain.begin(),eit=pHandle->domain.end();it!=eit;++it)
+        // {
+        //    u16 h = (*it)[0] | ((*it)[1] << 8);
+        //    if(h == handle){
+        //     pHandle->domain.erase(it);
+        //     return;
+        //    }
+        // }
         return;
       }
     }
@@ -196,8 +225,8 @@ public:
     }
   }
   inline void add_pending_cmd(hci_command_t *cmd) {
-    pcmd.resize(pcmd.size() + 1);
-    pcmd.back().insert(pcmd.back().end(), (u8 *)cmd, &cmd->param[cmd->len]);
+    pcmd.push_back(std::vector<u8>());
+    pcmd.back().assign((u8 *)cmd, &cmd->param[cmd->len]);
   }
 
   inline void remove_pending_cmd(u32 i) { pcmd.erase(pcmd.begin() + i); }
@@ -211,9 +240,9 @@ public:
       if (p == _psm)
         return;
     psm.push_back(_psm);
-    Parameter* pPsm = get_parameter(CORE_PARAMETER_PSM);
-    pPsm->domain.push_back(std::vector<u8>());
-    bytes2vec(pPsm->domain.back(), _psm);
+    // Parameter* pPsm = get_parameter(CORE_PARAMETER_PSM);
+    // pPsm->domain.push_back(std::vector<u8>());
+    // bytes2vec(pPsm->domain.back(), _psm);
   }
 
   inline void add_cid(u16 _cid) {
@@ -221,9 +250,9 @@ public:
       if (c == _cid)
         return;
     cid.push_back(_cid);
-    Parameter* pCid = get_parameter(CORE_PARAMETER_CID);
-    pCid->domain.push_back(std::vector<u8>());
-    bytes2vec(pCid->domain.back(), _cid);
+    // Parameter* pCid = get_parameter(CORE_PARAMETER_CID);
+    // pCid->domain.push_back(std::vector<u8>());
+    // bytes2vec(pCid->domain.back(), _cid);
   }
 };
 

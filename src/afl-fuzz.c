@@ -24,6 +24,7 @@
  */
 
 #include "afl-fuzz.h"
+#include "bluetooth.h"
 #include "cmplog.h"
 #include <limits.h>
 #include <stdlib.h>
@@ -2030,14 +2031,14 @@ int main(int argc, char **argv_orig, char **envp) {
   afl->fsrv.trace_bits =
       afl_shm_init(&afl->shm, afl->fsrv.map_size, afl->non_instrumented_mode);
 
-  afl->shm2.shm_id = shmget(IPC_PRIVATE, afl->fsrv.map_size == MAP_SIZE ? afl->fsrv.map_size + 8 : afl->fsrv.map_size,
+  afl->shm2.shm_id = shmget(IPC_PRIVATE, BT_MAX_BUFFER_SIZE,
       IPC_CREAT | IPC_EXCL | DEFAULT_PERMISSION);
   char* shm_str = alloc_printf("%d", afl->shm2.shm_id);
   setenv(SHM2_ENV_VAR, shm_str, 1);
   afl->shm2.map = shmat(afl->shm2.shm_id, NULL, 0);
   afl->fsrv.trace_bits2 = afl->shm2.map;
 
-  afl->shm3.shm_id = shmget(IPC_PRIVATE, afl->fsrv.map_size == MAP_SIZE ? afl->fsrv.map_size + 8 : afl->fsrv.map_size,
+  afl->shm3.shm_id = shmget(IPC_PRIVATE, BT_MAX_BUFFER_SIZE,
       IPC_CREAT | IPC_EXCL | DEFAULT_PERMISSION);
   shm_str = alloc_printf("%d", afl->shm3.shm_id);
   setenv(SHM3_ENV_VAR, shm_str, 1);

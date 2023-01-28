@@ -384,6 +384,8 @@ u8 fuzz_one_original(afl_state_t *afl) {
   static u8 bt_in[BT_MAX_BUFFER_SIZE];
   u32 bt_len, items=0;
   u32 bt_queued = afl->queued_items;
+  u32 bt_crashes = afl->total_crashes;
+  u32 bt_tmouts = afl->total_tmouts;
 
   if (!afl->queue_cur)
     goto bt_fuzz_stage;
@@ -606,12 +608,17 @@ bt_fuzz_stage:
 
     for (afl->stage_cur = 0; afl->stage_cur < afl->stage_max;
          ++afl->stage_cur) {
-      u32 steps = rand_below(afl, BT_MAX_STEPS - items) + 1;
+      u32 steps = rand_below(afl, BT_MAX_STEPS) + 1;
 
       for (u32 j = 0; j < steps; j++) {
         bt_len += bt_fuzz_one(bt_in + bt_len);
         afl->stage_short = bt_get_op_str();
         common_fuzz_stuff(afl, bt_in, bt_len);
+        if(bt_crashes != afl->total_crashes || bt_tmouts != afl->total_tmouts){
+          bt_crashes = afl->total_crashes;
+          bt_tmouts = afl->total_tmouts;
+          break;
+        }
       }
       bt_restore_state();
       if(!afl->queue_cur)

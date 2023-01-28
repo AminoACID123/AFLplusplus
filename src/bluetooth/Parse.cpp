@@ -9,6 +9,7 @@
 
 #include "../../include/bluetooth.h"
 #include "../../include/config.h"
+#include "Hci.h"
 #include "Operation.h"
 #include "cJSON.h"
 
@@ -128,10 +129,23 @@ void parse_operations(cJSON *file)
         cJSON *inputs = cJSON_GetObjectItem(op, "inputs");
         cJSON *outputs = cJSON_GetObjectItem(op, "outputs");
         cJSON *exec = cJSON_GetObjectItem(op, "exec");
+        string name = cJSON_GetObjectItem(op, "name")->valuestring;
+        u8 type = DUAL;
+        size_t pos = name.find('[');
+        if(pos != name.npos){
+            string typeStr = name.substr(pos + 1, name.length() - pos - 2);
+            if(typeStr == "classic")
+                type = CLASSIC;
+            else if(typeStr == "le")
+                type = LE;
+            name = name.substr(0, pos);
+        }
+
         // Operation operation;
         // operation.id = i++;
         // operation.name = cJSON_GetObjectItem(op, "name")->valuestring;
-        operations.push_back(Operation(i++, cJSON_GetObjectItem(op, "name")->valuestring));
+        operations.push_back(Operation(i++, name));
+        operations.back().set_type(type);
         cJSON_ArrayForEach(str, exec)
         {
             operations.back().Exec().push_back(str->valuestring);

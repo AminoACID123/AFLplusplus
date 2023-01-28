@@ -64,12 +64,14 @@ bool execute_one(){
     return false;
 
   pHCIItem = (item_t*)__afl_area2_ptr;
+  pHCIItem->size = 0;
 
   if(pItem->data[0] == OPERATION)
     execute_api(pItem->data);
   else 
     execute_hci(pItem->data);
   pItem = (item_t*)&pItem->data[pItem->size];
+  pHCIItem->size = 0;
   return true;
 }
 

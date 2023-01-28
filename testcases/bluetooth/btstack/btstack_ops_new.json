@@ -377,7 +377,7 @@
             "exec": ["gap_security_level(*(hci_con_handle_t*)$i0);"]
         },
         {
-            "name": "gap_request_security_level",
+            "name": "gap_request_security_level[classic]",
             "inputs": ["hci_con_handle_t", "gap_security_level_t"],
             "outputs": [],
             "exec": ["gap_request_security_level(*(hci_con_handle_t*)$i0, $i1);"]

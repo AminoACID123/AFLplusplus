@@ -10,6 +10,7 @@
 #include "Item.h"
 #include "Util.h"
 
+
 struct Parameter
 {
     u32 id;
@@ -39,6 +40,7 @@ class Operation : public Item
     s32 id;
     std::string name;
     bool isCore;
+    u8 type;
     std::vector<Parameter *> inputs;
     std::vector<Parameter *> outputs;
     std::vector<std::string> exec;
@@ -60,6 +62,8 @@ public:
     std::vector<Parameter *>& Inputs() { return inputs; }
     std::vector<Parameter *>& Outputs() { return outputs; }
     std::vector<std::string>& Exec() { return exec; }
+    void set_type(bool _type) {type = _type;}
+    u8 get_type() { return type; }
 
     // bool generate() {
     //     bool res = true;
@@ -71,6 +75,7 @@ public:
 
 #define PARAMETER_BYTEARRAY  "data"
 
+#define CORE_PARAMETER_BD_ADDR                  "bd_addr_t"
 #define CORE_PARAMETER_HCI_HANDLE               "hci_con_handle_t"
 #define CORE_PARAMETER_HCI_HANDLE_SIZE          2
 #define CORE_PARAMETER_CID                      "cid"

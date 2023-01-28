@@ -47,8 +47,9 @@ extern std::vector<u16> vCompleteCmd;
    ((psm <= BLUETOOTH_PSM_TCS_BIN_CORDLESS) ||                                 \
     (psm >= BLUETOOTH_PSM_BNEP && psm <= BLUETOOTH_PSM_OTS)))
 
-#define Classic 0
-#define LE 1
+#define CLASSIC 0
+#define LE      1
+#define DUAL    2
 
 typedef enum {
   BD_ADDR_TYPE_LE_PUBLIC = 0,
