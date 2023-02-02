@@ -1,3 +1,4 @@
+#include "ble/gatt_client.h"
 #include "ble/sm.h"
 #include "gap.h"
 #include "l2cap.h"
@@ -15,6 +16,7 @@ void done_callback(u8* hash){}
 int get_sc_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_sc_peer_confirm, uint8_t * oob_sc_peer_random){return 1;}
 bool get_ltk_callback(hci_con_handle_t con_handle, uint8_t address_type, bd_addr_t addr, uint8_t * ltk){return true;}
 void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){}
+void oob_callback(const uint8_t * confirm_value, const uint8_t * random_value) {}
 io_capability_t e4(u8 i) {
   switch(i) {
     case 0: return IO_CAPABILITY_DISPLAY_ONLY;break;
@@ -766,10 +768,7 @@ void operation95() {
 void operation96() {
   u8* _i0 = arg_in[0];
   u32 _s0 = *(u32*)arg_in[1];
-  u8* _i1 = arg_in[2];
-  u32 _s1 = *(u32*)arg_in[3];
-  _i1[_s1 - 1] = 0;
-  gap_pin_code_response(_i0, (char*)_i1);
+  gap_pin_code_response(_i0, "0000");
 }
 
 void operation97() {
@@ -1096,7 +1095,7 @@ void operation142() {
 }
 
 void operation143() {
-  sm_generate_sc_oob_data(NULL);
+  sm_generate_sc_oob_data(oob_callback);
 }
 
 void operation144() {
@@ -1120,6 +1119,402 @@ void operation147() {
   u32 _s0 = *(u32*)arg_in[1];
   gap_security_level_t _i1 = e11(*(u8*)arg_in[2]);
   l2cap_register_service(packet_handler, *(u16*)_i0, 100, _i1);
+}
+
+void operation148() {
+  gap_security_level_t _i0 = e11(*(u8*)arg_in[0]);
+  gatt_client_set_required_security_level(_i0);
+}
+
+void operation149() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  static u16 mtu;
+  gatt_client_get_mtu(*(hci_con_handle_t*)_i0, &mtu);
+}
+
+void operation150() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gatt_client_mtu_enable_auto_negotiation(*(bool*)_i0);
+}
+
+void operation151() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gatt_client_send_mtu_negotiation(packet_handler, _i0);
+}
+
+void operation152() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gatt_client_is_ready(*(hci_con_handle_t*)_i0);
+}
+
+void operation153() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gatt_client_discover_primary_services(packet_handler, *(hci_con_handle_t*)_i0);
+}
+
+void operation154() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gatt_client_discover_secondary_services(packet_handler, *(hci_con_handle_t*)_i0);
+}
+
+void operation155() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_discover_primary_services_by_uuid16(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1);
+}
+
+void operation156() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_discover_primary_services_by_uuid128(packet_handler, *(hci_con_handle_t*)_i0, _i1);
+}
+
+void operation157() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_find_included_services_for_service(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_service_t*)_i1);
+}
+
+void operation158() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_discover_characteristics_for_service(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_service_t*)_i1);
+}
+
+void operation159() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  gatt_client_discover_characteristics_for_handle_range_by_uuid16(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2, *(u16*)_i3);
+}
+
+void operation160() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  gatt_client_discover_characteristics_for_handle_range_by_uuid128(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2, _i3);
+}
+
+void operation161() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_discover_characteristics_for_service_by_uuid16(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_service_t*)_i1, *(u16*)_i2);
+}
+
+void operation162() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_discover_characteristics_for_service_by_uuid128(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_service_t*)_i1, _i2);
+}
+
+void operation163() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_discover_characteristic_descriptors(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_characteristic_t*)_i1);
+}
+
+void operation164() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_value_of_characteristic(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_characteristic_t*)_i1);
+}
+
+void operation165() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_value_of_characteristic_using_value_handle(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1);
+}
+
+void operation166() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  gatt_client_read_value_of_characteristics_by_uuid16(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2, *(u16*)_i3);
+}
+
+void operation167() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  gatt_client_read_value_of_characteristics_by_uuid128(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2, _i3);
+}
+
+void operation168() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_long_value_of_characteristic(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_characteristic_t*)_i1);
+}
+
+void operation169() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_long_value_of_characteristic_using_value_handle(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1);
+}
+
+void operation170() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_read_long_value_of_characteristic_using_value_handle_with_offset(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2);
+}
+
+void operation171() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_multiple_characteristic_values(packet_handler, *(hci_con_handle_t*)_i0, _s1/2, (u16*)_i1);
+}
+
+void operation172() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_write_value_of_characteristic_without_response(*(hci_con_handle_t*)_i0, *(u16*)_i1, _s2, _i2);
+}
+
+void operation173() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_signed_write_without_response(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, _s2, _i2);
+}
+
+void operation174() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_write_value_of_characteristic(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, _s2, _i2);
+}
+
+void operation175() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_write_long_value_of_characteristic(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, _s2, _i2);
+}
+
+void operation176() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  gatt_client_write_long_value_of_characteristic_with_offset(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2, _s3, _i3);
+}
+
+void operation177() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_reliable_write_long_value_of_characteristic(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, _s2, _i2);
+}
+
+void operation178() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_characteristic_descriptor(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_characteristic_descriptor_t*)_i1);
+}
+
+void operation179() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_characteristic_descriptor_using_descriptor_handle(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1);
+}
+
+void operation180() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_long_characteristic_descriptor(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_characteristic_descriptor_t*)_i1);
+}
+
+void operation181() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  gatt_client_read_long_characteristic_descriptor_using_descriptor_handle(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1);
+}
+
+void operation182() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_read_long_characteristic_descriptor_using_descriptor_handle_with_offset(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2);
+}
+
+void operation183() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_write_characteristic_descriptor(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_characteristic_descriptor_t*)_i1, _s2, _i2);
+}
+
+void operation184() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_write_characteristic_descriptor_using_descriptor_handle(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, _s2, _i2);
+}
+
+void operation185() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_write_long_characteristic_descriptor(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_characteristic_descriptor_t*)_i1, _s2, _i2);
+}
+
+void operation186() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_write_long_characteristic_descriptor_using_descriptor_handle(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, _s2, _i2);
+}
+
+void operation187() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  gatt_client_write_long_characteristic_descriptor_using_descriptor_handle_with_offset(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2,_s3, _i3);
+}
+
+void operation188() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  gatt_client_write_client_characteristic_configuration(packet_handler, *(hci_con_handle_t*)_i0, (gatt_client_characteristic_t*)_i1, *(u16*)_i2);
+}
+
+void operation189() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gatt_client_request_can_write_without_response_event(packet_handler, *(hci_con_handle_t*)_i0);
+}
+
+void operation190() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  u8* _i1 = arg_in[2];
+  u32 _s1 = *(u32*)arg_in[3];
+  u8* _i2 = arg_in[4];
+  u32 _s2 = *(u32*)arg_in[5];
+  u8* _i3 = arg_in[6];
+  u32 _s3 = *(u32*)arg_in[7];
+  gatt_client_prepare_write(packet_handler, *(hci_con_handle_t*)_i0, *(u16*)_i1, *(u16*)_i2, _s3, _i3);
+}
+
+void operation191() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gatt_client_execute_write(packet_handler, *(hci_con_handle_t*)_i0);
+}
+
+void operation192() {
+  u8* _i0 = arg_in[0];
+  u32 _s0 = *(u32*)arg_in[1];
+  gatt_client_cancel_write(packet_handler, *(hci_con_handle_t*)_i0);
 }
 
 typedef void (*fun_ptr)();
@@ -1271,6 +1666,51 @@ fun_ptr FUZZ_LIST[] = {
   &operation144,
   &operation145,
   &operation146,
-  &operation147
+  &operation147,
+  &operation148,
+  &operation149,
+  &operation150,
+  &operation151,
+  &operation152,
+  &operation153,
+  &operation154,
+  &operation155,
+  &operation156,
+  &operation157,
+  &operation158,
+  &operation159,
+  &operation160,
+  &operation161,
+  &operation162,
+  &operation163,
+  &operation164,
+  &operation165,
+  &operation166,
+  &operation167,
+  &operation168,
+  &operation169,
+  &operation170,
+  &operation171,
+  &operation172,
+  &operation173,
+  &operation174,
+  &operation175,
+  &operation176,
+  &operation177,
+  &operation178,
+  &operation179,
+  &operation180,
+  &operation181,
+  &operation182,
+  &operation183,
+  &operation184,
+  &operation185,
+  &operation186,
+  &operation187,
+  &operation188,
+  &operation189,
+  &operation190,
+  &operation191,
+  &operation192
 };
 

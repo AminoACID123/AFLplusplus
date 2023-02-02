@@ -67,7 +67,7 @@ class BTFuzzState {
   std::vector<u16> pdiscon;
   std::vector<u16> cid;
   std::vector<u16> psm;
-  std::vector<std::vector<u8>> pcmd;
+  std::vector<std::vector<u8>> phci;
 
 public:
   BTFuzzState() {}
@@ -81,17 +81,17 @@ public:
       ar & pdiscon;
       ar & cid;
       ar & psm;
-      ar & pcmd;
+      ar & phci;
       return ar;
     }
   
-  inline void remove_pcmd(u32 i){
-    pcmd.erase(pcmd.begin() + i);
+  inline void remove_phci(u32 i){
+    phci.erase(phci.begin() + i);
   }
 
-  inline void add_pcmd(item_t* item){
-    pcmd.push_back(std::vector<u8>());
-    pcmd.back().assign(item->data, &item->data[item->size]);
+  inline void add_phci(item_t* item){
+    phci.push_back(std::vector<u8>());
+    phci.back().assign(item->data, &item->data[item->size]);
   }
   
   inline bool choose_con_handle(u16* out, u8 type){
@@ -137,7 +137,7 @@ public:
     pdiscon.clear();
     cid.assign(cid_fixed.begin(), cid_fixed.end());
     psm.assign(psm_fixed.begin(), psm_fixed.end());
-    pcmd.clear();
+    phci.clear();
   }
 
   inline hci_con &get_connection(u16 handle) {
@@ -225,14 +225,14 @@ public:
     }
   }
   inline void add_pending_cmd(hci_command_t *cmd) {
-    pcmd.push_back(std::vector<u8>());
-    pcmd.back().assign((u8 *)cmd, &cmd->param[cmd->len]);
+    phci.push_back(std::vector<u8>());
+    phci.back().assign((u8 *)cmd, &cmd->param[cmd->len]);
   }
 
-  inline void remove_pending_cmd(u32 i) { pcmd.erase(pcmd.begin() + i); }
+  inline void remove_pending_cmd(u32 i) { phci.erase(phci.begin() + i); }
 
-  inline hci_command_t *get_pending_cmd(u32 i) {
-    return (hci_command_t *)pcmd[i].data();
+  inline u8 *get_pending_hci(u32 i) {
+    return phci[i].data();
   }
 
   inline void add_psm(u16 _psm) {

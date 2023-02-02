@@ -130,30 +130,14 @@ u32 BTFuzz::fuzz_one(u8 *buf) {
     return fuzz_one_rand(buf);
 }
 
-// reply pending commands
-u32 BTFuzz::fuzz_one_sema1(u8 *buf) {
-  if (cur_state.pcmd.empty())
-    return 0;
-
-  u32 r = rand_below(cur_state.pcmd.size());
+u32 BTFuzz::handle_cmd(u8* buf, hci_command_t* cmd)
+{
+  char str[100];
   u32 s = rand_below(100);
   s = (s >= 90 ? s % 10 : BT_HCI_ERR_SUCCESS);
   u32 n = rand_below(10);
-  hci_command_t *cmd = (hci_command_t *)cur_state.pcmd[r].data();
-
-  char str[100];
-  sprintf(str, "sema1-r%ds%dn%d", r, s, n);
+  sprintf(str, "sema1-cmd0x%04xs%dn%d", cmd->opcode, s, n);
   opStr = str;
-
-  // item_t *pItem = (item_t *)buf;
-  // hci_event_t *pEvt = (hci_event_t *)pItem->data;
-  // bt_hci_evt_cmd_status *pStatus = (bt_hci_evt_cmd_status *)pEvt->param;
-  // pStatus->status = s >= 90 ? s % 10 : BT_HCI_ERR_SUCCESS;
-  // pStatus->ncmd = s % 10;
-  // pStatus->opcode = cmd->opcode;
-  // pEvt->flag = HCI_EVENT_PACKET;
-  // pEvt->len = sizeof(bt_hci_evt_cmd_status);
-  // pItem->size = sizeof(hci_event_t) + pEvt->len;
 
   CmdStatusEvent evt1(buf, s, n, cmd->opcode);
 
@@ -162,14 +146,12 @@ u32 BTFuzz::fuzz_one_sema1(u8 *buf) {
     if (s == BT_HCI_ERR_SUCCESS) {
       cur_state.add_pending_con(BD_ADDR_TYPE_ACL, c->bdaddr);
     }
-    cur_state.remove_pcmd(r);
     return evt1.size() + sizeof(u32);
   } else if (cmd->opcode == BT_HCI_CMD_DISCONNECT) {
     bt_hci_cmd_disconnect *c = (bt_hci_cmd_disconnect *)cmd->param;
     if (s == BT_HCI_ERR_SUCCESS && cur_state.has_connection(c->handle)) {
       cur_state.add_pending_discon(c->handle);
     }
-    cur_state.remove_pcmd(r);
     return evt1.size() + sizeof(u32);
   } else if (cmd->opcode == BT_HCI_CMD_ACCEPT_CONN_REQUEST) {
     bt_hci_cmd_accept_conn_request *c =
@@ -177,24 +159,20 @@ u32 BTFuzz::fuzz_one_sema1(u8 *buf) {
     if (s == BT_HCI_ERR_SUCCESS) {
       cur_state.add_pending_con(BD_ADDR_TYPE_ACL, c->bdaddr);
     }
-    cur_state.remove_pcmd(r);
     return evt1.size() + sizeof(u32);
   } else if (cmd->opcode == BT_HCI_CMD_LE_CREATE_CONN) {
     bt_hci_cmd_le_create_conn *c = (bt_hci_cmd_le_create_conn *)cmd->param;
     if (s == BT_HCI_ERR_SUCCESS) {
       cur_state.add_pending_con(c->peer_addr_type, c->peer_addr);
     }
-    cur_state.remove_pcmd(r);
     return evt1.size() + sizeof(u32);
   }else if (cmd->opcode == BT_HCI_CMD_LE_EXT_CREATE_CONN) {
     bt_hci_cmd_le_ext_create_conn *c = (bt_hci_cmd_le_ext_create_conn *)cmd->param;
     if (s == BT_HCI_ERR_SUCCESS) {
       cur_state.add_pending_con(c->peer_addr_type, c->peer_addr);
     }
-    cur_state.remove_pcmd(r);
     return evt1.size() + sizeof(u32);
   } else if (sStatusCmd.find(cmd->opcode) != sStatusCmd.end()) {
-    cur_state.remove_pcmd(r);
     return evt1.size() + sizeof(u32);
   }
 
@@ -216,8 +194,28 @@ u32 BTFuzz::fuzz_one_sema1(u8 *buf) {
     *(u8 *)evt2.data()->param = s;
     cur_state.remove_pending_le_con();
   }
-  cur_state.remove_pcmd(r);
   return evt2.size() + sizeof(u32);
+}
+
+u32 BTFuzz::handle_acl(u8* buf, hci_acl_t* acl)
+{
+  return 0;
+}
+
+// reply pending hci packets
+u32 BTFuzz::fuzz_one_sema1(u8 *buf) {
+  if (cur_state.phci.empty())
+    return 0;
+
+  u32 res = 0;
+  u32 r = rand_below(cur_state.phci.size());
+  if(cur_state.phci[r][0] == HCI_COMMAND_DATA_PACKET){
+    res = handle_cmd(buf, (hci_command_t*)cur_state.phci[r].data());
+  }else if(cur_state.phci[r][0] == HCI_ACL_DATA_PACKET){
+    res = handle_acl(buf, (hci_acl_t*)cur_state.phci[r].data());
+  }
+  cur_state.remove_phci(r);
+  return res;
 }
 
 // core operations
@@ -275,6 +273,7 @@ u32 BTFuzz::fuzz_one_sema2(u8 *buf) {
     }
   }
   return op->size() + sizeof(u32);
+
 }
 
 // random operations
@@ -378,16 +377,13 @@ u32 BTFuzz::fuzz_one_sema5(u8 *buf) {
 void BTFuzz::sync_hci(){
   item_t* pItem;
   BT_ItemForEach2(pItem, hci){
-    if(pItem->data[0] != HCI_COMMAND_DATA_PACKET)
-      continue;;
-    cur_state.add_pcmd(pItem);
+    cur_state.add_phci(pItem);
   }
 }
 
 u32 BTFuzz::fuzz_one_sema(u8 *buf) {
   u32 r = rand_below(100);
   u32 res = 0;
-
 
   // Reply Pending Commands
   if (r < 50) {

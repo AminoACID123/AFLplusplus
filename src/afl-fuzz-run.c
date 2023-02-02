@@ -25,6 +25,7 @@
  */
 
 #include "afl-fuzz.h"
+#include "bluetooth_api.h"
 #include <sys/time.h>
 #include <signal.h>
 #include <limits.h>
@@ -1006,6 +1007,7 @@ common_fuzz_stuff(afl_state_t *afl, u8 *out_buf, u32 len) {
   }
 
   fault = fuzz_run_target(afl, &afl->fsrv, afl->fsrv.exec_tmout);
+  bt_sync_hci();
 
   if (afl->stop_soon) { return 1; }
 

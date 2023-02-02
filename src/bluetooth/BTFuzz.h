@@ -69,6 +69,10 @@ public:
 
   u32 fuzz_one_sema5(u8*);
 
+  u32 handle_cmd(u8*, hci_command_t*);
+
+  u32 handle_acl(u8*, hci_acl_t*);
+
 //   void handle_item(item_t*);
 
 //   void handle_cmd(hci_command_t*);

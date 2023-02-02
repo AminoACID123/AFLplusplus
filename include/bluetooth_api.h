@@ -24,3 +24,5 @@ u32 bt_serialize_state(u8 *buf);
 void bt_deserialize_state(u8 *buf);
 
 const char* bt_get_op_str();
+
+void bt_sync_hci();

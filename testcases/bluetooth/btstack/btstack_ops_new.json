@@ -149,7 +149,7 @@
             "domain": []
         }
     ],
-    "headers" : ["stdlib.h", "gap.h", "ble/sm.h", "l2cap.h"],
+    "headers" : ["stdlib.h", "gap.h", "ble/sm.h", "l2cap.h", "ble/gatt_client.h"],
     "static_functions" : [
         "le_advertising_set_t le_adv_set;",
         "static int f1(bd_addr_t addr, hci_link_type_t link_type){return 1;}",
@@ -157,7 +157,8 @@
         "void done_callback(u8* hash){}",
         "int get_sc_oob_data_callback(uint8_t address_type, bd_addr_t addr, uint8_t * oob_sc_peer_confirm, uint8_t * oob_sc_peer_random){return 1;}",
         "bool get_ltk_callback(hci_con_handle_t con_handle, uint8_t address_type, bd_addr_t addr, uint8_t * ltk){return true;}",
-        "void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){}"
+        "void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){}",
+        "void oob_callback(const uint8_t * confirm_value, const uint8_t * random_value) {}"
     ],
     "operations": [
         {
@@ -572,7 +573,7 @@
         },
         {
             "name": "gap_extended_advertising_set_scan_response_data",
-            "inputs": ["advertising_handle", "data[1:128]"],
+            "inputs": ["advertising_handle", "data[1:31]"],
             "outputs": [],
             "exec": [
                 "gap_extended_advertising_set_scan_response_data(*$i0, $s1, $i1);"
@@ -872,16 +873,15 @@
         },
         {
             "name": "gap_pin_code_response",
-            "inputs": ["bd_addr_t", "data[1:255]"],
+            "inputs": ["bd_addr_t"],
             "outputs": [],
             "exec": [
-                "$i1[$s1 - 1] = 0;",
-                "gap_pin_code_response($i0, (char*)$i1);"
+                "gap_pin_code_response($i0, \"0000\");"
             ]            
         },
         {
             "name": "gap_pin_code_response_binary",
-            "inputs": ["bd_addr_t", "data[1:255]"],
+            "inputs": ["bd_addr_t", "data[1:16]"],
             "outputs": [],
             "exec": [
                 "gap_pin_code_response_binary($i0, $i1, $s1);"
@@ -1209,7 +1209,7 @@
             "name": "sm_generate_sc_oob_data",
             "inputs": [],
             "outputs": [],
-            "exec": ["sm_generate_sc_oob_data(NULL);"]
+            "exec": ["sm_generate_sc_oob_data(oob_callback);"]
         },  
         {
             "name": "sm_register_sc_oob_data_callback",
@@ -1234,6 +1234,279 @@
             "inputs": ["psm", "gap_security_level_t"],
             "outputs": [],
             "exec": ["l2cap_register_service(packet_handler, *(u16*)$i0, 100, $i1);"]
-        }     
+        },
+        {
+            "name": "gatt_client_set_required_security_level",
+            "inputs": ["gap_security_level_t"],
+            "outputs": [],
+            "exec": ["gatt_client_set_required_security_level($i0);"]
+        },
+        {
+            "name": "gatt_client_get_mtu",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": [
+                "static u16 mtu;",
+                "gatt_client_get_mtu(*(hci_con_handle_t*)$i0, &mtu);"
+            ]
+        },
+        {
+            "name": "gatt_client_mtu_enable_auto_negotiation",
+            "inputs": ["bool"],
+            "outputs": [],
+            "exec": ["gatt_client_mtu_enable_auto_negotiation(*(bool*)$i0);"]
+        },
+        {
+            "name": "gatt_client_send_mtu_negotiation",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["gatt_client_send_mtu_negotiation(packet_handler, $i0);"]
+        },
+        {
+            "name": "gatt_client_is_ready",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["gatt_client_is_ready(*(hci_con_handle_t*)$i0);"]
+        },
+        {
+            "name": "gatt_client_discover_primary_services",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_primary_services(packet_handler, *(hci_con_handle_t*)$i0);"]
+        },
+        {
+            "name": "gatt_client_discover_secondary_services",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_secondary_services(packet_handler, *(hci_con_handle_t*)$i0);"]
+        },
+        {
+            "name": "gatt_client_discover_primary_services_by_uuid16",
+            "inputs": ["hci_con_handle_t", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_primary_services_by_uuid16(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1);"]
+        },
+        {
+            "name": "gatt_client_discover_primary_services_by_uuid128",
+            "inputs": ["hci_con_handle_t", "data[16]"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_primary_services_by_uuid128(packet_handler, *(hci_con_handle_t*)$i0, $i1);"]
+        },
+        {
+            "name": "gatt_client_find_included_services_for_service",
+            "inputs": ["hci_con_handle_t", "data[22]"],
+            "outputs": [],
+            "exec": ["gatt_client_find_included_services_for_service(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_service_t*)$i1);"]
+        },
+        {
+            "name": "gatt_client_discover_characteristics_for_service",
+            "inputs": ["hci_con_handle_t", "data[22]"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_characteristics_for_service(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_service_t*)$i1);"]
+        },
+        {
+            "name": "gatt_client_discover_characteristics_for_handle_range_by_uuid16",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_characteristics_for_handle_range_by_uuid16(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2, *(u16*)$i3);"]
+        },
+        {
+            "name": "gatt_client_discover_characteristics_for_handle_range_by_uuid128",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]", "data[16]"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_characteristics_for_handle_range_by_uuid128(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2, $i3);"]
+        },
+        {
+            "name": "gatt_client_discover_characteristics_for_service_by_uuid16",
+            "inputs": ["hci_con_handle_t", "data[22]", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_characteristics_for_service_by_uuid16(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_service_t*)$i1, *(u16*)$i2);"]
+        },
+        {
+            "name": "gatt_client_discover_characteristics_for_service_by_uuid128",
+            "inputs": ["hci_con_handle_t", "data[22]", "data[16]"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_characteristics_for_service_by_uuid128(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_service_t*)$i1, $i2);"]
+        },
+        {
+            "name": "gatt_client_discover_characteristic_descriptors",
+            "inputs": ["hci_con_handle_t", "data[26]"],
+            "outputs": [],
+            "exec": ["gatt_client_discover_characteristic_descriptors(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_characteristic_t*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_value_of_characteristic",
+            "inputs": ["hci_con_handle_t", "data[26]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_value_of_characteristic(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_characteristic_t*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_value_of_characteristic_using_value_handle",
+            "inputs": ["hci_con_handle_t", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_value_of_characteristic_using_value_handle(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_value_of_characteristics_by_uuid16",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_value_of_characteristics_by_uuid16(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2, *(u16*)$i3);"]
+        },
+        {
+            "name": "gatt_client_read_value_of_characteristics_by_uuid128",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]", "data[16]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_value_of_characteristics_by_uuid128(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2, $i3);"]
+        },
+        {
+            "name": "gatt_client_read_long_value_of_characteristic",
+            "inputs": ["hci_con_handle_t", "data[26]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_long_value_of_characteristic(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_characteristic_t*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_long_value_of_characteristic_using_value_handle",
+            "inputs": ["hci_con_handle_t", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_long_value_of_characteristic_using_value_handle(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_long_value_of_characteristic_using_value_handle_with_offset",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_long_value_of_characteristic_using_value_handle_with_offset(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2);"]
+        },
+        {
+            "name": "gatt_client_read_multiple_characteristic_values",
+            "inputs": ["hci_con_handle_t", "data[2:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_multiple_characteristic_values(packet_handler, *(hci_con_handle_t*)$i0, $s1/2, (u16*)$i1);"]
+        },
+        {
+            "name": "gatt_client_write_value_of_characteristic_without_response",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_value_of_characteristic_without_response(*(hci_con_handle_t*)$i0, *(u16*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_signed_write_without_response",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_signed_write_without_response(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_write_value_of_characteristic",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_value_of_characteristic(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_write_long_value_of_characteristic",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_long_value_of_characteristic(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_write_long_value_of_characteristic_with_offset",
+            "inputs": ["hci_con_handle_t", "data[2]","data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_long_value_of_characteristic_with_offset(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2, $s3, $i3);"]
+        },
+        {
+            "name": "gatt_client_reliable_write_long_value_of_characteristic",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_reliable_write_long_value_of_characteristic(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_read_characteristic_descriptor",
+            "inputs": ["hci_con_handle_t", "data[20]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_characteristic_descriptor(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_characteristic_descriptor_t*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_characteristic_descriptor_using_descriptor_handle",
+            "inputs": ["hci_con_handle_t", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_characteristic_descriptor_using_descriptor_handle(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_long_characteristic_descriptor",
+            "inputs": ["hci_con_handle_t", "data[20]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_long_characteristic_descriptor(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_characteristic_descriptor_t*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_long_characteristic_descriptor_using_descriptor_handle",
+            "inputs": ["hci_con_handle_t", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_long_characteristic_descriptor_using_descriptor_handle(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1);"]
+        },
+        {
+            "name": "gatt_client_read_long_characteristic_descriptor_using_descriptor_handle_with_offset",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_read_long_characteristic_descriptor_using_descriptor_handle_with_offset(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2);"]
+        },
+        {
+            "name": "gatt_client_write_characteristic_descriptor",
+            "inputs": ["hci_con_handle_t", "data[20]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_characteristic_descriptor(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_characteristic_descriptor_t*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_write_characteristic_descriptor_using_descriptor_handle",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_characteristic_descriptor_using_descriptor_handle(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_write_long_characteristic_descriptor",
+            "inputs": ["hci_con_handle_t", "data[20]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_long_characteristic_descriptor(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_characteristic_descriptor_t*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_write_long_characteristic_descriptor_using_descriptor_handle",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_long_characteristic_descriptor_using_descriptor_handle(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, $s2, $i2);"]
+        },
+        {
+            "name": "gatt_client_write_long_characteristic_descriptor_using_descriptor_handle_with_offset",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_long_characteristic_descriptor_using_descriptor_handle_with_offset(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2,$s3, $i3);"]
+        },
+        {
+            "name": "gatt_client_write_client_characteristic_configuration",
+            "inputs": ["hci_con_handle_t", "data[26]", "data[2]"],
+            "outputs": [],
+            "exec": ["gatt_client_write_client_characteristic_configuration(packet_handler, *(hci_con_handle_t*)$i0, (gatt_client_characteristic_t*)$i1, *(u16*)$i2);"]
+        },
+        {
+            "name": "gatt_client_request_can_write_without_response_event",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["gatt_client_request_can_write_without_response_event(packet_handler, *(hci_con_handle_t*)$i0);"]
+        },
+        {
+            "name": "gatt_client_prepare_write",
+            "inputs": ["hci_con_handle_t", "data[2]", "data[2]", "data[1:128]"],
+            "outputs": [],
+            "exec": ["gatt_client_prepare_write(packet_handler, *(hci_con_handle_t*)$i0, *(u16*)$i1, *(u16*)$i2, $s3, $i3);"]
+        },
+        {
+            "name": "gatt_client_execute_write",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["gatt_client_execute_write(packet_handler, *(hci_con_handle_t*)$i0);"]
+        },
+        {
+            "name": "gatt_client_cancel_write",
+            "inputs": ["hci_con_handle_t"],
+            "outputs": [],
+            "exec": ["gatt_client_cancel_write(packet_handler, *(hci_con_handle_t*)$i0);"]
+        }
     ]
 }

@@ -375,6 +375,10 @@ void stack_init() {
 
   sm_init();
 
+  sdp_init();
+
+  sdp_client_init();
+
   // turn on!
   hci_power_control(HCI_POWER_ON);
 
