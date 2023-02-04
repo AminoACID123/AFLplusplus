@@ -178,15 +178,12 @@ public:
     for (auto it = con.begin(), eit = con.end(); it != eit; ++it) {
       if (it->handle == handle) {
         con.erase(it);
-        // Parameter* pHandle = get_parameter(CORE_PARAMETER_HCI_HANDLE);
-        // for(auto it=pHandle->domain.begin(),eit=pHandle->domain.end();it!=eit;++it)
-        // {
-        //    u16 h = (*it)[0] | ((*it)[1] << 8);
-        //    if(h == handle){
-        //     pHandle->domain.erase(it);
-        //     return;
-        //    }
-        // }
+        for(auto it=phci.begin(),eit=phci.end();it!=eit;++it){
+          hci_acl_t* acl = (hci_acl_t*)(*it).data();
+          if(acl->flag == HCI_ACL_DATA_PACKET && acl->handle == handle){
+            phci.erase(it);
+          }
+        }
         return;
       }
     }

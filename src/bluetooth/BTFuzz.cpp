@@ -199,6 +199,9 @@ u32 BTFuzz::handle_cmd(u8* buf, hci_command_t* cmd)
 
 u32 BTFuzz::handle_acl(u8* buf, hci_acl_t* acl)
 {
+  bt_l2cap_hdr* l2cap = (bt_l2cap_hdr*)acl->data;
+  if(l2cap->cid == L2CAP_CID_ATTRIBUTE_PROTOCOL)
+    return handle_att(buf, (bt_l2cap_hdr_att*)l2cap->data);
   return 0;
 }
 

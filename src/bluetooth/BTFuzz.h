@@ -73,6 +73,8 @@ public:
 
   u32 handle_acl(u8*, hci_acl_t*);
 
+  u32 handle_att(u8*, bt_l2cap_hdr_att*);
+
 //   void handle_item(item_t*);
 
 //   void handle_cmd(hci_command_t*);

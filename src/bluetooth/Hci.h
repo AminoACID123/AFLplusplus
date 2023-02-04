@@ -3984,6 +3984,7 @@ struct bt_l2cap_amp_disconn_phy_link_rsp {
 
 struct bt_l2cap_hdr_att {
   u8 code;
+  u8 data[0];
 } __attribute__((packed));
 
 #define BT_L2CAP_ATT_ERROR_RESPONSE 0x01
@@ -4003,15 +4004,42 @@ struct bt_l2cap_att_exchange_mtu_rsp {
   u16 mtu;
 } __attribute__((packed));
 
+#define BT_L2CAP_ATT_FIND_INFORMATION_REQ 0x04
+struct bt_l2cap_att_find_information_req {
+  u16 start_handle;
+  u16 end_handle;
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_FIND_INFORMATION_RSP 0x05
+struct bt_l2cap_att_find_information_rsp{
+  u8 format;
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_FIND_BY_TYPE_VALUE_REQ 0x06
+struct bt_l2cap_att_find_by_type_value_req {
+  u16 start_handle;
+  u16 end_handle;
+  u16 type;
+  u8 value[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_FIND_BY_TYPE_VALUE_RSP 0x07
+struct bt_l2cap_att_find_by_type_value_rsp {
+  u8 list[0];
+} __attribute__((packed));
+
 #define BT_L2CAP_ATT_READ_TYPE_REQ 0x08
 struct bt_l2cap_att_read_type_req {
   u16 start_handle;
   u16 end_handle;
+  u8 type[16];
 } __attribute__((packed));
 
 #define BT_L2CAP_ATT_READ_TYPE_RSP 0x09
 struct bt_l2cap_att_read_type_rsp {
   u8 length;
+  u8 list[0];
 } __attribute__((packed));
 
 #define BT_L2CAP_ATT_READ_REQ 0x0a
@@ -4020,21 +4048,99 @@ struct bt_l2cap_att_read_req {
 } __attribute__((packed));
 
 #define BT_L2CAP_ATT_READ_RSP 0x0b
+struct bt_l2cap_att_read_rsp {
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_READ_BLOB_REQ 0x0c
+struct bt_l2cap_att_read_blob_req {
+  u16 handle;
+  u16 offset;
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_READ_BLOB_RSP 0x0d
+struct bt_l2cap_att_read_blob_rsp {
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_READ_MULTIPLE_REQ 0x0e
+struct bt_l2cap_att_read_multiple_req {
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_READ_MULTIPLE_RSP 0x0f
+struct bt_l2cap_att_read_multiple_rsp {
+  u8 data[0];
+} __attribute__((packed));
 
 #define BT_L2CAP_ATT_READ_GROUP_TYPE_REQ 0x10
 struct bt_l2cap_att_read_group_type_req {
   u16 start_handle;
   u16 end_handle;
+  u8 type[16];
 } __attribute__((packed));
 
 #define BT_L2CAP_ATT_READ_GROUP_TYPE_RSP 0x11
 struct bt_l2cap_att_read_group_type_rsp {
   u8 length;
+  u8 data[0];
 } __attribute__((packed));
+
+#define BT_L2CAP_ATT_READ_MULTIPLE_VARIABLE_REQ 0x20
+struct bt_l2cap_att_read_multiple_variable_req {
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_READ_MULTIPLE_VARIABLE_RSP 0x21
+struct bt_l2cap_att_read_multiple_variable_rsp {
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_WRITE_REQ 0x12
+struct bt_l2cap_att_write_req {
+  u16 handle;
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_WRITE_RSP 0x13
+
+#define BT_L2CAP_ATT_WRITE_CMD 0x52
+struct bt_l2cap_att_write_cmd {
+  u16 handle;
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_SIGNED_WRITE_CMD 0xd2
+struct bt_l2cap_att_signed_write_cmd {
+  u16 handle;
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_PREPARE_WRITE_REQ 0x16
+struct bt_l2cap_att_prepare_write_req {
+  u16 handle;
+  u16 offset;
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_PREPARE_WRITE_RSP 0x17
+struct bt_l2cap_att_prepare_write_rsp {
+  u16 handle;
+  u16 offset;
+  u8 data[0];
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_EXECUTE_WRITE_REQ 0x18
+struct bt_l2cap_att_execute_write_req {
+  u8 flags;
+} __attribute__((packed));
+
+#define BT_L2CAP_ATT_EXECUTE_WRITE_RSP 0x19
 
 #define BT_L2CAP_ATT_HANDLE_VALUE_NOTIFY 0x1b
 struct bt_l2cap_att_handle_value_notify {
   u16 handle;
+  u8 data[0];
 } __attribute__((packed));
 
 #define BT_L2CAP_ATT_HANDLE_VALUE_IND 0x1d
@@ -4043,6 +4149,11 @@ struct bt_l2cap_att_handle_value_ind {
 } __attribute__((packed));
 
 #define BT_L2CAP_ATT_HANDLE_VALUE_CONF 0x1e
+
+#define BT_L2CAP_ATT_MULTIPLE_HANDLE_VALUE_NTF 0x23
+struct bt_l2cap_att_multiple_handle_value_ntf {
+  u8 data[0];
+} __attribute__((packed));
 
 struct bt_l2cap_hdr_smp {
   u8 code;
@@ -4136,6 +4247,61 @@ struct bt_sdp_hdr {
   u16 tid;
   u16 plen;
 } __attribute__((packed));
+
+
+// MARK: Attribute PDU Opcodes 
+#define ATT_ERROR_RESPONSE              0x01u
+
+#define ATT_EXCHANGE_MTU_REQUEST        0x02u
+#define ATT_EXCHANGE_MTU_RESPONSE       0x03u
+
+#define ATT_FIND_INFORMATION_REQUEST    0x04u
+#define ATT_FIND_INFORMATION_REPLY      0x05u
+#define ATT_FIND_BY_TYPE_VALUE_REQUEST  0x06u
+#define ATT_FIND_BY_TYPE_VALUE_RESPONSE 0x07u
+
+#define ATT_READ_BY_TYPE_REQUEST        0x08u
+#define ATT_READ_BY_TYPE_RESPONSE       0x09u
+#define ATT_READ_REQUEST                0x0au
+#define ATT_READ_RESPONSE               0x0bu
+#define ATT_READ_BLOB_REQUEST           0x0cu
+#define ATT_READ_BLOB_RESPONSE          0x0du
+#define ATT_READ_MULTIPLE_REQUEST       0x0eu
+#define ATT_READ_MULTIPLE_RESPONSE      0x0fu
+#define ATT_READ_BY_GROUP_TYPE_REQUEST  0x10u
+#define ATT_READ_BY_GROUP_TYPE_RESPONSE 0x11u
+
+#define ATT_WRITE_REQUEST               0x12u
+#define ATT_WRITE_RESPONSE              0x13u
+
+#define ATT_PREPARE_WRITE_REQUEST       0x16u
+#define ATT_PREPARE_WRITE_RESPONSE      0x17u
+#define ATT_EXECUTE_WRITE_REQUEST       0x18u
+#define ATT_EXECUTE_WRITE_RESPONSE      0x19u
+
+#define ATT_HANDLE_VALUE_NOTIFICATION   0x1bu
+#define ATT_HANDLE_VALUE_INDICATION     0x1du
+#define ATT_HANDLE_VALUE_CONFIRMATION   0x1eu
+
+#define ATT_READ_MULTIPLE_VARIABLE_REQ  0x20u
+#define ATT_READ_MULTIPLE_VARIABLE_RSP  0x21u
+#define ATT_MULTIPLE_HANDLE_VALUE_NTF   0x23u
+
+#define ATT_WRITE_COMMAND                0x52u
+#define ATT_SIGNED_WRITE_COMMAND         0xD2u
+
+
+// internal additions
+// 128 bit UUID used
+#define ATT_PROPERTY_UUID128             0x200u
+// Read/Write Permission bits
+#define ATT_PROPERTY_READ_PERMISSION_BIT_0  0x0400u
+#define ATT_PROPERTY_READ_PERMISSION_BIT_1  0x0800u
+#define ATT_PROPERTY_WRITE_PERMISSION_BIT_0 0x0001u
+#define ATT_PROPERTY_WRITE_PERMISSION_BIT_1 0x0010u
+#define ATT_PROPERTY_READ_PERMISSION_SC     0x0020u
+#define ATT_PROPERTY_WRITE_PERMISSION_SC    0x0080u
+
 
 class Event : public Item {
 protected:
@@ -4248,5 +4414,80 @@ public:
   
   bt_hci_evt_le_conn_complete* data() { return pComp; }
 };
+
+class ACL : public Item {
+protected:
+  hci_acl_t *pAcl;
+
+public:
+  ACL() = default;
+  ACL(u8 *buf, u16 handle) : Item(buf) {
+    pAcl = (hci_acl_t *)pItem->data;
+    pAcl->flag = HCI_ACL_DATA_PACKET;
+    pAcl->handle = handle;
+  }
+
+  hci_acl_t* data() { return pAcl; }
+};
+
+class ATT : public ACL {
+protected:
+  bt_l2cap_hdr_att* pAtt;
+
+public:
+  ATT(u8* buf, u16 handle, u8 opcode) : ACL(buf, handle) {
+    pAtt = (bt_l2cap_hdr_att*)pAcl->data;
+    pAtt->code = opcode;
+  }
+};
+
+class ATTErrorRsp : public ATT {
+  bt_l2cap_att_error_response* pRsp;
+
+public:
+  ATTErrorRsp(u8* buf, u16 handle) : 
+    ATT(buf, handle, BT_L2CAP_ATT_ERROR_RESPONSE){
+      pRsp = (bt_l2cap_att_error_response*)pAtt->data;
+      pAcl->len = sizeof(bt_l2cap_hdr_att) + sizeof(bt_l2cap_att_error_response);
+      pItem->size = sizeof(hci_acl_t) + pAcl->len;
+  }
+  bt_l2cap_att_error_response* data() { return pRsp; }
+};
+
+class ATTExchangMTURsp : public ATT {
+  bt_l2cap_att_exchange_mtu_rsp* pRsp;
+
+public:
+  ATTExchangMTURsp(u8* buf, u16 handle) :
+    ATT(buf, handle, BT_L2CAP_ATT_EXCHANGE_MTU_RSP) {
+      pRsp = (bt_l2cap_att_exchange_mtu_rsp*)pAtt->data;
+      pAcl->len = sizeof(bt_l2cap_hdr_att) + sizeof(bt_l2cap_att_exchange_mtu_rsp);
+      pItem->size = sizeof(hci_acl_t) + pAcl->len;
+    }
+    bt_l2cap_att_exchange_mtu_rsp* data() { return pRsp; }
+};
+
+
+class ATTFindInfoRsp : public ATT {
+  bt_l2cap_att_find_information_rsp* pRsp;
+
+public:
+  ATTFindInfoRsp(u8* buf, u16 handle) : 
+    ATT(buf, handle, BT_L2CAP_ATT_FIND_INFORMATION_RSP) {
+      u32 n = rand_below(BT_ATT_MAX_MTU);
+      pRsp = (bt_l2cap_att_find_information_rsp*)pAtt->data;
+      pRsp->format = rand_below(2);
+      rand_fill(pRsp->data, n);
+      pAcl->len = sizeof(bt_l2cap_hdr_att) + sizeof(bt_l2cap_att_find_information_rsp) + n;
+      pItem->size = sizeof(hci_acl_t) + pAcl->len;
+    }
+};
+
+
+class ATTFindTypeValueRsp : public ATT {
+
+};
+
+
 
 #endif /* D9164AF1_4E22_4376_82E6_9C574FB08463 */

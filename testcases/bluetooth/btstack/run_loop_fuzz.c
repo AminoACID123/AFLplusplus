@@ -371,6 +371,8 @@ void stack_init() {
 
   l2cap_init();
 
+  att_server_init(NULL, NULL, NULL);
+
   gatt_client_init();
 
   sm_init();
