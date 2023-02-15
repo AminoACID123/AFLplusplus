@@ -205,6 +205,26 @@ u32 BTFuzz::handle_acl(u8* buf, hci_acl_t* acl)
   return 0;
 }
 
+u32 BTFuzz::handle_att(u8* buf, hci_acl_t* acl){
+  if(rand_below(10) < 2)
+  {
+    ATTErrorResponse(buf, att->)
+  }
+
+
+
+
+  switch (att->code)
+  {
+  case /* constant-expression */:
+    /* code */
+    break;
+  
+  default:
+    break;
+  }
+}
+
 // reply pending hci packets
 u32 BTFuzz::fuzz_one_sema1(u8 *buf) {
   if (cur_state.phci.empty())
