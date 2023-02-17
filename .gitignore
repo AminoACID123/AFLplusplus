@@ -100,6 +100,8 @@ utils/persistent_mode/test-instr
 **/a.out
 testcases/bluetooth/btstack/wllvm_build
 testcases/bluetooth/btstack/afl_build
+testcases/bluetooth/nimble/wllvm_build
+testcases/bluetooth/nimble/afl_build
 !coresight_mode/coresight-trace
 vuln_prog
 testcases/bluetooth/btstack/build
