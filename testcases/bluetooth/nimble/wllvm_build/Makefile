@@ -1,3 +1,6 @@
+CC := wllvm
+CXX := wllvm++
+LD := wllvm
 SIZE    := size
 
 # Configure NimBLE variables

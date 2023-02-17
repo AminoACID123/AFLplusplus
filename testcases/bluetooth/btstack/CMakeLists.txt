@@ -141,7 +141,7 @@ add_library(btstack STATIC ${SOURCES})
 
 message(STATUS ${CMAKE_C_COMPILER})
 if(${CMAKE_C_COMPILER} STREQUAL "/usr/local/bin/afl-clang-lto")
-       add_executable(bt main.c hci_transport_fuzz.c run_loop_fuzz.c port.c harness.c)
+       add_executable(bt main.c hci_transport_fuzz.c run_loop_fuzz.c execute.c harness.c)
        add_link_options(-Wl,--whole-archive)
        target_link_libraries( bt btstack )
 endif()

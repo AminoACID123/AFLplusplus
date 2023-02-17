@@ -1,4 +1,5 @@
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
@@ -79,5 +80,4 @@ void stack_execute(u8* buf, u32 size){
   pItem = (item_t*)buf;
   pItem_end = (item_t*)(buf + size);
   pHCIItem = (item_t*)__afl_area2_ptr;
-  btstack_run_loop_execute();
 }

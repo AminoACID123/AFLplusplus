@@ -3,6 +3,7 @@
 
 #include "../../include/bluetooth.h"
 #include "../../include/types.h"
+#ifdef __cplusplus
 #include "Item.h"
 #include "Util.h"
 #include <set>
@@ -17,6 +18,7 @@ extern std::vector<u8> vEvt;
 extern std::vector<u8> vLeEvt;
 extern std::vector<u16> vStatusCmd;
 extern std::vector<u16> vCompleteCmd;
+#endif
 
 #define L2CAP_CID_SIGNALING 0x0001
 #define L2CAP_CID_CONNECTIONLESS_CHANNEL 0x0002
@@ -4307,6 +4309,7 @@ struct bt_sdp_hdr {
 #define ATT_PROPERTY_READ_PERMISSION_SC 0x0020u
 #define ATT_PROPERTY_WRITE_PERMISSION_SC 0x0080u
 
+#ifdef __cplusplus
 class Event : public Item {
 protected:
   hci_event_t *pEvt;
@@ -4464,5 +4467,7 @@ typedef ATT<bt_l2cap_att_prepare_write_rsp, BT_L2CAP_ATT_PREPARE_WRITE_RSP, fals
 typedef ATT<bt_l2cap_att_execute_write_rsp, BT_L2CAP_ATT_EXECUTE_WRITE_RSP, false> ATTExecuteWriteRsp;
 typedef ATT<bt_l2cap_att_read_multiple_variable_rsp, BT_L2CAP_ATT_READ_MULTIPLE_VARIABLE_RSP, true> ATTReadMultipleVariableRsp;
 typedef ATT<bt_l2cap_att_handle_value_conf, BT_L2CAP_ATT_HANDLE_VALUE_CONF, false> ATTHandleValueConf;
+
+#endif
 
 #endif /* D9164AF1_4E22_4376_82E6_9C574FB08463 */

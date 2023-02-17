@@ -1,3 +1,6 @@
+CC := afl-clang-lto
+CXX := afl-clang-lto++
+LD := afl-clang-lto
 SIZE    := size
 
 # Configure NimBLE variables

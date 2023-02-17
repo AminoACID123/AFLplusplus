@@ -27,6 +27,7 @@ static struct ble_npl_task s_task_hci;
 #define TASK_DEFAULT_STACK          NULL
 #define TASK_DEFAULT_STACK_SIZE     400
 
+void ble_store_ram_init();
 void send_init_packets();
 void *ble_host_task(void* param);
 
@@ -56,13 +57,14 @@ int main(int argc, char *argv[])
                       NULL, TASK_DEFAULT_PRIORITY, BLE_NPL_TIME_FOREVER,
                       TASK_DEFAULT_STACK, TASK_DEFAULT_STACK_SIZE);
 
-    send_init_packets();
-
+    // send_init_packets();
+    while(!ble_hs_synced());
     ble_addr_t addr = {
         .type = 0,
-        .val = {0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb,}
+        .val = {0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb}
     };
     struct ble_gap_conn_params param;
     ble_gap_connect(0, &addr, 100, &param, NULL, NULL);
+    pthread_exit(&ret);
 
 }

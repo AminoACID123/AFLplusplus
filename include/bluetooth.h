@@ -24,47 +24,47 @@
 
 typedef struct __attribute__((packed)){
     u32 size;
-    u8 data[0];
+    u8 data[];
 } item_t ;
 
 typedef struct __attribute__((packed)){
     u8 flag;
     u32 id;
     u32 params;
-    u8 data[0];
+    u8 data[];
 } operation_t;
 
 typedef struct  __attribute__((packed)) {
     u32 len;
-    u8  data[0];
+    u8  data[];
 } parameter_t;
 
 typedef struct __attribute__((packed)) {
   u8 flag;
   u8 opcode;
   u8 len;
-  u8 param[0];
+  u8 param[];
 } hci_event_t;
 
 typedef struct __attribute__((packed)) {
   u8 flag;
   u16 opcode;
   u8 len;
-  u8 param[0];
+  u8 param[];
 } hci_command_t;
 
 typedef struct __attribute__((packed)) {
   u8 flag;
   u16 handle;
   u16 len;
-  u8 data[0];
+  u8 data[];
 } hci_acl_t;
-
 
 
 #define BT_ItemForEach3(item, array, s) for(item=(item_t*)array;(u8*)item-(u8*)array<s;item=(item_t*)&item->data[item->size])
 
 #define BT_ItemForEach2(item, array) for(item=(item_t*)array;item->size!=0;item=(item_t*)&item->data[item->size])
+
 
 static inline u32 bt_item_nr(u8* buf, u32 size){
   u32 n = 0;
