@@ -16,6 +16,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern item_t* pItem;
+extern item_t* pItem_end;
+extern item_t* pHCIItem;
+
 void *ble_transport_alloc_evt(int discardable);
 int ble_transport_to_hs_evt_impl(void *buf);
 void ble_transport_free(void *buf);
@@ -58,7 +62,7 @@ void *ble_host_task(void *param)
     return NULL;
 }
 
-void send_evt(u8 *buf, u32 len)
+void send_to_hs_evt(u8 *buf, u32 len)
 {
     int rc;
     u8 *data = ble_transport_alloc_evt(0);
@@ -69,45 +73,38 @@ void send_evt(u8 *buf, u32 len)
     return;
 }
 
-void send_init_packets()
+void send_to_hs_acl(u8* buf, u32 len)
 {
-    // while (packet_sent != init_packets)
-    // {
-    //     if (packet_sent == packet_to_send)
-    //         continue;
-    //     switch (packet_to_send){
-    //         case 1: send_evt(packet1, sizeof(packet1)); break;
-    //         case 2: send_evt(packet2, sizeof(packet2)); break;
-    //         case 3: send_evt(packet3, sizeof(packet3)); break;
-    //         case 4: send_evt(packet4, sizeof(packet4)); break;
-    //         case 5: send_evt(packet5, sizeof(packet5)); break;
-    //         case 6: send_evt(packet6, sizeof(packet6)); break;
-    //         case 7: send_evt(packet7, sizeof(packet7)); break;
-    //         case 8: send_evt(packet8, sizeof(packet8)); break;
-    //         case 9: send_evt(packet9, sizeof(packet9)); break;
-    //         case 10: send_evt(packet10, sizeof(packet10)); break;
-    //         case 11: send_evt(packet11, sizeof(packet11)); break;
-    //         case 12: send_evt(packet12, sizeof(packet12)); break;
-    //         case 13: send_evt(packet13, sizeof(packet13)); break;
-    //         case 14: send_evt(packet14, sizeof(packet14)); break;
-    //         case 15: send_evt(packet15, sizeof(packet15)); break;
-    //         default: 
-    //             break;
-    //     }
-    //     packet_sent = packet_to_send;
-    // }
-    // while(!ble_hs_synced());
+    struct os_mbuf *m = ble_transport_alloc_acl_from_ll();
+    if (os_mbuf_append(m, buf, len)) {
+        os_mbuf_free_chain(m);
+        return;
+    }
+    ble_transport_to_hs_acl(m);
 }
 
 int ble_transport_to_ll_cmd_impl(void *buf)
 {
-    printf("%02x%02x\n", ((u8 *)buf)[1], ((u8 *)buf)[0]);
+    printf("HCI Command: 0x%02x%02x\n", ((u8 *)buf)[1], ((u8 *)buf)[0]);
+    if(pHCIItem){
+        hci_command_t* cmd = (hci_command_t*)pHCIItem->data;
+        cmd->flag = HCI_COMMAND_DATA_PACKET;
+        memcpy(&cmd->opcode, buf, *((u8*)buf + 2) + 3);
+        pHCIItem->size = cmd->len + sizeof(hci_command_t);
+        pHCIItem = (item_t*)&pHCIItem->data[pHCIItem->size];
+        pHCIItem->size = 0;
+    }
+
     ble_transport_free(buf);
     if(packet_sent < INIT_PACKETS){
-        send_evt(init_evts[packet_sent], init_evts[packet_sent][1] + 1);
+        send_to_hs_evt(init_evts[packet_sent], init_evts[packet_sent][1] + 1);
         ++packet_sent;
-    }else{
-
+    }else if(&pItem->data[pItem->size] < pItem_end){
+        item_t* next = (item_t*)&pItem->data[pItem->size];
+        if(next->data[0] == HCI_EVENT_PACKET){
+            send_to_hs_evt(next->data + 1, next->size - 1);
+            pItem = next;
+        }
     }
     return 0;
 }

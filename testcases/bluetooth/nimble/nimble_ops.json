@@ -1,0 +1,156 @@
+{
+    "parameters": [
+        {
+            "name": "bool", 
+            "enum": 0,
+            "bytes": 1,
+            "domain": [[0], [1]]
+        },
+        {
+            "name": "bd_addr_t", 
+            "enum": 0,
+            "bytes": 6,
+            "domain": []
+        },
+        {
+            "name": "link_key_t", 
+            "enum": 0,
+            "bytes": 16,
+            "domain": [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+            ]
+        },
+        {
+            "name": "sm_key_t", 
+            "enum": 0,
+            "bytes": 16,
+            "domain": [
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+            ]
+        },
+        {
+            "name": "io_capability_t", 
+            "enum": 1,
+            "domain": [
+                "IO_CAPABILITY_DISPLAY_ONLY", 
+                "IO_CAPABILITY_DISPLAY_YES_NO",
+                "IO_CAPABILITY_KEYBOARD_ONLY",
+                "IO_CAPABILITY_NO_INPUT_NO_OUTPUT",
+                "IO_CAPABILITY_KEYBOARD_DISPLAY"
+            ]
+        },
+        {
+            "name": "bd_addr_type_t", 
+            "enum": 0,
+            "bytes": 1,
+            "domain": [[0], [1], [2], [3]]
+        },
+        {
+            "name": "hci_con_handle_t", 
+            "enum": 0,
+            "bytes": 2,
+            "domain": []
+        },
+        {
+            "name": "hci_service_type_t", 
+            "enum": 1,
+            "domain": [
+                "HCI_SERVICE_TYPE_NO_TRAFFIC",
+                "HCI_SERVICE_TYPE_BEST_EFFORT", 
+                "HCI_SERVICE_TYPE_GUARANTEED"
+            ]
+        },
+        {
+            "name": "advertising_handle", 
+            "enum": 0,
+            "bytes": 1,
+            "domain": [[0], [1], [2]]
+        },
+        {
+            "name": "gap_security_mode_t", 
+            "enum": 1,
+            "domain": [
+                "GAP_SECURITY_MODE_1",
+                "GAP_SECURITY_MODE_2",
+                "GAP_SECURITY_MODE_3",
+                "GAP_SECURITY_MODE_4"
+            ]
+        },
+        {
+            "name": "gap_random_address_type_t",
+            "enum": 1,
+            "domain": [
+                "GAP_RANDOM_ADDRESS_TYPE_STATIC",
+                "GAP_RANDOM_ADDRESS_NON_RESOLVABLE",
+                "GAP_RANDOM_ADDRESS_RESOLVABLE"
+            ]
+        },
+        {
+            "name": "gap_security_level_t", 
+            "enum": 1,
+            "domain": [
+                "LEVEL_0",
+                "LEVEL_1",
+                "LEVEL_2",
+                "LEVEL_3"
+            ]
+        },
+        {
+            "name": "link_key_type_t", 
+            "enum": 1,
+            "domain": [
+                "COMBINATION_KEY",
+                "LOCAL_UNIT_KEY",
+                "REMOTE_UNIT_KEY",
+                "DEBUG_COMBINATION_KEY",
+                "UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192",
+                "AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P192",
+                "CHANGED_COMBINATION_KEY",
+                "UNAUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256",
+                "AUTHENTICATED_COMBINATION_KEY_GENERATED_FROM_P256"
+            ]
+        },
+        {
+            "name": "page_scan_type_t",
+            "enum": 1,
+            "domain": [
+                "PAGE_SCAN_MODE_STANDARD",
+                "PAGE_SCAN_MODE_INTERLACED"
+            ]
+        },
+        {
+            "name": "hci_role_t", 
+            "enum": 1,
+            "domain": [
+                "HCI_ROLE_MASTER",
+                "HCI_ROLE_SLAVE"
+            ]
+        },
+        {
+            "name": "cid",
+            "enum": 0, 
+            "bytes": 2,
+            "domain": []
+        },
+        {
+            "name": "psm",
+            "enum": 0, 
+            "bytes": 2,
+            "domain": []
+        }
+    ],
+    "headers" : ["stdlib.h", "host/gap.h"],
+    "static_functions" : [],
+    "operations": [
+        {
+            "name": "gap_connect",
+            "inputs": ["bd_addr_t", "bd_addr_type_t", ""],
+            "outputs": [],
+            "exec" : ["gap_read_rssi(*(hci_con_handle_t*)$i0);"]
+        }
+    ]
+}

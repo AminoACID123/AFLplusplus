@@ -5,4 +5,5 @@ echo "export LLVM_COMPILER := clang" > Makefile
 echo "CC := wllvm" > Makefile
 echo "CXX := wllvm++" >> Makefile
 echo "LD := wllvm" >> Makefile
-cat ../Makefile >> Makefile
+echo "include ../Makefile" >> Makefile
+# cat ../Makefile >> Makefile

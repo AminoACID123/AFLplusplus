@@ -27,13 +27,18 @@ static struct ble_npl_task s_task_hci;
 #define TASK_DEFAULT_STACK          NULL
 #define TASK_DEFAULT_STACK_SIZE     400
 
+int ble_hs_synced();
 void ble_store_ram_init();
 void send_init_packets();
 void *ble_host_task(void* param);
+void stack_execute(u8* buf, u32 size);
 
 extern u32 init_packets;
 extern u32 packet_to_send;
 extern u32 packet_sent;
+
+__AFL_FUZZ_INIT();
+
 
 int main(int argc, char *argv[])
 {
@@ -59,12 +64,10 @@ int main(int argc, char *argv[])
 
     // send_init_packets();
     while(!ble_hs_synced());
-    ble_addr_t addr = {
-        .type = 0,
-        .val = {0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb}
-    };
-    struct ble_gap_conn_params param;
-    ble_gap_connect(0, &addr, 100, &param, NULL, NULL);
-    pthread_exit(&ret);
 
+    __AFL_INIT();
+
+    u8 *buf = __AFL_FUZZ_TESTCASE_BUF;
+    u32 len = __AFL_FUZZ_TESTCASE_LEN;
+    stack_execute(buf, len);
 }

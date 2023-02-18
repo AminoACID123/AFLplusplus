@@ -18,13 +18,10 @@
 
 extern u8* __afl_area2_ptr;
 extern u32 log_ptr;
-extern void (*fuzz_packet_handler)(u8 packet_type, u8 *packet, uint16_t size);
-
 extern void* arg_in[];
 
 item_t* pItem;
 item_t* pItem_end;
-
 item_t* pHCIItem;
 
 typedef void (*fun_ptr)();
@@ -45,25 +42,24 @@ void execute_api(operation_t *op) {
 }
 
 void execute_hci(u8* hci_packet_in){
-    u32 packet_len;
-    switch(hci_packet_in[0]){
-        case HCI_EVENT_PACKET:
-            packet_len = hci_packet_in[2] + 3;
-            break;
-        case HCI_ACL_DATA_PACKET:
-            packet_len = little_endian_read_16(hci_packet_in, 3) + 5;
-            break;
-        default:
-            return;
-    }
-
-    fuzz_packet_handler(hci_packet_in[0], &hci_packet_in[1], packet_len-1);
+  u32 packet_len;
+  switch(hci_packet_in[0]){
+      case HCI_EVENT_PACKET:{
+          hci_event_t* evt = (hci_event_t*)hci_packet_in;
+          packet_len = evt->len + sizeof(hci_event_t);
+          break;
+      }
+      case HCI_ACL_DATA_PACKET:{
+          hci_acl_t* acl = (hci_acl_t*)hci_packet_in;
+          packet_len = acl->len + sizeof(hci_acl_t);
+          break;
+      }
+      default:
+          return;
+  }
 }
 
-bool execute_one(){
-  if(pItem == pItem_end)
-    return false;
-
+void execute_one(){
   pHCIItem = (item_t*)__afl_area2_ptr;
   pHCIItem->size = 0;
 
@@ -73,11 +69,16 @@ bool execute_one(){
     execute_hci(pItem->data);
   pItem = (item_t*)&pItem->data[pItem->size];
   pHCIItem->size = 0;
-  return true;
 }
 
 void stack_execute(u8* buf, u32 size){
   pItem = (item_t*)buf;
   pItem_end = (item_t*)(buf + size);
   pHCIItem = (item_t*)__afl_area2_ptr;
+
+  while (pItem < pItem_end)
+  {
+    execute_one();  
+  }
+  
 }

@@ -265,7 +265,6 @@ u32 BTFuzz::fuzz_one_sema2(u8 *buf) {
       if(param->bytes == 6){
         memcpy(param->data, bd_addrs[rand_below(sizeof(bd_addrs) / 6)], 6);
       }else{
-        assert(param->isEnum);
         param->data[0] = rand_below(param->enum_domain.size());
       }
     }

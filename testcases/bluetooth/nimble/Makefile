@@ -42,25 +42,35 @@ OBJ := $(patsubst $(NIMBLE_ROOT)/%, $(BUILDDIR)/%,  $(SRC_C:.c=.o))
 OBJ += $(patsubst $(NIMBLE_ROOT)/%, $(BUILDDIR)/%,  $(SRC_CC:.cc=.o))
 
 TINYCRYPT_OBJ := $(patsubst $(NIMBLE_ROOT)/%, $(BUILDDIR)/%,  $(TINYCRYPT_SRC:.c=.o))  
+
 CFLAGS =                    \
     $(NIMBLE_CFLAGS)        \
     $(INCLUDES)             \
     -g                      \
     -D_GNU_SOURCE           \
-    $(NULL)
+	-O0						
+
+ifeq ($(CC), wllvm)
+    CFLAGS +=						\
+		-D__AFL_FUZZ_INIT()			\
+		-D__AFL_COVERAGE()			\
+		-D__AFL_INIT()				\
+		-D__AFL_FUZZ_TESTCASE_BUF=0	\
+		-D__AFL_FUZZ_TESTCASE_LEN=0
+endif
 
 LIBS := $(NIMBLE_LDFLAGS) -lrt -lpthread -lstdc++
 
 .PHONY: all clean
 .DEFAULT: all
 
-all: nimble-linux
+all: bt
 
 clean:
 	rm $(OBJ) -f
 	rm -f main.o
 	rm -f hci_transport_fuzz.o
-	rm nimble-linux -f
+	rm bt -f
 
 $(TINYCRYPT_OBJ): CFLAGS+=$(TINYCRYPT_CFLAGS)
 
@@ -68,6 +78,9 @@ main.o: ../main.c
 	$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
 
 hci_transport_fuzz.o: ../hci_transport_fuzz.c
+	$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
+
+execute.o: ../execute.c
 	$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
 
 ${BUILDDIR}/%.o: $(NIMBLE_ROOT)/%.c
@@ -78,6 +91,6 @@ ${BUILDDIR}/%.o: $(NIMBLE_ROOT)/%.cc
 	mkdir -p $(@D)
 	$(CXX) -c $(INCLUDES) $(CFLAGS) -o $@ $<
 
-nimble-linux: main.o hci_transport_fuzz.o $(OBJ) $(TINYCRYPT_OBJ)
+bt: main.o execute.o hci_transport_fuzz.o $(OBJ) $(TINYCRYPT_OBJ)
 	$(LD) -o $@ $^ $(LIBS)
 	$(SIZE) $@
