@@ -49,6 +49,8 @@ vector<u16> core_commands = {
     BT_HCI_CMD_CREATE_CONN, BT_HCI_CMD_CREATE_CONN_CANCEL,
     BT_HCI_CMD_DISCONNECT, BT_HCI_CMD_ACCEPT_CONN_REQUEST};
 
+vector<Operation*> core_operations;
+
 u8 bd_addrs[][6] = {{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa},
                     {0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb},
                     {0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc},
@@ -199,30 +201,29 @@ u32 BTFuzz::handle_cmd(u8* buf, hci_command_t* cmd)
 
 u32 BTFuzz::handle_acl(u8* buf, hci_acl_t* acl)
 {
-  bt_l2cap_hdr* l2cap = (bt_l2cap_hdr*)acl->data;
-  if(l2cap->cid == L2CAP_CID_ATTRIBUTE_PROTOCOL)
-    return handle_att(buf, (bt_l2cap_hdr_att*)l2cap->data);
+  // bt_l2cap_hdr* l2cap = (bt_l2cap_hdr*)acl->data;
+  // if(l2cap->cid == L2CAP_CID_ATTRIBUTE_PROTOCOL)
+  //   return handle_att(buf, (bt_l2cap_hdr_att*)l2cap->data);
   return 0;
 }
 
 u32 BTFuzz::handle_att(u8* buf, hci_acl_t* acl){
-  if(rand_below(10) < 2)
-  {
-    ATTErrorResponse(buf, att->)
-  }
+  // if(rand_below(10) < 2)
+  // {
+  //   ATTErrorResponse(buf, att->)
+  // }
 
 
-
-
-  switch (att->code)
-  {
-  case /* constant-expression */:
-    /* code */
-    break;
+  // switch (att->code)
+  // {
+  // case /* constant-expression */:
+  //   /* code */
+  //   break;
   
-  default:
-    break;
-  }
+  // default:
+  //   break;
+  // }
+  return 0;
 }
 
 // reply pending hci packets
@@ -243,59 +244,47 @@ u32 BTFuzz::fuzz_one_sema1(u8 *buf) {
 
 // core operations
 u32 BTFuzz::fuzz_one_sema2(u8 *buf) {
-  u32 r ;
-  if(cur_state.con.empty()){
-    r = rand_below(4) + 1;
-  }else
-    r = rand_below(5);
+  u32 r = rand_below(core_operations.size());
   
-  Operation *op = NULL;
+  Operation *op = core_operations[r]->arrange_bytes(buf);
   char str[100];
   sprintf(str, "sema2-r%d", r);
   opStr = str;
 
-  if (r == 0){
-    op = get_operation(CORE_OPERATION_GAP_DISCONNECT)->arrange_bytes(buf);
+  if (op->Name() == CORE_OPERATION_GAP_DISCONNECT){
     Parameter* param = get_parameter(CORE_PARAMETER_HCI_HANDLE);
-    if(!cur_state.choose_con_handle((u16*)param->data, op->get_type())) return 0;
+    if(!cur_state.choose_con_handle((u16*)param->data, op->get_type())) 
+      *(u16*)param->data = rand_below(UINT16_MAX);
   }
-  else if (r == 1){
-    op = get_operation(CORE_OPERATION_GAP_CONNECT)->arrange_bytes(buf);
-    for(Parameter* param : op->Inputs()){
-      if(param->bytes == 6){
-        memcpy(param->data, bd_addrs[rand_below(sizeof(bd_addrs) / 6)], 6);
+  else if (op->Name() == CORE_OPERATION_GAP_CONNECT){
+    for(Parameter& param : op->Inputs()){
+      if(param.name == CORE_PARAMETER_BD_ADDR){
+        memcpy(param.data, bd_addrs[rand_below(sizeof(bd_addrs) / 6)], 6);
       }else{
-        param->data[0] = rand_below(param->enum_domain.size());
+        param.generate();
       }
     }
   }
-  else if (r == 2)
-    op = get_operation(CORE_OPERATION_GAP_CONNECT_CANCEL)->arrange_bytes(buf);
-  else if (r == 3){
-    op = get_operation(CORE_OPERATION_L2CAP_CREATE_CHANNEL)->arrange_bytes(buf);
-    for(Parameter* param : op->Inputs()){
-      if(param->name == CORE_PARAMETER_BD_ADDR){
-        memcpy(param->data, bd_addrs[rand_below(sizeof(bd_addrs) / 6)], 6);
+  else if (op->Name() == CORE_OPERATION_L2CAP_CREATE_CHANNEL){
+    for(Parameter& param : op->Inputs()){
+      if(param.name == CORE_PARAMETER_BD_ADDR){
+        memcpy(param.data, bd_addrs[rand_below(sizeof(bd_addrs) / 6)], 6);
       }else{
-        assert(param->bytes == 2);
-        *(u16*)param->data = rand_below(UINT16_MAX);
+        param.generate();
       }
     }    
   }
-  else if (r == 4){
-    op = get_operation(CORE_OPERATION_L2CAP_REGISTER_SERVICE)->arrange_bytes(buf);
-    for(Parameter* param : op->Inputs()){
-      if(param->name == CORE_PARAMETER_PSM){
-        *(u16*)param->data = rand_below(UINT16_MAX);
-        cur_state.add_psm(*(u16*)param->data);
+  else if (op->Name() == CORE_OPERATION_L2CAP_REGISTER_SERVICE){
+    for(Parameter& param : op->Inputs()){
+      if(param.name == CORE_PARAMETER_PSM){
+        *(u16*)param.data = rand_below(UINT16_MAX);
+        cur_state.add_psm(*(u16*)param.data);
       }else{
-        assert(param->isEnum);
-        param->data[0] = rand_below(param->enum_domain.size());
+        param.generate();
       }
     }
   }
   return op->size() + sizeof(u32);
-
 }
 
 // random operations
@@ -304,17 +293,17 @@ u32 BTFuzz::fuzz_one_sema3(u8 *buf) {
   op = &operations[rand_below(operations.size())];
   op->arrange_bytes(buf);
   opStr = "sema3";
-  for (Parameter *param : op->Inputs()) {
-    if (param->name == CORE_PARAMETER_HCI_HANDLE) {
-      if(!cur_state.choose_con_handle((u16 *)param->data, op->get_type())) return 0;
-    } else if (param->name == CORE_PARAMETER_CID) {
-      if(!cur_state.choose_cid((u16 *)param->data)) return 0;
-    } else if (param->name == CORE_PARAMETER_PSM) {
-      if(!cur_state.choose_psm((u16 *)param->data)) return 0;
-    }else if(param->name == CORE_PARAMETER_BD_ADDR){
-      memcpy(param->data, bd_addrs[rand_below(sizeof(bd_addrs) / 6)], 6);
+  for (Parameter& param : op->Inputs()) {
+    if (param.name == CORE_PARAMETER_HCI_HANDLE) {
+      if(!cur_state.choose_con_handle((u16 *)param.data, op->get_type())) return 0;
+    } else if (param.name == CORE_PARAMETER_CID) {
+      if(!cur_state.choose_cid((u16 *)param.data)) return 0;
+    } else if (param.name == CORE_PARAMETER_PSM) {
+      if(!cur_state.choose_psm((u16 *)param.data)) return 0;
+    }else if(param.name == CORE_PARAMETER_BD_ADDR){
+      memcpy(param.data, bd_addrs[rand_below(sizeof(bd_addrs) / 6)], 6);
     } else {
-      param->generate();
+      param.generate();
     }
   }
 
@@ -438,8 +427,8 @@ u32 BTFuzz::fuzz_one_rand(u8 *buf) {
   if (rand < 6) {
     Operation *op = get_operation(rand_below(operations.size()));
     op->arrange_bytes(buf);
-    for (Parameter *param : op->Inputs()) {
-      param->generate();
+    for (Parameter& param : op->Inputs()) {
+      param.generate();
     }
     size = op->size() + sizeof(u32);
   } else if (rand < 4) {

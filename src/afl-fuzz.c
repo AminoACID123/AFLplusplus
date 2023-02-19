@@ -546,14 +546,23 @@ int main(int argc, char **argv_orig, char **envp) {
   afl->shmem_testcase_mode = 1;  // we always try to perform shmem fuzzing
 
   afl->bt = 1;
-
+/*
+  -H xxx   Type of Bluetooth stack to be fuzzed
+  -j xxx   Descripiton of stack apis
+  -k xxx   File name of output harness
+  -r       Whether to enable semantics-aware fuzzing 
+*/
   while (
       (opt = getopt(
            argc, argv,
-           "+Ab:B:c:CdDe:E:hri:j:k:q:I:f:F:g:G:l:L:m:M:nNOo:p:RQs:S:t:T:UV:WXx:YZ")) >
+           "+Ab:B:c:CdDe:E:hH:ri:j:k:q:I:f:F:g:G:l:L:m:M:nNOo:p:RQs:S:t:T:UV:WXx:YZ")) >
       0) {
 
     switch (opt) {
+      case 'H':
+        afl->stack_name = optarg;
+        break;
+        
       case 'j':
         afl->stack_desc = optarg;
         break;
@@ -1865,7 +1874,7 @@ int main(int argc, char **argv_orig, char **envp) {
 
   parse_operation(afl->stack_desc, afl->out_harness);
 
-  init_stack_hci(afl->bc_file);
+  init_stack_hci(afl->bc_file, afl->stack_name);
 
   if(!afl->bt)
     read_testcases(afl, NULL);

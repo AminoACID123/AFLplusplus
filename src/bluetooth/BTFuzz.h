@@ -17,7 +17,6 @@
 #include <unistd.h>
 
 
-
 class BTFuzz {
   bool sema;
   u8* hci;

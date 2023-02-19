@@ -105,6 +105,8 @@ int ble_transport_to_ll_cmd_impl(void *buf)
             send_to_hs_evt(next->data + 1, next->size - 1);
             pItem = next;
         }
+    }else{
+        exit(0);
     }
     return 0;
 }

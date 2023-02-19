@@ -67,7 +67,16 @@ int main(int argc, char *argv[])
 
     __AFL_INIT();
 
+  if (argc == 2) {
+    static char buf[1024 * 1024];
+    FILE *f = fopen("/home/xaz/Documents/AFLplusplus/testcases/bluetooth/"
+                    "nimble/out/default/crashes/crash",
+                    "rb");
+    int len = fread(buf, 1, 1024 * 1024, f);
+    stack_execute(buf, len);
+  } else {
     u8 *buf = __AFL_FUZZ_TESTCASE_BUF;
     u32 len = __AFL_FUZZ_TESTCASE_LEN;
     stack_execute(buf, len);
+  }
 }

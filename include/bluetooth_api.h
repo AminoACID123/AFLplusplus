@@ -2,7 +2,7 @@
 
 /*Init*/
 
-void init_stack_hci(const char* bc_file);
+void init_stack_hci(const char* bc_file, const char* stack);
 
 void parse_operation(const char *in_file, const char *out_file);
 

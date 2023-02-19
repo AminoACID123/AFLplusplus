@@ -17,14 +17,13 @@ using namespace std;
 
 set<string> headers;
 vector<string> static_functions;
+extern vector<Operation*> core_operations;
 
 void Operation::dump()
 {
     printf("Operation: %s\n", name.c_str());
-    for (Parameter *in : inputs)
-        printf("    Parameter In: %s\n", in->name.c_str());
-    for (Parameter *out : outputs)
-        printf("    Parameter Out: %s\n", out->name.c_str());
+    for (Parameter& in : inputs)
+        printf("    Parameter In: %s\n", in.name.c_str());
 }
 
 // void Harness::dump()
@@ -153,15 +152,11 @@ void parse_operations(cJSON *file)
 
         cJSON_ArrayForEach(input, inputs)
         {
-            operations.back().Inputs().push_back(get_parameter(input->valuestring));
+            operations.back().Inputs().push_back(*get_parameter(input->valuestring));
         }
-
-        cJSON_ArrayForEach(output, outputs)
-        {
-            operations.back().Outputs().push_back(get_parameter(output->valuestring));
+        if(operations.back().core())
+            core_operations.push_back(&operations.back());
         }
-
-    }
 }
 
 // void parse_harnesses(cJSON *file)
@@ -276,20 +271,16 @@ void payload4(FILE *f)
         fprintf(f, "void operation%d() {\n", i);
         for (u32 j = 0; j < op.Inputs().size(); j++)
         {
-            Parameter *param = op.Inputs()[j];
-            if (!param->isEnum)
+            Parameter& param = op.Inputs()[j];
+            if (!param.isEnum)
             {
                 fprintf(f, "  u8* _i%d = arg_in[%d];\n", j, j * 2);
                 fprintf(f, "  u32 _s%d = *(u32*)arg_in[%d];\n", j, j * 2 + 1);
             }
             else
             {
-                fprintf(f, "  %s _i%d = e%d(*(u8*)arg_in[%d]);\n", param->name.c_str(), j, param->id, j * 2);
+                fprintf(f, "  %s _i%d = e%d(*(u8*)arg_in[%d]);\n", param.name.c_str(), j, param.id, j * 2);
             }
-        }
-        for (u32 j = 0; j < op.Outputs().size(); j++)
-        {
-            fprintf(f, "  u8* _o%d = __afl_area3_ptr + %d;\n", j, op.Outputs()[j]->offset);
         }
         for (string &e : op.Exec())
         {

@@ -12,14 +12,7 @@ using namespace std;
 vector<Parameter> parameters;
 vector<Operation> operations;
 
-set<string> core_operations = 
-{
-    CORE_OPERATION_GAP_CONNECT,
-    CORE_OPERATION_GAP_CONNECT_CANCEL,
-    CORE_OPERATION_GAP_DISCONNECT,
-    CORE_OPERATION_L2CAP_CREATE_CHANNEL,
-    CORE_OPERATION_L2CAP_REGISTER_SERVICE
-};
+extern vector<Operation*> core_operations; 
 
 set<string> core_parameters = 
 {
@@ -127,18 +120,20 @@ void init_operations()
 void Operation::deserialize(operation_t* pOp)
 {
     parameter_t* pParam = (parameter_t*)pOp->data;
-    for(Parameter* p : inputs){
-        p->bytes = pParam->len;
-        memcpy(p->data, pParam->data, p->bytes);
+    for(Parameter& p : inputs){
+        p.bytes = pParam->len;
+        memcpy(p.data, pParam->data, p.bytes);
         pParam = (parameter_t*)&pParam->data[pParam->len];
     }
 }
 
+// Generate the concrete value of a parameter
+// The length of the parameter should already be determined by Operation::arrange_bytes()
 bool Parameter::generate()
 {
     bool res = true;
-    bytes = (max_bytes == min_bytes) ? max_bytes : (min_bytes + rand_below(max_bytes - min_bytes));
-    assert(bytes!=0);
+    // bytes = (max_bytes == min_bytes) ? max_bytes : (min_bytes + rand_below(max_bytes - min_bytes));
+    // assert(bytes!=0);
     if(isEnum){
         data[0] = rand_below(domain.size());
     }else if(!domain.empty()){
@@ -162,13 +157,13 @@ Operation* Operation::arrange_bytes(u8* buf)
     pOp->id = id;
     pOp->params = inputs.size();
 
-    for(Parameter* p : inputs){
-        if(p->max_bytes == p->min_bytes)
-            param->len = p->bytes = p->max_bytes;
+    for(Parameter& p : inputs){
+        if(p.max_bytes == p.min_bytes)
+            param->len = p.bytes = p.max_bytes;
         else
-            param->len = p->bytes = rand_below(p->max_bytes - p->min_bytes) + p->min_bytes;
-        p->data = param->data;
-        l += (p->bytes + sizeof(parameter_t));
+            param->len = p.bytes = rand_below(p.max_bytes - p.min_bytes) + p.min_bytes;
+        p.data = param->data;
+        l += (p.bytes + sizeof(parameter_t));
         param = (parameter_t*)&param->data[param->len];
     }
     pItem->size =  sizeof(operation_t) + l;

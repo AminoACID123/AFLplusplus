@@ -21,6 +21,9 @@
 #define BT_HCI_OUT_SIZE 1024*1024
 #define BT_OPERATION_OUT_SIZE 1024*1024
 
+#define BTSTACK "btstack"
+#define NIMBLE "nimble"
+
 
 typedef struct __attribute__((packed)){
     u32 size;

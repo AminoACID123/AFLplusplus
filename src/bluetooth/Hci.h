@@ -16,8 +16,7 @@ extern std::set<u16> sCompleteCmd;
 
 extern std::vector<u8> vEvt;
 extern std::vector<u8> vLeEvt;
-extern std::vector<u16> vStatusCmd;
-extern std::vector<u16> vCompleteCmd;
+
 #endif
 
 #define L2CAP_CID_SIGNALING 0x0001

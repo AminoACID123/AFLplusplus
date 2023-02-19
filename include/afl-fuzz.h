@@ -483,6 +483,7 @@ typedef struct afl_state {
       *infoexec,                       /* Command to execute on a new crash */
       *stack_desc,
       *out_harness,
+      *stack_name,
       *bc_file;
 
   u32 hang_tmout;                       /* Timeout used for hang det (ms)   */

@@ -83,6 +83,9 @@ hci_transport_fuzz.o: ../hci_transport_fuzz.c
 execute.o: ../execute.c
 	$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
 
+harness.o: ../harness.c
+	$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
+
 ${BUILDDIR}/%.o: $(NIMBLE_ROOT)/%.c
 	mkdir -p $(@D)
 	$(CC) -c $(INCLUDES) $(CFLAGS) -o $@ $<
@@ -91,6 +94,6 @@ ${BUILDDIR}/%.o: $(NIMBLE_ROOT)/%.cc
 	mkdir -p $(@D)
 	$(CXX) -c $(INCLUDES) $(CFLAGS) -o $@ $<
 
-bt: main.o execute.o hci_transport_fuzz.o $(OBJ) $(TINYCRYPT_OBJ)
+bt: main.o harness.o execute.o hci_transport_fuzz.o $(OBJ) $(TINYCRYPT_OBJ)
 	$(LD) -o $@ $^ $(LIBS)
 	$(SIZE) $@
