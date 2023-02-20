@@ -141,6 +141,9 @@ u32 BTFuzz::handle_cmd(u8* buf, hci_command_t* cmd)
   sprintf(str, "sema1-cmd0x%04xs%dn%d", cmd->opcode, s, n);
   opStr = str;
 
+  if(cmd->opcode == BT_HCI_CMD_HOST_NUM_COMPLETED_PACKETS)
+    return 0;
+
   CmdStatusEvent evt1(buf, s, n, cmd->opcode);
 
   if (cmd->opcode == BT_HCI_CMD_CREATE_CONN) {
@@ -185,18 +188,18 @@ u32 BTFuzz::handle_cmd(u8* buf, hci_command_t* cmd)
   // pItem->size = sizeof(hci_event_t) + pEvt->len;
 
   CmdCompleteEvent evt2(buf, n, cmd->opcode);
-
+  *(u8 *)evt2.data()->param = s;
   if (cmd->opcode == BT_HCI_CMD_CREATE_CONN_CANCEL) {
     bt_hci_cmd_create_conn_cancel *c =
         (bt_hci_cmd_create_conn_cancel *)cmd->param;
-    *(u8 *)evt2.data()->param = s;
     memcpy(&evt2.data()->param[1], c->bdaddr, 6);
     cur_state.remove_pending_con(c->bdaddr);
   } else if (cmd->opcode == BT_HCI_CMD_LE_CREATE_CONN_CANCEL) {
-    *(u8 *)evt2.data()->param = s;
     cur_state.remove_pending_le_con();
+  }else if(sCompleteCmd.find(cmd->opcode) != sCompleteCmd.end()){
+    return evt2.size() + sizeof(u32);
   }
-  return evt2.size() + sizeof(u32);
+  exit(-1);
 }
 
 u32 BTFuzz::handle_acl(u8* buf, hci_acl_t* acl)
@@ -397,11 +400,10 @@ u32 BTFuzz::fuzz_one_sema(u8 *buf) {
   u32 res = 0;
 
   // Reply Pending Commands
-  if (r < 50) {
-    res = fuzz_one_sema1(buf);
-    if (res)
-      return res;
-  }
+  res = fuzz_one_sema1(buf);
+  if (res)
+    return res;
+
   do {
     // Core Operations
     if (r < 10)

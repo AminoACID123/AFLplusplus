@@ -1,4 +1,4 @@
-#include "Hci.h"
+
 #include <bits/unique_ptr.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/LLVMContext.h>
@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-
+#include "Hci.h"
 #define BTSTACK "btstack"
 #define NIMBLE "nimble"
 
@@ -64,6 +64,22 @@ set<u16> sStatusCmd = {
     BT_HCI_CMD_REFRESH_ENCRYPT_KEY,
     BT_HCI_CMD_ENHANCED_FLUSH,
     BT_HCI_CMD_SHORT_RANGE_MODE,
+    BT_HCI_CMD_LE_CREATE_CONN,
+    BT_HCI_CMD_LE_CONN_UPDATE,
+    BT_HCI_CMD_LE_READ_REMOTE_FEATURES,
+    BT_HCI_CMD_LE_START_ENCRYPT,
+    BT_HCI_CMD_LE_READ_LOCAL_PK256,
+    BT_HCI_CMD_LE_GENERATE_DHKEY,
+    BT_HCI_CMD_LE_SET_PHY,
+    BT_HCI_CMD_LE_EXT_CREATE_CONN,
+    BT_HCI_CMD_LE_PA_CREATE_SYNC,
+    BT_HCI_CMD_LE_CREATE_CIS,
+    BT_HCI_CMD_LE_ACCEPT_CIS,
+    BT_HCI_CMD_LE_CREATE_BIG,
+    BT_HCI_CMD_LE_CREATE_BIG_TEST,
+    BT_HCI_CMD_LE_TERM_BIG,
+    BT_HCI_CMD_LE_BIG_CREATE_SYNC,
+    BT_HCI_CMD_LE_REQ_PEER_SCA,
 };
 set<u16> sCompleteCmd = {
     BT_HCI_CMD_INQUIRY_CANCEL,
@@ -207,10 +223,95 @@ set<u16> sCompleteCmd = {
     BT_HCI_CMD_READ_LOOPBACK_MODE,
     BT_HCI_CMD_WRITE_LOOPBACK_MODE,
     BT_HCI_CMD_ENABLE_DUT_MODE,
-    BT_HCI_CMD_WRITE_SIMPLE_PAIRING_MODE
+    BT_HCI_CMD_WRITE_SSP_DEBUG_MODE,
+    BT_HCI_CMD_LE_SET_EVENT_MASK,
+    BT_HCI_CMD_LE_READ_BUFFER_SIZE,
+    BT_HCI_CMD_LE_READ_LOCAL_FEATURES,
+    BT_HCI_CMD_LE_SET_RANDOM_ADDRESS,
+    BT_HCI_CMD_LE_SET_ADV_PARAMETERS,
+    BT_HCI_CMD_LE_READ_ADV_TX_POWER,
+    BT_HCI_CMD_LE_SET_ADV_DATA,
+    BT_HCI_CMD_LE_SET_SCAN_RSP_DATA,
+    BT_HCI_CMD_LE_SET_ADV_ENABLE,
+    BT_HCI_CMD_LE_SET_SCAN_PARAMETERS,
+    BT_HCI_CMD_LE_SET_SCAN_ENABLE,
+    BT_HCI_CMD_LE_CREATE_CONN_CANCEL,
+    BT_HCI_CMD_LE_READ_ACCEPT_LIST_SIZE,
+    BT_HCI_CMD_LE_CLEAR_ACCEPT_LIST,
+    BT_HCI_CMD_LE_ADD_TO_ACCEPT_LIST,
+    BT_HCI_CMD_LE_REMOVE_FROM_ACCEPT_LIST,
+    BT_HCI_CMD_LE_SET_HOST_CLASSIFICATION,
+    BT_HCI_CMD_LE_READ_CHANNEL_MAP,
+    BT_HCI_CMD_LE_ENCRYPT,
+    BT_HCI_CMD_LE_RAND,
+    BT_HCI_CMD_LE_LTK_REQ_REPLY,
+    BT_HCI_CMD_LE_LTK_REQ_NEG_REPLY,
+    BT_HCI_CMD_LE_READ_SUPPORTED_STATES,
+    BT_HCI_CMD_LE_RECEIVER_TEST,
+    BT_HCI_CMD_LE_ENHANCED_RECEIVER_TEST,
+    BT_HCI_CMD_LE_RECEIVER_TEST_V3,
+    BT_HCI_CMD_LE_TRANSMITTER_TEST,
+    BT_HCI_CMD_LE_TEST_END,
+    BT_HCI_CMD_LE_CONN_PARAM_REQ_REPLY,
+    BT_HCI_CMD_LE_CONN_PARAM_REQ_NEG_REPLY,
+    BT_HCI_CMD_LE_SET_DATA_LENGTH,
+    BT_HCI_CMD_LE_READ_DEFAULT_DATA_LENGTH,
+    BT_HCI_CMD_LE_WRITE_DEFAULT_DATA_LENGTH,
+    BT_HCI_CMD_LE_ADD_TO_RESOLV_LIST,
+    BT_HCI_CMD_LE_REMOVE_FROM_RESOLV_LIST,
+    BT_HCI_CMD_LE_CLEAR_RESOLV_LIST,
+    BT_HCI_CMD_LE_READ_RESOLV_LIST_SIZE,
+    BT_HCI_CMD_LE_READ_PEER_RESOLV_ADDR,
+    BT_HCI_CMD_LE_READ_LOCAL_RESOLV_ADDR,
+    BT_HCI_CMD_LE_SET_RESOLV_ENABLE,
+    BT_HCI_CMD_LE_SET_RESOLV_TIMEOUT,
+    BT_HCI_CMD_LE_READ_MAX_DATA_LENGTH,
+    BT_HCI_CMD_LE_READ_PHY,
+    BT_HCI_CMD_LE_SET_DEFAULT_PHY,
+    BT_HCI_CMD_LE_SET_ADV_SET_RAND_ADDR,
+    BT_HCI_CMD_LE_SET_EXT_ADV_PARAMS,
+    BT_HCI_CMD_LE_SET_EXT_ADV_DATA,
+    BT_HCI_CMD_LE_SET_EXT_SCAN_RSP_DATA,
+    BT_HCI_CMD_LE_SET_EXT_ADV_ENABLE,
+    BT_HCI_CMD_LE_READ_MAX_ADV_DATA_LEN,
+    BT_HCI_CMD_LE_READ_NUM_SUPPORTED_ADV_SETS,
+    BT_HCI_CMD_LE_REMOVE_ADV_SET,
+    BT_HCI_CMD_LE_CLEAR_ADV_SETS,
+    BT_HCI_CMD_LE_SET_PA_PARAMS,
+    BT_HCI_CMD_LE_SET_PA_DATA,
+    BT_HCI_CMD_LE_SET_PA_ENABLE,
+    BT_HCI_CMD_LE_SET_EXT_SCAN_PARAMS,
+    BT_HCI_CMD_LE_SET_EXT_SCAN_ENABLE,
+    BT_HCI_CMD_LE_PA_CREATE_SYNC_CANCEL,
+    BT_HCI_CMD_LE_PA_TERM_SYNC,
+    BT_HCI_CMD_LE_ADD_DEV_PA_LIST,
+    BT_HCI_CMD_LE_REMOVE_DEV_PA_LIST,
+    BT_HCI_CMD_LE_CLEAR_PA_LIST,
+    BT_HCI_CMD_LE_READ_PA_LIST_SIZE,
+    BT_HCI_CMD_LE_READ_TX_POWER,
+    BT_HCI_CMD_LE_READ_RF_PATH_COMPENSATION,
+    BT_HCI_CMD_LE_WRITE_RF_PATH_COMPENSATION,
+    BT_HCI_CMD_LE_SET_PRIV_MODE,
+    BT_HCI_CMD_SET_PA_REC_ENABLE,
+    BT_HCI_CMD_PERIODIC_SYNC_TRANS,
+    BT_HCI_CMD_PA_SET_INFO_TRANS,
+    BT_HCI_CMD_PA_SYNC_TRANS_PARAMS,
+    BT_HCI_CMD_LE_READ_ISO_TX_SYNC,
+    BT_HCI_CMD_LE_SET_CIG_PARAMS,
+    BT_HCI_CMD_LE_SET_CIG_PARAMS_TEST,
+    BT_HCI_CMD_LE_REMOVE_CIG,
+    BT_HCI_CMD_LE_REJECT_CIS,
+    BT_HCI_CMD_LE_BIG_TERM_SYNC,
+    BT_HCI_CMD_LE_SETUP_ISO_PATH,
+    BT_HCI_CMD_LE_REMOVE_ISO_PATH,
+    BT_HCI_CMD_LE_ISO_TX_TEST,
+    BT_HCI_CMD_LE_ISO_RX_TEST,
+    BT_HCI_CMD_LE_ISO_READ_TEST_COUNTER,
+    BT_HCI_CMD_LE_ISO_TEST_END,
+    BT_HCI_CMD_LE_SET_HOST_FEATURE,
 };
 
-BT_HCI_CMD_HOST_NUM_COMPLETED_PACKETS;
+// BT_HCI_CMD_HOST_NUM_COMPLETED_PACKETS;
 vector<u8> vEvt;
 vector<u8> vLeEvt;
 
@@ -328,48 +429,6 @@ extern "C" u32 bt_hci_le_event_nr() {
     return sLeEvt.size();
 }
 
-static void parse_status_evt_handler_btstack(Module *m)
-{
-    Function *F = m->getFunction("handle_command_status_event");
-    for (BasicBlock &BB : F->getBasicBlockList())
-    {
-        for (Instruction &inst : BB.getInstList())
-        {
-            if (SwitchInst *sw = dyn_cast<SwitchInst>(&inst))
-            {
-                int n = sw->getNumCases();
-                for (auto c : sw->cases())
-                {
-                    u16 opcode = c.getCaseValue()->getZExtValue();
-                    sStatusCmd.insert(opcode);
-                }
-                return;
-            }
-        }
-    }
-}
-
-static void parse_complete_evt_handler_btstack(Module *m)
-{
-    Function *F = m->getFunction("handle_command_complete_event");
-    for (BasicBlock &BB : F->getBasicBlockList())
-    {
-        for (Instruction &inst : BB.getInstList())
-        {
-            if (SwitchInst *sw = dyn_cast<SwitchInst>(&inst))
-            {
-                int n = sw->getNumCases();
-                for (auto c : sw->cases())
-                {
-                    u16 opcode = c.getCaseValue()->getZExtValue();
-                    sCompleteCmd.insert(opcode);
-                }
-                return;
-            }
-        }
-    }
-}
-
 static void parse_le_evt_handler_btstack(BasicBlock *BB)
 {
     for (Instruction &inst : BB->getInstList())
@@ -389,9 +448,6 @@ static void parse_le_evt_handler_btstack(BasicBlock *BB)
 
 void parse_event_handler_btstack(Module *m)
 {
-    parse_complete_evt_handler_btstack(m);
-    parse_status_evt_handler_btstack(m);
-
     Function *F = m->getFunction("event_handler");
     for (BasicBlock &BB : F->getBasicBlockList())
     {
@@ -438,28 +494,6 @@ void parse_event_handler_nimble(Module* m)
             sLeEvt.insert(i);
     }
 }
-
-/*
-void dump_stack_evts()
-{
-    llvm::outs() << "Events:\n";
-    for (uint8_t opcode : stack_evts)
-        llvm::outs() << "\t" << get_evt_str(opcode) << "\n";
-
-    llvm::outs() << "LE Events:\n";
-    for (uint16_t opcode : stack_le_evts)
-        llvm::outs() << "\t" << get_le_evt_str(opcode) << "\n";
-
-    llvm::outs() << "Complete Events:\n";
-    for (uint16_t opcode : stack_complete_cmds)
-        llvm::outs() << "\t" << get_cmd_str(opcode) << "\n";
-
-    llvm::outs() << "Status Events:\n";
-    for (uint16_t opcode : stack_status_cmds)
-        llvm::outs() << "\t" << get_cmd_str(opcode) << "\n";
-}
-*/
-
 
 extern "C" void init_stack_hci(const char *bc, const char* stack)
 {
