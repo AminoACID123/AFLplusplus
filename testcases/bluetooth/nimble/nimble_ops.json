@@ -76,6 +76,70 @@
                 "memcpy(addr.val, $i2, 6);",
                 "ble_gap_connect(*$i1, &addr, *(int*)$i3, (struct ble_gap_conn_params *)$i4, NULL, NULL);"
             ]
-        }
+        },
+        {
+            "name": "ble_gap_conn_find",
+            "inputs": ["hci_con_handle_t"],
+            "exec": [
+                "ble_gap_conn_desc desc;",
+                "ble_gap_conn_find(*(u16*)$i0, &desc);"
+            ]
+        },
+        {
+            "name": "ble_gap_conn_find_by_addr",
+            "inputs": ["bd_addr_type_t", "bd_addr_t"],
+            "exec": [
+                "ble_gap_conn_desc desc;",
+                "ble_addr_t addr;",
+                "addr.type = *$i0;",
+                "memcpy(addr.val, $i1, 6);",
+                "ble_gap_conn_find(&addr, &desc);"
+            ]
+        },
+        {
+            "name": "ble_gap_set_event_cb",
+            "inputs": ["hci_con_handle_t"],
+            "exec": [
+                "ble_gap_set_event_cb(*(u16*)$i0, NULL, NULL);"
+            ]
+        },
+        {
+            "name": "ble_gap_adv_start",
+            "inputs": ["bd_addr_type_t", "bd_addr_type_t", "bd_addr_t", "data[4]", "data[9]"],
+            "exec" : [
+                "ble_addr_t addr;",
+                "addr.type = *$i0;",
+                "memcpy(addr.val, $i2, 6);",
+                "ble_gap_connect(*$i1, &addr, *(int*)$i3, (struct ble_gap_adv_params *)$i4, NULL, NULL);"
+            ]
+        },
+        {
+            "name": "ble_gap_adv_stop",
+            "inputs": [],
+            "exec": [
+                "ble_gap_adv_stop();"
+            ]
+        },
+        {
+            "name": "ble_gap_adv_active",
+            "inputs": [],
+            "exec": [
+                "ble_gap_adv_active();"
+            ]
+        },
+        {
+            "name": "ble_gap_adv_set_data",
+            "inputs": ["data[1:128]"],
+            "exec": [
+                "ble_gap_adv_set_data($i0, $s0);"
+            ]
+        },
+        {
+            "name": "ble_gap_adv_rsp_set_data",
+            "inputs": ["data[1:128]"],
+            "exec": [
+                "ble_gap_adv_rsp_set_data($i0, $s0);"
+            ]
+        },
     ]
 }

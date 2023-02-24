@@ -1,3 +1,4 @@
+*.pdf
 .test
 .test2
 .sync_tmp
