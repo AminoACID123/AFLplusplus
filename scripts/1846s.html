@@ -1,0 +1,56 @@
+<!DOCTYPE html><html>
+<head>
+<title></title>
+<style type="text/css">
+<!--
+.xflip {
+    -moz-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: fliph;
+}
+.yflip {
+    -moz-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    transform: scaleY(-1);
+    filter: flipv;
+}
+.xyflip {
+    -moz-transform: scaleX(-1) scaleY(-1);
+    -webkit-transform: scaleX(-1) scaleY(-1);
+    -o-transform: scaleX(-1) scaleY(-1);
+    transform: scaleX(-1) scaleY(-1);
+    filter: fliph + flipv;
+}
+-->
+</style>
+</head>
+<body>
+<a name=1></a>BLUETOOTH&#160;CORE&#160;SPECIFICATION&#160;Version 5.3 |&#160;Vol&#160;4,&#160;Part&#160;E<br/>
+page&#160;1846<br/>
+<i>Host&#160;Controller Interface&#160;Functional&#160;Specification</i><br/>
+<b>7 &#160;HCI COMMANDS&#160;AND&#160;EVENTS</b><br/>
+<b>7.1&#160;&#160; LINK CONTROL&#160;COMMANDS</b><br/>
+The&#160;Link&#160;Control commands&#160;allow&#160;a&#160;Controller&#160;to&#160;control&#160;connections&#160;to&#160;other&#160;<br/>BR/EDR&#160;Controllers. Some&#160;Link&#160;Control commands&#160;are used only with&#160;a BR/<br/>EDR&#160;Controller whereas other&#160;Link Control&#160;commands&#160;are&#160;also used with&#160;an&#160;<br/>LE&#160;Controller.<br/>
+In&#160;the&#160;BR/EDR&#160;Controller,&#160;when&#160;the&#160;Link&#160;Control&#160;commands&#160;are&#160;used,&#160;the&#160;Link&#160;<br/>Manager (LM) controls how&#160;the Bluetooth&#160;piconets&#160;and scatternets&#160;are&#160;<br/>established and&#160;maintained.&#160;These commands&#160;instruct&#160;the&#160;LM to create and&#160;<br/>modify Link Layer&#160;connections&#160;with&#160;Bluetooth&#160;remote&#160;devices,&#160;perform&#160;<br/>Inquiries&#160;of other&#160;BR/EDR&#160;Controllers in range, and other LMP&#160;commands.<br/>
+In the LE Controller, Link Control commands&#160;are&#160;used to&#160;disconnect physical&#160;<br/>links.<br/>
+For&#160;the&#160;Link&#160;Control commands,&#160;the OGF&#160;is&#160;defined&#160;as&#160;0x01.<br/>
+<b>7.1.1&#160;&#160;Inquiry&#160;command</b><br/>
+<b>Command</b><br/>
+<b>OCF</b><br/>
+<b>Command&#160;Parameters</b><br/>
+<b>Return&#160;Parameters</b><br/>
+HCI_Inquiry<br/>
+0x0001<br/>
+LAP,<br/>Inquiry_Length,&#160;<br/>Num_Responses<br/>
+<b>Description:&#160;</b><br/>
+This command causes&#160;the BR/EDR&#160;Controller to&#160;enter&#160;Inquiry&#160;Mode. Inquiry&#160;<br/>Mode is used to discover other nearby&#160;BR/EDR&#160;Controllers.&#160;The&#160;LAP&#160;input&#160;<br/>parameter&#160;contains&#160;the&#160;LAP&#160;from&#160;which the inquiry&#160;access&#160;code shall be&#160;<br/>derived&#160;when&#160;the&#160;inquiry&#160;procedure&#160;is made.&#160;The&#160;Inquiry_Length&#160;parameter,&#160;<br/>added&#160;to&#160;Extended_Inquiry_Length&#160;(see&#160;Section&#160;6.42),&#160;specifies&#160;the&#160;total&#160;dura-<br/>tion&#160;of&#160;the&#160;Inquiry&#160;Mode&#160;and,&#160;when&#160;this&#160;time&#160;expires,&#160;Inquiry&#160;will&#160;be&#160;halted.&#160;The&#160;<br/>Num_Responses parameter specifies the number&#160;of&#160;responses that&#160;can&#160;be&#160;<br/>received&#160;before the Inquiry is halted.&#160;HCI_Inquiry_Result,&#160;HCI_Inquiry_-<br/>Result_with_RSSI, or&#160;HCI_Extended_Inquiry_Result events will&#160;be&#160;sent&#160;to&#160;<br/>report the details&#160;of nearby&#160;BR/EDR&#160;Controllers&#160;that&#160;have&#160;responded&#160;to this&#160;<br/>inquiry.&#160;The&#160;HCI_Inquiry_Complete event is&#160;sent to&#160;report&#160;that Inquiry&#160;Mode&#160;<br/>has&#160;ended.<br/>
+A&#160;device which&#160;responds during an inquiry&#160;or&#160;inquiry period&#160;should always be&#160;<br/>reported to&#160;the&#160;Host&#160;in&#160;an HCI_Inquiry_Result,&#160;HCI_Inquiry_Result_with_-<br/>RSSI,&#160;or&#160;HCI_Extended_Inquiry_Result&#160;event&#160;if&#160;the&#160;device&#160;has not&#160;been&#160;<br/>reported&#160;earlier&#160;during&#160;the&#160;current&#160;inquiry&#160;or inquiry&#160;period&#160;and&#160;the&#160;device&#160;has&#160;<br/>not been filtered out using the command HCI_Set_Event_Filter.&#160;If the&#160;device&#160;<br/>
+HCI commands&#160;and events<br/>
+Revision Date: 2021-07-13<br/>
+Bluetooth&#160;SIG Proprietary<br/>
+<hr/>
+</body>
+</html>
