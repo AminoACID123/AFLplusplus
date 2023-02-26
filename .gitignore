@@ -1,4 +1,10 @@
-*.pdf
+scripts/*.html
+scripts/*.jpg
+scripts/*.jpeg
+scripts/*.htm
+scripts/*.pdf
+scripts/*.png
+scripts/*.txt
 .test
 .test2
 .sync_tmp

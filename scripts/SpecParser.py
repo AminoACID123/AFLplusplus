@@ -1,174 +1,251 @@
+"""
+Experimental script which detects rectangles and lines on a PDF page.
 
+It may or may not work (correctly)!
+We are only covering the most simple cases: A general drawback is, that we are
+ignoring any geometry changes, which might be established by "cm" commands.
+More simplifying assumption can be found at the functions below.
+"""
+import fitz
 import numpy as np
-import PyPDF2
-from pdf2image import convert_from_path
-import cv2
-import os
-import re
 
-MAX_LINE_BREAK = 25
-MIN_LINE_LENGTH = 30
-MAX_LINE_GRAY = 20
-MAX_GRAY_GAP = 25
-PAGE_MARGIN_LEFT = 246
-PAGE_MARGIN_RIGHT = 1403
-CELL_MARGIN_WIDTH = 2
+print(fitz.__doc__)
 
+RECT_TO_START = 8
+RECT_SHRINK_WIDTH = 3
+RECT_MIN_SIZE = 10
+POINT_SIZE = 3
 
-def clean_text(text):
-    global event_start
-    skip = False
-    res = []
-    i = 0
-    for line in text:
-        if line.strip() == "" or "This section is no longer used" in line:
-            continue
-        if line.strip() == "HCI commands and events":
-            skip = True
-            continue
-        if line.strip() == "Host Controller Interface Functional Specification":
-            skip = False
-            continue
-        if skip:
-            continue
-        if "7.7 EVENT" in line.strip():
-            event_start = i
-        res.append(line)
-        i += 1
-    return res
+class Point:
+    def __init__(self, p) -> None:
+        self.p = p
+    
+    def  __str__(self):
+        X = str(int(self.p.x))
+        Y = str(int(self.p.y))
+        return str((X,Y))
+
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o, Point):
+            return self.xeq(o) and self.yeq(o)
+        return False
+    
+    def xeq(self, o):
+        return abs(self.p.x - o.p.x) < 1
+    
+    def yeq(self, o):
+        return abs(self.p.y - o.p.y) < 1
+    
+    
+def pcmp(p1 : Point, p2 : Point):
+    if p1 == p2:
+        return 0
+    # elif p1.xeq(p2):
 
 
-
-def text_extractor(path, start, end):
-    with open(path, 'rb') as f:
-        pdf = PyPDF2.PdfReader(f)
-        for i in range(start, end + 1):
-            page = pdf.pages[i]
-            text = page.extract_text()
-            print(text)
 
 class PDFFormRecognizer:
-    def  __init__(self, path, start, end) -> None:
-        self.images = convert_from_path('Core_v5.3.pdf', fmt="jpeg", first_page=start, last_page=end)
-        self.cells = 0
-        self.page = start
+    def __init__(self, path, start, end):
+        doc = fitz.open(path)  # the PDF
+        self.start = start
+        self.end = end
+        self.doc = fitz.open()
+        self.doc.insert_pdf(doc, from_page=start-1, to_page=end)
+        self.shape = None
+        self.form_areas = []
+    
+    def __del__(self):
+        self.doc.save("x.pdf")
 
-    def locate_vertical(self, arr):
-        indices = np.flatnonzero(np.concatenate(([True], arr[1:]!=arr[:-1],[True])))
-        runs = np.diff(indices).tolist()
-        starts = indices[:-1].tolist()
-        values = arr[starts].tolist()
-        lines = list(zip(runs, starts, values))
-        lines = [(line[1], line[0] + line[1]) for line in lines if line[2] < MAX_LINE_GRAY and line[0] > MIN_LINE_LENGTH]
-        real_lines = []
-        cur = 0
-        for i in range(len(lines)-1):
-            if i == 0:
-                real_lines.append(lines[i])
-            if lines[i+1][0] - lines[i][1] < MAX_LINE_BREAK:
-                real_lines[cur] = (real_lines[cur][0], lines[i+1][1])
+    def find_lines(self, page, cont):
+        """Collect lines drawn on a page.
+
+        For simplicity we assume the we always have this sequence of commands:
+
+        x0 y0 m  % means go to point (x0, y0)
+        x1 y1 l  % means draw line (from previous point) to point(x1, y1)
+
+        We should also do the right thing, if an "l" command is preceeded by
+        another "l".
+        """
+        ctm = page.transformation_matrix
+        lines = []
+        p1 = p2 = 0
+        while p1 >= 0 and p1 < len(cont):
+            try:
+                p1 = cont.index("l", p2)
+                p2 = p1 + 1
+                y1 = float(cont[p1 - 1])
+                x1 = float(cont[p1 - 2])
+                if cont[p1 - 3] in ("m", "l"):
+                    y0 = float(cont[p1 - 4])
+                    x0 = float(cont[p1 - 5])
+                else:
+                    x0 = y0 = -1
+                if x0 != -1:
+                    point1 = fitz.Point(x0, y0) * ctm
+                    point2 = fitz.Point(x1, y1) * ctm
+                    lines.append((point1, point2))
+                p1 = p2
+            except:
+                break
+
+        return lines
+
+    def rect_to_line(self, rect):
+        delta_x = np.abs(rect.x0 - rect.x1)
+        mean_x = np.mean([rect.x0 ,rect.x1])
+        if delta_x < 10:
+            p1 = fitz.Point(mean_x, rect.y0)
+            p2 = fitz.Point(mean_x, rect.y1)
+            return (p1, p2) if p1.y < p2.y else (p2, p1)
+        delta_y = np.abs(rect.y0 - rect.y1)
+        mean_y = np.mean([rect.y0, rect.y1])
+        if delta_y < 10:
+            p1 = fitz.Point(rect.x0, mean_y)
+            p2 = fitz.Point(rect.x1, mean_y)
+            return (p1, p2) if p1.x < p2.x else (p2, p1)
+        return None
+
+    def rect_to_keep(self, rect):
+        return np.abs(rect.x0 -rect.x1) > RECT_MIN_SIZE and np.abs(rect.y0- rect.y1) > RECT_MIN_SIZE
+
+    def transform_rect(self, page, x0, y0, x1, y1):
+        ctm = page.transformation_matrix
+        height = y1 - y0
+        width = x1 - x0
+        p = fitz.Point(x0, y0) * ctm + (0, -height)
+        return fitz.Rect(p.x, p.y, p.x + width, p.y + height)
+
+    def shrink_rect(self, rect):
+        w = RECT_SHRINK_WIDTH
+        return fitz.Rect(rect.x0 + w, rect.y0 + w, rect.x1 - w, rect.y1 - w)
+    
+    def vertex_valid(self, p):
+        for r in self.form_areas:
+            if p.p.y <= r[1].p.y and p.p.y >= r[0].p.y:
+                return True
+        return False
+
+    def find_rects(self, page, cont):
+        ctm = page.transformation_matrix
+        rlist = []
+        p1 = p2 = 0
+        while p1 >= 0 and p1 < len(cont):
+            try:
+                p1 = cont.index("re", p2)
+                p2 = p1 + 1
+                height = float(cont[p1 - 1])
+                width = float(cont[p1 - 2])
+                y = float(cont[p1 - 3])
+                x = float(cont[p1 - 4])
+                p = fitz.Point(x, y) * ctm + (0, -height)
+                rect = fitz.Rect(p.x, p.y, p.x + width, p.y + height)
+                # rect = fitz.Rect(x, y, x + width, y + height)
+                rlist.append(rect)
+                p1 = p2
+            except Exception as e:
+                print(e)
+                break
+        return rlist
+    
+    def find_vertices(self, rects):
+        vertices : list(Point) = []
+        res : list(Point) = []
+        for rect in rects:
+            line = self.rect_to_line(rect)
+            if line is not None:
+                p1, p2 = Point(line[0]), Point(line[1])
+                vertices += ([p1] + [p2])
+                if p1.xeq(p2):
+                    self.form_areas.append((p1, p2)) if (p1, p2) not in self.form_areas else None
             else:
-                real_lines.append(lines[i+1])
-                cur += 1
-        return real_lines
+                vertices += [Point(rect.tl)]
+                vertices += [Point(rect.tr)]
+                vertices += [Point(rect.bl)]
+                vertices += [Point(rect.br)]
+        [res.append(v) for v in vertices if v not in res]
+        res = [v for v in res if self.vertex_valid(v)]
+        return res
+
     
-    def shrink_rect(self, x1, x2, y1, y2, w):
-        x_min = min(x1, x2)
-        x_max = max(x1, x2)
-        y_min = min(y1, y2)
-        y_max = max(y1, y2)
-        return x_min + w, x_max - w, y_min + w, y_max - w
-
-    def image_to_string(self, image):
-        print(self.page)
-        cv2.imwrite("/tmp/tmp.png", image)
-        os.system("tesseract /tmp/tmp.png /tmp/res 2> /dev/null")
-        with open('/tmp/res.txt', 'r') as f:
-            text = f.read()
-        os.system('rm /tmp/res.txt')
-        return text
+    def draw_rects(self, rects):
+        for r in rects:
+            self.shape.drawRect(r)
+        self.shape.finish(color=(1, 0, 0), width=0.3)
+        self.shape.commit()
     
-    def parse_cells(self, x_start, x_end, y_start, y_end):
-        cells = []
-        X, Y = [], []
-        s = 1
-        x1, x2, y1, y2 = self.shrink_rect(x_start, x_end, y_start, y_end, 3)
-        for y in range(y1, y2):
-            if s*(self.gray[y, x1] - self.gray[y+1, x1]) > MAX_GRAY_GAP:
-                Y.append(y+1)
-                s = -s
-        for x in range(x1, x2):
-            if self.gray[y1, x] - self.gray[y1, x+1] > MAX_GRAY_GAP:
-                X.append(x+1)
-        X = [x_start] + X + [x_end]
-        Y = [y_start] + Y + [y_end]
+    def draw_point(self, point):
+        self.shape.drawLine(point + fitz.Point(0, POINT_SIZE), point + fitz.Point(0, -POINT_SIZE))
+        self.shape.drawLine(point + fitz.Point(POINT_SIZE, 0), point + fitz.Point(-POINT_SIZE, 0))
 
-        for i in range(len(Y)-1):
-            cells.append([])
-            y1, y2 = Y[i], Y[i+1]
-            for j in range(len(X)-1):
-                x1, x2 = X[j], X[j+1]
-                x1, x2, y1, y2 = self.shrink_rect(x1, x2, y1, y2, 3)
-                print((x1, x2, y1, y2))
-                image = self.image[y1:y2,x1:x2]
-                cells[-1].append(self.image_to_string(image))
-        return cells
+    def draw_points(self, points):
+        for v in points:
+            self.draw_point(v.p)
+        self.shape.finish(color=(0, 0, 1), width=2)
 
-    def parse_command(self, X, Y):
-        cells = self.parse_cells(X[0], X[1], Y[0], Y[1])
-        for row in cells:
-            cmd = row[0].replace('-','').replace('\n','').strip()
-            ocf = eval(row[1].lower().replace('o','0'))
-            params = [ re.sub('[\n\-\s]', '', param) for param in row[2].split(',')]
-            ret_params = [ re.sub('[\n\-\s]', '', param) for param in row[3].split(',')]
-            print((cmd, ocf, params, ret_params))
-
-    def parse_form(self, start, end):
-        x1, x2, y1, y2 = self.shrink_rect(PAGE_MARGIN_LEFT, PAGE_MARGIN_RIGHT, start, end, 2)
-        X , Y= [PAGE_MARGIN_LEFT], [start]
-        for x in range(PAGE_MARGIN_LEFT, PAGE_MARGIN_RIGHT):
-            if self.gray[y1, x] - self.gray[y1, x+1] > MAX_GRAY_GAP:
-                X.append(x)
-                break
-        for y in range(start, end):
-            if self.gray[y, x1] - self.gray[y+1, x1] > MAX_GRAY_GAP:
-                Y.append(y)
-                break
-        print(X, Y)
-        x1, x2, y1, y2 = self.shrink_rect(X[0], X[1], Y[0], Y[1], 3)
-        gray = self.gray[y1:y2,x1:x2]
-        text = self.image_to_string(gray)
-        X, Y = [PAGE_MARGIN_LEFT, PAGE_MARGIN_RIGHT], [Y[1], end]
-        if text.strip() == 'Command':
-            self.parse_command(X, Y)
-        elif text.strip() == 'Value':
-            self
-        # for i in range(len(X)-1):
-        #     x1, x2 = X[i], X[i+1]
-        #     for j in range(len(Y)-1):
-        #         y1, y2 = Y[j], Y[j+1]
-        #         x1, x2, y1, y2 = self.shrink_rect(x1, x2, y1, y2)
-        #         gray = self.gray[y1:y2,x1:x2]
-        #         cv2.imwrite(str(self.cells)+".png", gray)
-        #         self.cells += 1
-
-    def rgb2gray(self, rgb):
-        r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
-        gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
-        return gray.astype('int')
-
+        for v in points:
+            self.shape.insert_text(v.p + fitz.Point(2, 2), str(v), morph=(v.p,-fitz.Matrix(fitz.Identity)))
+        self.shape.finish(color=(0, 0, 1), width=2)       
+        self.shape.commit()
+    
     def analyze(self):
-        for image in self.images:
-            self.image = np.array(image)
-            self.gray = self.rgb2gray(self.image)
-            col = self.gray[:, PAGE_MARGIN_LEFT]
-            vertical_lines = self.locate_vertical(col)
-            for line in vertical_lines:
-                self.parse_form(line[0], line[1])
-            self.page += 1
+        for page in self.doc.pages():
+            # assert(page.get_contents) == 1
+            self.page = page
+            self.shape = page.new_shape()
+            rects = []
+            cont = []
+            try:
+                for xref in page.get_contents():
+                    cont += self.doc.xref_stream(xref).decode().split()
+            except:
+                continue
+
+            rects = self.find_rects(page, cont)[RECT_TO_START:]
+            # rects = [rect for rect in rects if not self.rect_to_keep(rect)]
+            # # for rect in rects:
+            # #     text = page.get_textbox(rect)
+            # #     print(text)
+            # #     print('------------------------------')
+            # print(rects)
+            # self.draw_rects([rect for rect in rects])
+            vertices = self.find_vertices(rects)
+            self.draw_points(vertices)
+            print(self.form_areas)
 
 
+PDFFormRecognizer("test.pdf", 1, 1).analyze()
 
-if __name__ == "__main__":
-    # text_extractor("Core_v5.3.pdf", 1846, 1848)
-    PDFFormRecognizer("Core_v5.3.pdf", 1846, 2164).analyze()
+# # create a drawing shape and draw the lines and the rectangles ...
+# # just to demonstrate things are working
+# shape = page.new_shape()
+
+# # draw all the rectangles
+
+# for i, r in enumerate(rects[8:]):
+#     line = rect_to_line(r)
+#     if line is None:
+#         text = page.get_textbox(r)
+#         print(text)
+#         shape.drawRect(shrink_rect(r))
+#         shape.finish(color=(1, 0, 0), width=0.3)
+#         if i== 5:
+#             break
+#     # else:
+#     #     shape.drawLine(line[0], line[1])
+#     #     shape.finish(color=(0, 0, 1), width=2) 
+#   # with a thin red line
+
+# # draw all the lines
+# #for l in lines:
+# #    shape.drawLine(l[0], l[1])
+
+# for word in page.get_text("words"):
+#     #print(word)
+#     shape.drawRect(transform_rect(page, word[0], word[1], word[2], word[3]))
+
+# shape.finish(color=(0, 0, 1), width=2)  # with a thick blue line
+
+# shape.commit()  # commit the shape to the page
+# doc.save("x.pdf")  # save everything to a new PDF
