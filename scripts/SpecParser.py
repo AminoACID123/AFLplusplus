@@ -8,51 +8,130 @@ More simplifying assumption can be found at the functions below.
 """
 import fitz
 import numpy as np
+import functools
+import re
 
 print(fitz.__doc__)
 
+TEXT_TO_START = 4
 RECT_TO_START = 8
 RECT_SHRINK_WIDTH = 3
 RECT_MIN_SIZE = 10
 POINT_SIZE = 3
 
-class Point:
+class Point(fitz.Point):
     def __init__(self, p) -> None:
-        self.p = p
+        super().__init__(p)
     
-    def  __str__(self):
-        X = str(int(self.p.x))
-        Y = str(int(self.p.y))
-        return str((X,Y))
-
     def __eq__(self, o: object) -> bool:
         if isinstance(o, Point):
             return self.xeq(o) and self.yeq(o)
         return False
     
     def xeq(self, o):
-        return abs(self.p.x - o.p.x) < 1
+        return abs(self.x - o.x) < 1
     
     def yeq(self, o):
-        return abs(self.p.y - o.p.y) < 1
+        return abs(self.y - o.y) < 1
     
     
 def pcmp(p1 : Point, p2 : Point):
-    if p1 == p2:
-        return 0
-    # elif p1.xeq(p2):
+    if p1.yeq(p2):
+        return p1.x - p2.x
+    return p1.y - p2.y
+
+class Form:
+    def __init__(self, y0, y1) -> None:
+        self.y0 = min(y0, y1)
+        self.y1 = max(y0, y1)
+        self.vertices = []
+        pass
+
+    def __eq__(self, o: object) -> bool:
+        if isinstance(o, Form):
+            return abs(self.y0 - o.y0) < 1 and abs(self.y1 - o.y1) < 1
+        return False
+    
+    def __getitem__(self, index):
+        return self.cells[index]
+    
+    def __str__(self) -> str:
+        text = ''
+        for row in self.texts:
+            for col in row:
+                text = text + col + '\t'
+            text += '\n'
+        return text
+    
+    def add_vertex(self, v):
+        if self.vertex_valid(v):
+            self.vertices.append(v)
+    
+    def get_vertices(self):
+        return self.vertices
+
+    def form(self, page):
+        self.page = page
+        self.vertices = sorted(self.vertices, key=functools.cmp_to_key(pcmp))
+        self.vertices_to_cells()
+        self.cells_to_texts()
+    
+    def cells_to_texts(self):
+        self.texts = []
+        for row in self.cells:
+            self.texts.append([])
+            for col in row:
+                self.texts[-1].append(self.page.get_textbox(col))
+
+    def vertices_to_cells(self):
+        m = []
+        self.cells = []
+        self.rows = 0
+        self.cols = 0
+        prev = Point(fitz.Point(0,0))
+        for v in self.vertices:
+            if not v.yeq(prev):
+                self.rows += 1
+                self.cols = 1
+                m.append([v])
+                prev = v
+            else:
+                self.cols += 1
+                m[-1].append(v)
+
+        # print(len(self.vertices) , self.rows * self.cols)
+        if len(self.vertices) != self.rows * self.cols:
+            self.rows = 0
+            self.cols = 0
+            return
+
+        for i in range(self.rows-1):
+            self.cells.append([])
+            # m[i] = sorted(m[i], key=functools.cmp_to_key(pcmp))
+            for j in range(self.cols-1):
+                self.cells[-1].append(fitz.Rect(m[i][j], m[i+1][j+1]))
+        
+        self.rows -= 1
+        self.cols -= 1
 
 
+    def vertex_valid(self, p : Point):
+        if abs(self.y0 - p.y) < 1 or abs(self.y1 - p.y) < 1:
+            return True 
+        return p.y > self.y0 and p.y < self.y1
 
-class PDFFormRecognizer:
+
+class HCIAnalyzer:
     def __init__(self, path, start, end):
-        doc = fitz.open(path)  # the PDF
+        doc = fitz.open(path)
         self.start = start
         self.end = end
         self.doc = fitz.open()
-        self.doc.insert_pdf(doc, from_page=start-1, to_page=end)
-        self.shape = None
-        self.form_areas = []
+        self.doc.insert_pdf(doc, from_page=start-1,to_page=end)
+        self.pageno = 0
+        self.forms = []
+        self.event_descs = []
+        self.event_desc_on = False
     
     def __del__(self):
         self.doc.save("x.pdf")
@@ -110,8 +189,8 @@ class PDFFormRecognizer:
     def rect_to_keep(self, rect):
         return np.abs(rect.x0 -rect.x1) > RECT_MIN_SIZE and np.abs(rect.y0- rect.y1) > RECT_MIN_SIZE
 
-    def transform_rect(self, page, x0, y0, x1, y1):
-        ctm = page.transformation_matrix
+    def transform_rect(self, x0, y0, x1, y1):
+        ctm = self.page.transformation_matrix
         height = y1 - y0
         width = x1 - x0
         p = fitz.Point(x0, y0) * ctm + (0, -height)
@@ -123,6 +202,8 @@ class PDFFormRecognizer:
     
     def vertex_valid(self, p):
         for r in self.form_areas:
+            if r[1].yeq(p) or r[0].yeq(p):
+                return True
             if p.p.y <= r[1].p.y and p.p.y >= r[0].p.y:
                 return True
         return False
@@ -141,14 +222,13 @@ class PDFFormRecognizer:
                 x = float(cont[p1 - 4])
                 p = fitz.Point(x, y) * ctm + (0, -height)
                 rect = fitz.Rect(p.x, p.y, p.x + width, p.y + height)
-                # rect = fitz.Rect(x, y, x + width, y + height)
+                #rect = fitz.Rect(x, y, x + width, y + height)
                 rlist.append(rect)
                 p1 = p2
             except Exception as e:
-                print(e)
                 break
         return rlist
-    
+        
     def find_vertices(self, rects):
         vertices : list(Point) = []
         res : list(Point) = []
@@ -158,20 +238,33 @@ class PDFFormRecognizer:
                 p1, p2 = Point(line[0]), Point(line[1])
                 vertices += ([p1] + [p2])
                 if p1.xeq(p2):
-                    self.form_areas.append((p1, p2)) if (p1, p2) not in self.form_areas else None
+                    form = Form(p1.y, p2.y)
+                    self.forms[-1].append(form) if form not in self.forms[-1] else None
             else:
                 vertices += [Point(rect.tl)]
                 vertices += [Point(rect.tr)]
                 vertices += [Point(rect.bl)]
                 vertices += [Point(rect.br)]
         [res.append(v) for v in vertices if v not in res]
-        res = [v for v in res if self.vertex_valid(v)]
-        return res
-
+        for v in res:
+            for form in self.forms[-1]:
+                form.add_vertex(v)
+        for form in self.forms[-1]:
+            form.form(self.page)
+        
     
-    def draw_rects(self, rects):
-        for r in rects:
-            self.shape.drawRect(r)
+    def draw_rects_2d(self, rects):
+        for row in rects:
+            for col in row:
+                # col = self.transform_rect(col.x0, col.y0, col.x1, col.y1)
+                self.shape.drawRect(col)
+        self.shape.finish(color=(1, 0, 0), width=0.3)
+        self.shape.commit()
+
+    def draw_rects_1d(self, rects):
+        for rect in rects:
+            # rect = self.transform_rect(rect.x0, rect.y0, rect.x1, rect.y1)
+            self.shape.drawRect(rect)
         self.shape.finish(color=(1, 0, 0), width=0.3)
         self.shape.commit()
     
@@ -181,71 +274,62 @@ class PDFFormRecognizer:
 
     def draw_points(self, points):
         for v in points:
-            self.draw_point(v.p)
+            self.draw_point(v)
         self.shape.finish(color=(0, 0, 1), width=2)
 
         for v in points:
-            self.shape.insert_text(v.p + fitz.Point(2, 2), str(v), morph=(v.p,-fitz.Matrix(fitz.Identity)))
+            self.shape.insert_text(v + fitz.Point(2, 2), str(v), morph=(v,-fitz.Matrix(fitz.Identity)))
         self.shape.finish(color=(0, 0, 1), width=2)       
         self.shape.commit()
     
+    def draw_lines(self, lines):
+        for line in lines:
+            self.shape.drawLine(line[0], line[1])
+        self.shape.finish(color=(1, 0, 1), width=1.5)       
+        self.shape.commit()         
+
     def analyze(self):
         for page in self.doc.pages():
-            # assert(page.get_contents) == 1
-            self.page = page
-            self.shape = page.new_shape()
-            rects = []
-            cont = []
+            self.analyze_page_text(page)
+            self.analyze_page_forms(page)
+    
+    def analyze_page_text(self, page):
+        for i, block in enumerate(page.get_text('blocks')[TEXT_TO_START:]):
+            text = block[4]
+            print(i,text)
+            if i == 0 and re.match("7.*command", text) is not None:
+                self.event_desc_on = False
+            elif "event(s) generated" in text.lower():
+                self.event_desc_on = True
+                self.event_descs.append('')
+            elif self.event_desc_on:
+                self.event_descs[-1] += text
+
+    def analyze_page_forms(self,  page):
+        self.pageno += 1
+        print(self.pageno)
+        # assert(page.get_contents) == 1
+        self.page = page
+        self.shape = page.new_shape()
+        self.forms.append([])
+        rects = []
+        cont = []
+        for xref in page.get_contents():
             try:
-                for xref in page.get_contents():
-                    cont += self.doc.xref_stream(xref).decode().split()
+                cont += self.doc.xref_stream(xref).decode(errors='ignore').split()
             except:
+                print(self.doc.xref_stream(xref))
                 continue
 
-            rects = self.find_rects(page, cont)[RECT_TO_START:]
-            # rects = [rect for rect in rects if not self.rect_to_keep(rect)]
-            # # for rect in rects:
-            # #     text = page.get_textbox(rect)
-            # #     print(text)
-            # #     print('------------------------------')
-            # print(rects)
-            # self.draw_rects([rect for rect in rects])
-            vertices = self.find_vertices(rects)
-            self.draw_points(vertices)
-            print(self.form_areas)
+        rects = self.find_rects(page, cont)[RECT_TO_START:]
+        self.draw_rects_1d([rect for rect in rects])
+        self.find_vertices(rects)
+        # for form in self.forms[-1]:
+        #     print(form)
+        
 
 
-PDFFormRecognizer("test.pdf", 1, 1).analyze()
-
-# # create a drawing shape and draw the lines and the rectangles ...
-# # just to demonstrate things are working
-# shape = page.new_shape()
-
-# # draw all the rectangles
-
-# for i, r in enumerate(rects[8:]):
-#     line = rect_to_line(r)
-#     if line is None:
-#         text = page.get_textbox(r)
-#         print(text)
-#         shape.drawRect(shrink_rect(r))
-#         shape.finish(color=(1, 0, 0), width=0.3)
-#         if i== 5:
-#             break
-#     # else:
-#     #     shape.drawLine(line[0], line[1])
-#     #     shape.finish(color=(0, 0, 1), width=2) 
-#   # with a thin red line
-
-# # draw all the lines
-# #for l in lines:
-# #    shape.drawLine(l[0], l[1])
-
-# for word in page.get_text("words"):
-#     #print(word)
-#     shape.drawRect(transform_rect(page, word[0], word[1], word[2], word[3]))
-
-# shape.finish(color=(0, 0, 1), width=2)  # with a thick blue line
-
-# shape.commit()  # commit the shape to the page
-# doc.save("x.pdf")  # save everything to a new PDF
+ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 1900)
+ha.analyze()
+# for desc in ha.event_descs:
+#     print(desc)
