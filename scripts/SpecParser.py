@@ -13,7 +13,7 @@ import re
 
 print(fitz.__doc__)
 
-TEXT_TO_START = 4
+TEXT_TO_START = 5
 RECT_TO_START = 8
 RECT_SHRINK_WIDTH = 3
 RECT_MIN_SIZE = 10
@@ -57,7 +57,7 @@ class Form:
     
     def __str__(self) -> str:
         text = ''
-        for row in self.texts:
+        for row in self.cells:
             for col in row:
                 text = text + col + '\t'
             text += '\n'
@@ -74,14 +74,14 @@ class Form:
         self.page = page
         self.vertices = sorted(self.vertices, key=functools.cmp_to_key(pcmp))
         self.vertices_to_cells()
-        self.cells_to_texts()
+        # self.cells_to_texts()
     
-    def cells_to_texts(self):
-        self.texts = []
-        for row in self.cells:
-            self.texts.append([])
-            for col in row:
-                self.texts[-1].append(self.page.get_textbox(col))
+    # def cells_to_texts(self):
+    #     self.texts = []
+    #     for row in self.cells:
+    #         self.texts.append([])
+    #         for col in row:
+    #             self.texts[-1].append(self.page.get_textbox(col))
 
     def vertices_to_cells(self):
         m = []
@@ -100,16 +100,18 @@ class Form:
                 m[-1].append(v)
 
         # print(len(self.vertices) , self.rows * self.cols)
-        if len(self.vertices) != self.rows * self.cols:
+        if len(self.vertices) != self.rows * self.cols or self.rows < 2 or self.cols < 2:
             self.rows = 0
             self.cols = 0
+            self.cells.append([''])
             return
 
         for i in range(self.rows-1):
             self.cells.append([])
-            # m[i] = sorted(m[i], key=functools.cmp_to_key(pcmp))
+            m[i] = sorted(m[i], key=functools.cmp_to_key(pcmp))
             for j in range(self.cols-1):
-                self.cells[-1].append(fitz.Rect(m[i][j], m[i+1][j+1]))
+                self.cells[-1].append(self.page.get_textbox(fitz.Rect(m[i][j], m[i+1][j+1])))
+                # print(self.cells[-1][-1])
         
         self.rows -= 1
         self.cols -= 1
@@ -120,6 +122,8 @@ class Form:
             return True 
         return p.y > self.y0 and p.y < self.y1
 
+def fcmp(f1, f2):
+    return f1.y0 - f2.y0
 
 class HCIAnalyzer:
     def __init__(self, path, start, end):
@@ -245,6 +249,17 @@ class HCIAnalyzer:
                 vertices += [Point(rect.tr)]
                 vertices += [Point(rect.bl)]
                 vertices += [Point(rect.br)]
+
+        temp = sorted(self.forms[-1], key=functools.cmp_to_key(fcmp))
+        self.forms[-1] = []
+        for i in range(len(temp)-1):
+            if i == 0:
+                self.forms[-1].append(Form(temp[i].y0, temp[i].y1))
+            if abs(temp[i].y1 - temp[i+1].y0) < 1:
+                self.forms[-1][-1].y1 = temp[i+1].y1
+            else:
+                self.forms[-1].append(temp[i+1])
+
         [res.append(v) for v in vertices if v not in res]
         for v in res:
             for form in self.forms[-1]:
@@ -294,20 +309,28 @@ class HCIAnalyzer:
             self.analyze_page_forms(page)
     
     def analyze_page_text(self, page):
-        for i, block in enumerate(page.get_text('blocks')[TEXT_TO_START:]):
-            text = block[4]
-            print(i,text)
-            if i == 0 and re.match("7.*command", text) is not None:
+        for i, block in enumerate(page.get_text('blocks', sort=True)):
+            text =  block[4]
+            if re.match("7.*command", text.strip()) is not None or \
+                re.match("7.*event", text.strip()) is not None:
                 self.event_desc_on = False
             elif "event(s) generated" in text.lower():
                 self.event_desc_on = True
                 self.event_descs.append('')
             elif self.event_desc_on:
+                if text.strip() == "HCI commands and events" or \
+                    "Revision Date" in text or \
+                    "Bluetooth SIG Proprietary" in text or \
+                    "BLUETOOTH CORE SPECIFICATION Version" in text or \
+                    "Host Controller Interface Functional Specification" == text.strip() or \
+                    re.match("page [0-9]*", text) is not None:
+                    continue
+                text = text.replace('-\n', '').replace('\n', ' ')
                 self.event_descs[-1] += text
 
     def analyze_page_forms(self,  page):
         self.pageno += 1
-        print(self.pageno)
+        # print(self.pageno)
         # assert(page.get_contents) == 1
         self.page = page
         self.shape = page.new_shape()
@@ -327,9 +350,38 @@ class HCIAnalyzer:
         # for form in self.forms[-1]:
         #     print(form)
         
+    def analyze_commands(self):
+        #cmd = {'name': '', 'ogf': 0, 'ocf': 0, 'parameters': [], 'return_parameters:': []}
+
+        ogf = 0
+        self.commands = []
+        for forms in self.forms:
+            for form in forms:
+                if form[0][0].strip() == "Command":
+                    name = form[1][0].strip().replace('-\n', '')
+                    ocf = eval(form[1][1].strip().replace('\n',''))
+                    if ocf == 1:
+                        ogf += 1
+                    self.commands.append({'name': name, 'ogf': ogf, 'ocf':ocf, 'p':[], 'rp': []})
+                    for pname in form[1][2].replace('-\n', '').split():
+                        pname = pname.strip().strip(',')
+                        self.commands[-1]['p'].append({'name': pname, 'size': 0})
+                    for pname in form[1][3].replace('-\n', '').split():
+                        pname = pname.strip().strip(',')
+                        self.commands[-1]['rp'].append({'name': pname, 'size': 0})
 
 
-ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 1900)
+                
+
+
+ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 2629)
 ha.analyze()
-# for desc in ha.event_descs:
-#     print(desc)
+ha.analyze_commands()
+for i in range(len(ha.event_descs)):
+    cmd = ha.commands[i]
+    event_desc = ha.event_descs[i].replace('-\n', '')
+    if not cmd['name'] in event_desc:
+        print(cmd['name'], cmd['ogf'], cmd['ocf'])
+        print(event_desc)
+        print('-------------------')
+        
