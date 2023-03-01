@@ -10,8 +10,10 @@ import fitz
 import numpy as np
 import functools
 import re
+import pprint
 
 print(fitz.__doc__)
+pp = pprint.PrettyPrinter(indent=4)
 
 TEXT_TO_START = 5
 RECT_TO_START = 8
@@ -44,7 +46,9 @@ class Form:
     def __init__(self, y0, y1) -> None:
         self.y0 = min(y0, y1)
         self.y1 = max(y0, y1)
-        self.vertices = []
+        self.prev = 0
+        self.X = []
+        self.Y = []
         pass
 
     def __eq__(self, o: object) -> bool:
@@ -65,62 +69,74 @@ class Form:
     
     def add_vertex(self, v):
         if self.vertex_valid(v):
-            self.vertices.append(v)
+            self.X.append(v.x)
+            self.Y.append(v.y)
     
     def get_vertices(self):
         return self.vertices
 
     def form(self, page):
         self.page = page
-        self.vertices = sorted(self.vertices, key=functools.cmp_to_key(pcmp))
+        i = 0
+        self.X = sorted(self.X)
+        while i < len(self.X) - 1:
+            if abs(self.X[i] - self.X[i+1]) < 10:
+                self.X.pop(i+1)
+            else:
+                i += 1
+
+        i = 0
+        self.Y = sorted(self.Y)
+        while i < len(self.Y) - 1:
+            if abs(self.Y[i] - self.Y[i+1]) < 10:
+                self.Y.pop(i+1)
+            else:
+                i += 1
         self.vertices_to_cells()
-        # self.cells_to_texts()
-    
-    # def cells_to_texts(self):
-    #     self.texts = []
-    #     for row in self.cells:
-    #         self.texts.append([])
-    #         for col in row:
-    #             self.texts[-1].append(self.page.get_textbox(col))
 
     def vertices_to_cells(self):
-        m = []
+        self.header = ''
         self.cells = []
-        self.rows = 0
-        self.cols = 0
-        prev = Point(fitz.Point(0,0))
-        for v in self.vertices:
-            if not v.yeq(prev):
-                self.rows += 1
-                self.cols = 1
-                m.append([v])
-                prev = v
-            else:
-                self.cols += 1
-                m[-1].append(v)
-
-        # print(len(self.vertices) , self.rows * self.cols)
-        if len(self.vertices) != self.rows * self.cols or self.rows < 2 or self.cols < 2:
-            self.rows = 0
-            self.cols = 0
+        self.cols = len(self.X) - 1
+        self.rows = len(self.Y) - 1
+        if  self.rows < 1 or self.cols < 1:
             self.cells.append([''])
             return
 
-        for i in range(self.rows-1):
+        for i in range(self.rows):
             self.cells.append([])
-            m[i] = sorted(m[i], key=functools.cmp_to_key(pcmp))
-            for j in range(self.cols-1):
-                self.cells[-1].append(self.page.get_textbox(fitz.Rect(m[i][j], m[i+1][j+1])))
-                # print(self.cells[-1][-1])
-        
-        self.rows -= 1
-        self.cols -= 1
+            y0 = self.Y[i]
+            y1 = self.Y[i+1]
+            for j in range(self.cols):
+                x0 = self.X[j]
+                x1 = self.X[j+1]
+                self.cells[-1].append(self.page.get_textbox(fitz.Rect(x0-5, y0-5, x1+5, y1+5)))
 
+        header = self.page.get_textbox(fitz.Rect(self.X[0]-10, self.Y[0]-60 , self.X[-1]+10, self.Y[0])).split()
+        print(header)
+        print('-------------------------')
+        self.pname = None
+        self.size = None
+        for i in range(len(header)-1):
+            tok = header[i]
+            next_tok = header[i+1]
+            if next_tok == 'Size:':
+                self.pname = tok[:-1]
+                for j in range(i, len(header)):
+                    if header[j].startswith('octet'):
+                        try:
+                            self.size = int(header[j-1])
+                        except:
+                            pass
+                        print(self.pname, self.size)
+                        return
+            
 
     def vertex_valid(self, p : Point):
         if abs(self.y0 - p.y) < 1 or abs(self.y1 - p.y) < 1:
             return True 
         return p.y > self.y0 and p.y < self.y1
+    
 
 def fcmp(f1, f2):
     return f1.y0 - f2.y0
@@ -141,16 +157,6 @@ class HCIAnalyzer:
         self.doc.save("x.pdf")
 
     def find_lines(self, page, cont):
-        """Collect lines drawn on a page.
-
-        For simplicity we assume the we always have this sequence of commands:
-
-        x0 y0 m  % means go to point (x0, y0)
-        x1 y1 l  % means draw line (from previous point) to point(x1, y1)
-
-        We should also do the right thing, if an "l" command is preceeded by
-        another "l".
-        """
         ctm = page.transformation_matrix
         lines = []
         p1 = p2 = 0
@@ -249,14 +255,16 @@ class HCIAnalyzer:
                 vertices += [Point(rect.tr)]
                 vertices += [Point(rect.bl)]
                 vertices += [Point(rect.br)]
+                form = Form(rect.y0, rect.y1)
+                self.forms[-1].append(form) if form not in self.forms[-1] else None
 
         temp = sorted(self.forms[-1], key=functools.cmp_to_key(fcmp))
         self.forms[-1] = []
         for i in range(len(temp)-1):
             if i == 0:
                 self.forms[-1].append(Form(temp[i].y0, temp[i].y1))
-            if abs(temp[i].y1 - temp[i+1].y0) < 1:
-                self.forms[-1][-1].y1 = temp[i+1].y1
+            if abs(temp[i].y1 - temp[i+1].y0) < 1 or temp[i].y1 > temp[i+1].y0:
+                self.forms[-1][-1].y1 = max(temp[i].y1, temp[i+1].y1)
             else:
                 self.forms[-1].append(temp[i+1])
 
@@ -287,14 +295,12 @@ class HCIAnalyzer:
         self.shape.drawLine(point + fitz.Point(0, POINT_SIZE), point + fitz.Point(0, -POINT_SIZE))
         self.shape.drawLine(point + fitz.Point(POINT_SIZE, 0), point + fitz.Point(-POINT_SIZE, 0))
 
-    def draw_points(self, points):
-        for v in points:
-            self.draw_point(v)
+    def draw_points(self, X, Y):
+        for x in X:
+            for y in Y:
+                self.draw_point(fitz.Point(x, y))
         self.shape.finish(color=(0, 0, 1), width=2)
 
-        for v in points:
-            self.shape.insert_text(v + fitz.Point(2, 2), str(v), morph=(v,-fitz.Matrix(fitz.Identity)))
-        self.shape.finish(color=(0, 0, 1), width=2)       
         self.shape.commit()
     
     def draw_lines(self, lines):
@@ -347,21 +353,30 @@ class HCIAnalyzer:
         rects = self.find_rects(page, cont)[RECT_TO_START:]
         self.draw_rects_1d([rect for rect in rects])
         self.find_vertices(rects)
+        #self.draw_points(self.forms[-1][0].X, self.forms[-1][0].Y)
         # for form in self.forms[-1]:
         #     print(form)
         
-    def analyze_commands(self):
+    def analyze_data(self):
         #cmd = {'name': '', 'ogf': 0, 'ocf': 0, 'parameters': [], 'return_parameters:': []}
-
         ogf = 0
         self.commands = []
+        self.events = []
+        cur = ''
+        p_cur = 0
         for forms in self.forms:
             for form in forms:
-                if form[0][0].strip() == "Command":
-                    name = form[1][0].strip().replace('-\n', '')
+                ty = form[0][0].strip()
+                if ty == '':
+                    pass
+                elif ty == "Command":
+                    cur = "Command"
+                    name = form[1][0].strip().replace('-', '').replace('\n','')
                     ocf = eval(form[1][1].strip().replace('\n',''))
                     if ocf == 1:
                         ogf += 1
+                    elif "HCI_LE_" in name:
+                        ogf = 8
                     self.commands.append({'name': name, 'ogf': ogf, 'ocf':ocf, 'p':[], 'rp': []})
                     for pname in form[1][2].replace('-\n', '').split():
                         pname = pname.strip().strip(',')
@@ -369,19 +384,27 @@ class HCIAnalyzer:
                     for pname in form[1][3].replace('-\n', '').split():
                         pname = pname.strip().strip(',')
                         self.commands[-1]['rp'].append({'name': pname, 'size': 0})
+                elif ty == "Event":
+                    cur = "Event"
+                    name = form[1][0].strip().replace('-', '').replace('\n','')
+                    print(name)
+                    opcode = eval(form[1][1].strip().replace('\n',''))
+                    self.events.append({'name': name, 'opcode': opcode, 'p':[]})
+                    p_cur = 0
+                    for pname in form[1][2].replace('-\n', '').split():
+                        pname = pname.strip().strip(',')
+                        self.events[-1]['p'].append({'name': pname, 'size': 0})
+                elif cur == "Event":
+                    pname, size = form.pname, form.size
+                    if pname is not None:
+                        assert self.events[-1]['p'][p_cur]['name'] == pname
+                        self.events[-1]['p'][p_cur]['size'] = size if size is not None else -1
+                        p_cur+=1
 
 
-                
 
-
-ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 2629)
+ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 2650)
 ha.analyze()
-ha.analyze_commands()
-for i in range(len(ha.event_descs)):
-    cmd = ha.commands[i]
-    event_desc = ha.event_descs[i].replace('-\n', '')
-    if not cmd['name'] in event_desc:
-        print(cmd['name'], cmd['ogf'], cmd['ocf'])
-        print(event_desc)
-        print('-------------------')
-        
+ha.analyze_data()
+# pp.pprint(ha.commands)
+pp.pprint(ha.events)
