@@ -13,7 +13,6 @@ import re
 import pprint
 
 print(fitz.__doc__)
-pp = pprint.PrettyPrinter(indent=4)
 
 TEXT_TO_START = 5
 RECT_TO_START = 8
@@ -112,9 +111,7 @@ class Form:
                 x1 = self.X[j+1]
                 self.cells[-1].append(self.page.get_textbox(fitz.Rect(x0-5, y0-5, x1+5, y1+5)))
 
-        header = self.page.get_textbox(fitz.Rect(self.X[0]-10, self.Y[0]-60 , self.X[-1]+10, self.Y[0])).split()
-        print(header)
-        print('-------------------------')
+        header = self.page.get_textbox(fitz.Rect(self.X[0]-10, self.Y[0]-60 , self.X[-1]+10, self.Y[0])).replace('-\n', '').split()
         self.pname = None
         self.size = None
         for i in range(len(header)-1):
@@ -128,7 +125,6 @@ class Form:
                             self.size = int(header[j-1])
                         except:
                             pass
-                        print(self.pname, self.size)
                         return
             
 
@@ -356,6 +352,35 @@ class HCIAnalyzer:
         #self.draw_points(self.forms[-1][0].X, self.forms[-1][0].Y)
         # for form in self.forms[-1]:
         #     print(form)
+    
+    def analyze_domain(self, form):
+        dom = []
+        if form[0][0].strip() != 'Value':
+            return dom
+        for i in range(1, form.rows):
+            text = form[i][0].split('=')[-1].strip().replace('-', '').replace('\n', '')
+            if 'All' in text:
+                pass
+            elif 'XX' in text:
+                dom.append([])
+            elif 'octet' in text.lower():
+                dom.append([])
+            elif 'Name' in text:
+                dom.append([-1])
+            elif ',' in text:
+                for val in text.split(','):
+                    if 'to' in val:
+                        vals = val.split('to')
+                        dom.append([eval(vals[0]), eval(vals[1])])
+            elif 'to' in text:
+                vals = text.split('to')
+                dom.append([eval(vals[0]), eval(vals[1])])
+            else:
+                try:
+                    dom.append([eval(text)])
+                except:
+                    print(text)
+        return dom
         
     def analyze_data(self):
         #cmd = {'name': '', 'ogf': 0, 'ocf': 0, 'parameters': [], 'return_parameters:': []}
@@ -363,48 +388,73 @@ class HCIAnalyzer:
         self.commands = []
         self.events = []
         cur = ''
-        p_cur = 0
         for forms in self.forms:
             for form in forms:
                 ty = form[0][0].strip()
                 if ty == '':
                     pass
                 elif ty == "Command":
-                    cur = "Command"
-                    name = form[1][0].strip().replace('-', '').replace('\n','')
-                    ocf = eval(form[1][1].strip().replace('\n',''))
-                    if ocf == 1:
+                    ocf = []
+                    params = dict()
+                    rparams = dict()
+                    cur = ty
+                    name = form[1][0].strip().replace('-', '').replace('\n','').split('[')[0].strip()
+                    for i in range(1, form.rows):
+                        ocf.append([eval(form[i][1].strip().replace('\n',''))])
+                    for i in range(1, form.rows):
+                        pnames = [pname for pname in form[i][2].split(',') if pname != '']
+                        ocf[i-1].append(len(pnames))
+                        for pname in pnames:
+                            pname = pname.strip().replace('\n','').replace('-','')
+                            params[pname] = {'size': -1}
+                    for i in range(1, form.rows):
+                        pnames = [pname for pname in form[i][3].split(',') if pname != '']
+                        ocf[i-1].append(len(pnames))
+                        for pname in pnames:
+                            pname = pname.strip().replace('\n','').replace('-','')
+                            rparams[pname] = {'size': -1}
+                    if ocf[0][0] == 1:
                         ogf += 1
                     elif "HCI_LE_" in name:
                         ogf = 8
-                    self.commands.append({'name': name, 'ogf': ogf, 'ocf':ocf, 'p':[], 'rp': []})
-                    for pname in form[1][2].replace('-\n', '').split():
-                        pname = pname.strip().strip(',')
-                        self.commands[-1]['p'].append({'name': pname, 'size': 0})
-                    for pname in form[1][3].replace('-\n', '').split():
-                        pname = pname.strip().strip(',')
-                        self.commands[-1]['rp'].append({'name': pname, 'size': 0})
+                    # params = list(map(lambda i: {'name': params[i], 'size': -1}, range(len(params))))
+                    # rparams = list(map(lambda i: {'name': rparams[i], 'size': -1}, range(len(rparams))))
+                    self.commands.append({'name': name, 'ogf': ogf, 'ocf':ocf, 'p':params, 'rp': rparams})
                 elif ty == "Event":
-                    cur = "Event"
-                    name = form[1][0].strip().replace('-', '').replace('\n','')
-                    print(name)
-                    opcode = eval(form[1][1].strip().replace('\n',''))
-                    self.events.append({'name': name, 'opcode': opcode, 'p':[]})
-                    p_cur = 0
-                    for pname in form[1][2].replace('-\n', '').split():
-                        pname = pname.strip().strip(',')
-                        self.events[-1]['p'].append({'name': pname, 'size': 0})
+                    opcode = []
+                    params = dict()
+                    cur = ty
+                    name = form[1][0].strip().replace('-', '').replace('\n','').split('[')[0].strip()
+                    for i in range(1, form.rows):
+                        opcode.append([eval(form[i][1].strip().replace('\n',''))])
+                    for i in range(1, form.rows):
+                        pnames = form[i][2].split(',')
+                        opcode[i-1].append(len(pnames))
+                        for pname in pnames:
+                            pname = pname.strip().replace('\n','').replace('-', '')
+                            params[pname] = {'size': -1} if pname != '' else None
+                    #params = list(map(lambda i: {'name': params[i]}, range(len(params))))
+                    self.events.append({'name': name, 'opcode': opcode, 'p':params})
+                elif cur == "Command":
+                    pname, size = form.pname, form.size
+                    if pname is not None:
+                        if pname in self.commands[-1]['p'].keys() and self.commands[-1]['p'][pname]['size'] == -1:
+                            self.commands[-1]['p'][pname]['size'] = size if size is not None else 0
+                            self.commands[-1]['p'][pname]['domain'] = self.analyze_domain(form)
+                        elif pname in self.commands[-1]['rp'].keys() and self.commands[-1]['rp'][pname]['size'] == -1:
+                            self.commands[-1]['rp'][pname]['size'] = size if size is not None else 0
+                            self.commands[-1]['rp'][pname]['domain'] = self.analyze_domain(form)
                 elif cur == "Event":
                     pname, size = form.pname, form.size
                     if pname is not None:
-                        assert self.events[-1]['p'][p_cur]['name'] == pname
-                        self.events[-1]['p'][p_cur]['size'] = size if size is not None else -1
-                        p_cur+=1
+                        if pname in self.events[-1]['p'].keys() and self.events[-1]['p'][pname]['size'] == -1:
+                            self.events[-1]['p'][pname]['size'] = size if size is not None else 0
+                            self.events[-1]['p'][pname]['domain'] = self.analyze_domain(form)
 
 
 
 ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 2650)
 ha.analyze()
 ha.analyze_data()
-# pp.pprint(ha.commands)
-pp.pprint(ha.events)
+pprint.pprint(ha.commands, sort_dicts=False)
+pprint.pprint(ha.events, sort_dicts=False)
