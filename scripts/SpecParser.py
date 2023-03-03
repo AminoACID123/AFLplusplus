@@ -313,8 +313,9 @@ class HCIAnalyzer:
     def analyze_page_text(self, page):
         for i, block in enumerate(page.get_text('blocks', sort=True)):
             text =  block[4]
-            if re.match("7.*command", text.strip()) is not None or \
-                re.match("7.*event", text.strip()) is not None:
+            if re.match("7\..*", text.strip()) is not None or \
+                re.match("7\..*", text.strip()) is not None or \
+                "appendix" in text.lower():
                 self.event_desc_on = False
             elif "event(s) generated" in text.lower():
                 self.event_desc_on = True
@@ -325,6 +326,7 @@ class HCIAnalyzer:
                     "Bluetooth SIG Proprietary" in text or \
                     "BLUETOOTH CORE SPECIFICATION Version" in text or \
                     "Host Controller Interface Functional Specification" == text.strip() or \
+                    'this section is no longer used' in text.lower() or \
                     re.match("page [0-9]*", text) is not None:
                     continue
                 text = text.replace('-\n', '').replace('\n', ' ')
@@ -451,10 +453,16 @@ class HCIAnalyzer:
                             self.events[-1]['p'][pname]['size'] = size if size is not None else 0
                             self.events[-1]['p'][pname]['domain'] = self.analyze_domain(form)
 
+    def analyze_model(self):
+        assert len(self.commands) == len(self.event_descs)
+        for i in range(len(self.commands)):
+            event_desc = self.event_descs[i]
+            self.commands[i]['desc'] = event_desc
 
 
 ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 2650)
 ha.analyze()
 ha.analyze_data()
+ha.analyze_model()
 pprint.pprint(ha.commands, sort_dicts=False)
-pprint.pprint(ha.events, sort_dicts=False)
+# pprint.pprint(ha.events, sort_dicts=False)
