@@ -2606,6 +2606,8 @@ void setup_testcase_shmem(afl_state_t *afl) {
    a valid ELF header and for evidence of AFL instrumentation. */
 
 void check_binary(afl_state_t *afl, u8 *fname) {
+  if(afl->fsrv.qemu_mode > 1)
+    return;
 
   if (unlikely(!fname)) { FATAL("BUG: Binary name is NULL"); }
 

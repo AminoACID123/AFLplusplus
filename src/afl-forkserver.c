@@ -1480,17 +1480,19 @@ afl_fsrv_run_target(afl_forkserver_t *fsrv, u32 timeout,
     /* If there was no response from forkserver after timeout seconds,
     we kill the child. The forkserver should inform us afterwards */
 
-    s32 tmp_pid = fsrv->child_pid;
-    if (tmp_pid > 0) {
-
-      kill(tmp_pid, fsrv->child_kill_signal);
-      fsrv->child_pid = -1;
-
+    if(fsrv->qemu_mode > 1){
+      s32 t = 1;
+      if(write(FORKSRV_FD, &t, 4)!= 4)
+        RPFATAL(res, "Unable to request new process from fork server (OOM?)");
+    }else{
+      s32 tmp_pid = fsrv->child_pid;
+      if (tmp_pid > 0) {
+        kill(tmp_pid, fsrv->child_kill_signal);
+        fsrv->child_pid = -1;
+      }
     }
-
     fsrv->last_run_timed_out = 1;
     if (read(fsrv->fsrv_st_fd, &fsrv->child_status, 4) < 4) { exec_ms = 0; }
-
   }
 
   if (!exec_ms) {

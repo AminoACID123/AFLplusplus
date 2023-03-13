@@ -1024,9 +1024,7 @@ int main(int argc, char **argv_orig, char **envp) {
 
       case 'Q':                                                /* QEMU mode */
 
-        if (afl->fsrv.qemu_mode) { FATAL("Multiple -Q options not supported"); }
-
-        afl->fsrv.qemu_mode = 1;
+        afl->fsrv.qemu_mode++;
 
         if (!mem_limit_given) { afl->fsrv.mem_limit = MEM_LIMIT_QEMU; }
 
@@ -2009,7 +2007,12 @@ int main(int argc, char **argv_orig, char **envp) {
 
   afl->start_time = get_cur_time();
 
-  if (afl->fsrv.qemu_mode) {
+  if (afl->fsrv.qemu_mode > 1) {
+    use_argv = ck_alloc(sizeof(char *) * (argc - optind + 1));
+    memcpy(&use_argv[0], argv + optind, (int)(sizeof(char *)) * (argc - optind));
+    afl->fsrv.target_path = use_argv[0];
+  }
+  else if (afl->fsrv.qemu_mode) {
 
     if (afl->use_wine) {
 

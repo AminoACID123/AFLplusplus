@@ -120,7 +120,7 @@ typedef struct afl_forkserver {
 
   bool use_fauxsrv;                     /* Fauxsrv for non-forking targets? */
 
-  bool qemu_mode;                       /* if running in qemu mode or not   */
+  u8 qemu_mode;                       /* if running in qemu mode or not   */
 
   bool frida_mode;                     /* if running in frida mode or not   */
 
