@@ -11,6 +11,7 @@
 #include "../../include/config.h"
 #include "Hci.h"
 #include "Operation.h"
+#include "Parse.h"
 #include "cJSON.h"
 
 using namespace std;
@@ -35,27 +36,7 @@ void Operation::dump()
 //         printf("    Exec: %s\n", e.c_str());
 // }
 
-cJSON *load_from_file(const char *file)
-{
-    u32 len;
-    char *data;
-    cJSON *root;
-    FILE *f = fopen(file, "rb");
-    /* get the length */
-    fseek(f, 0, SEEK_END);
-    len = ftell(f);
-    fseek(f, 0, SEEK_SET);
 
-    data = (char *)malloc(len + 1);
-
-    fread(data, 1, len, f);
-    data[len] = '\0';
-    fclose(f);
-
-    root = cJSON_Parse(data);
-    free(data);
-    return root;
-}
 
 void parse_headers(cJSON *file)
 {

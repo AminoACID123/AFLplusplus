@@ -5,6 +5,7 @@ scripts/*.htm
 scripts/*.pdf
 scripts/*.png
 scripts/*.txt
+scripts/*.json
 .test
 .test2
 .sync_tmp

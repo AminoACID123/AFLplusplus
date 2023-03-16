@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Experimental script which detects rectangles and lines on a PDF page.
 
@@ -6,11 +8,14 @@ We are only covering the most simple cases: A general drawback is, that we are
 ignoring any geometry changes, which might be established by "cm" commands.
 More simplifying assumption can be found at the functions below.
 """
+
+
 import fitz
 import numpy as np
 import functools
 import re
 import pprint
+import json
 
 print(fitz.__doc__)
 
@@ -368,7 +373,7 @@ class HCIAnalyzer:
             elif 'octet' in text.lower():
                 dom.append([])
             elif 'Name' in text:
-                dom.append([-1])
+                dom.append([-1, -1])
             elif ',' in text:
                 for val in text.split(','):
                     if 'to' in val:
@@ -379,7 +384,8 @@ class HCIAnalyzer:
                 dom.append([eval(vals[0]), eval(vals[1])])
             else:
                 try:
-                    dom.append([eval(text)])
+                    val = eval(text)
+                    dom.append([val, val])
                 except:
                     print(text)
         return dom
@@ -404,13 +410,13 @@ class HCIAnalyzer:
                     for i in range(1, form.rows):
                         ocf.append([eval(form[i][1].strip().replace('\n',''))])
                     for i in range(1, form.rows):
-                        pnames = [pname for pname in form[i][2].split(',') if pname != '']
+                        pnames = [pname for pname in form[i][2].replace(']', '],').split(',') if pname != '']
                         ocf[i-1].append(len(pnames))
                         for pname in pnames:
                             pname = pname.strip().replace('\n','').replace('-','')
                             params[pname] = {'size': -1}
                     for i in range(1, form.rows):
-                        pnames = [pname for pname in form[i][3].split(',') if pname != '']
+                        pnames = [pname for pname in form[i][3].replace(']', '],').split(',') if pname != '']
                         ocf[i-1].append(len(pnames))
                         for pname in pnames:
                             pname = pname.strip().replace('\n','').replace('-','')
@@ -430,7 +436,7 @@ class HCIAnalyzer:
                     for i in range(1, form.rows):
                         opcode.append([eval(form[i][1].strip().replace('\n',''))])
                     for i in range(1, form.rows):
-                        pnames = form[i][2].split(',')
+                        pnames = [pname for pname in form[i][2].replace(']', '],').split(',') if pname != '']
                         opcode[i-1].append(len(pnames))
                         for pname in pnames:
                             pname = pname.strip().replace('\n','').replace('-', '')
@@ -465,4 +471,6 @@ ha.analyze()
 ha.analyze_data()
 ha.analyze_model()
 pprint.pprint(ha.commands, sort_dicts=False)
+with open("hci.json", 'w') as f:
+    f.write(json.dumps({"commands": ha.commands, "events": ha.events}, indent=2))
 # pprint.pprint(ha.events, sort_dicts=False)

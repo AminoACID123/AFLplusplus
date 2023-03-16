@@ -8,6 +8,8 @@
 #include "Util.h"
 #include <set>
 #include <vector>
+#include <string>
+#include <iostream>
 
 extern std::set<u8> sEvt;
 extern std::set<u8> sLeEvt;
@@ -16,6 +18,94 @@ extern std::set<u16> sCompleteCmd;
 
 extern std::vector<u8> vEvt;
 extern std::vector<u8> vLeEvt;
+
+class HCICommand;
+class HCIEvent;
+
+class HCIParameter {
+  std::string name;
+  u32 size;
+  bool isSubField;
+  std::vector<std::vector<u32>> domain;
+  friend class HCICommand;
+  friend class HCIEvent;
+
+public:
+  HCIParameter() {}
+  void setName(char* _name) { 
+    name = _name;
+    isSubField = name.find('[') != std::string::npos; 
+  }
+  void setSize(u32 _size) { size = _size; }
+  void addDomain() { domain.push_back(std::vector<u32>()); }
+  void addDomain(u32 l, u32 u) { 
+    std::vector<u32> temp;
+    temp.push_back(l);
+    temp.push_back(u);
+    domain.push_back(temp);
+  }
+
+  friend std::ostream & operator << (std::ostream &out, HCIParameter&);
+};
+
+class HCIEvent : public Item {
+  std::vector<std::vector<u8>> opc;
+  std::string name;
+  std::vector<HCIParameter> p;
+
+public:
+  HCIEvent() {}
+  void setName(std::string _name) { name = _name; }
+  void addOpcode(u8 c, u8 n) { 
+    std::vector<u8> temp;
+    temp.push_back(c);
+    temp.push_back(n);
+    opc.push_back(temp);
+  }
+  void addParameter(HCIParameter& _p) { p.push_back(_p); }
+  std::vector<HCIParameter>& getParameters() { return p; }
+};
+
+class HCICommand : public Item {
+  u8 ogf;
+  std::vector<std::vector<u8>> ocf;
+  std::string name;
+  std::vector<HCIParameter> p;
+  std::vector<HCIParameter> rp;
+public: 
+  HCICommand() {}
+  void setName(std::string _name) { name = _name; }
+  void setOgf(u8 _ogf) { ogf = _ogf; }
+  void addOcf(u8 c, u8 n1, u8 n2) { 
+    std::vector<u8> temp;
+    temp.push_back(c);
+    temp.push_back(n1);
+    temp.push_back(n2);
+    ocf.push_back(temp);
+  }
+  void addParameter(HCIParameter& _p) { p.push_back(_p); }
+  void addRParameter(HCIParameter& _rp) { rp.push_back(_rp); }
+  std::vector<HCIParameter>& getParameters() { return p; }
+  std::vector<HCIParameter>& getRParameters() { return rp; } 
+
+  friend std::ostream& operator << (std::ostream &out, HCICommand&);
+};
+
+class HCIManager {
+  std::vector<HCICommand> commands;
+  std::vector<HCIEvent> events;
+  static HCIManager* manager;
+  HCIManager() {}
+
+public:
+  static HCIManager* get() {
+    if(!manager)
+      manager = new HCIManager;
+    return manager;
+  }
+  void addCommand(HCICommand& cmd) { commands.push_back(cmd); }
+  void addEvent(HCIEvent& evt) { events.push_back(evt); }
+}
 
 #endif
 
