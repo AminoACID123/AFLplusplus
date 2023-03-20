@@ -1073,7 +1073,7 @@ bool AFLCoverage::runOnModule(Module &M) {
                getenv("AFL_USE_CFISAN") ? ", CFISAN" : "",
                getenv("AFL_USE_TSAN") ? ", TSAN" : "",
                getenv("AFL_USE_UBSAN") ? ", UBSAN" : "");
-      OKF("Instrumented %d locations (%s mode, ratio %u%%).", inst_blocks,
+      OKF("afl-llvm-pass: Instrumented %d locations (%s mode, ratio %u%%).", inst_blocks,
           modeline, inst_ratio);
 
     }

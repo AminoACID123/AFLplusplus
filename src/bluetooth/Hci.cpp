@@ -3,13 +3,14 @@
 #include "Parse.h"
 using namespace std;
 
+HCIManager* HCIManager:: manager = nullptr;
+
 ostream & operator << (ostream &out, HCIParameter& p)
 {
     out << "Name: " << p.name << endl;
     out << "Size: " << p.size << endl;
     return out;
 }
-
 
 ostream& operator << (std::ostream &out, HCICommand& c)
 {
@@ -73,7 +74,6 @@ void parse_commands(cJSON* root) {
     }
 }
 
-
 void parse_events(cJSON* root) {
     cJSON* item;
     cJSON* events =  cJSON_GetObjectItem(root, "commands");
@@ -95,7 +95,6 @@ void parse_events(cJSON* root) {
         manager->addEvent(event);
     }
 }
-
 
 void parse_hci(const char* file) {
     cJSON* json = load_from_file(file);

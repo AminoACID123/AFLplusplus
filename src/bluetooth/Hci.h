@@ -105,7 +105,7 @@ public:
   }
   void addCommand(HCICommand& cmd) { commands.push_back(cmd); }
   void addEvent(HCIEvent& evt) { events.push_back(evt); }
-}
+};
 
 #endif
 

@@ -569,7 +569,7 @@ bool ModuleSanitizerCoverageAFL::instrumentModule(
                getenv("AFL_USE_TSAN") ? ", TSAN" : "",
                getenv("AFL_USE_CFISAN") ? ", CFISAN" : "",
                getenv("AFL_USE_UBSAN") ? ", UBSAN" : "");
-      OKF("Instrumented %u locations with no collisions (%s mode) of which are "
+      OKF("SanitizerCoveragePCGUARD: Instrumented %u locations with no collisions (%s mode) of which are "
           "%u handled and %u unhandled selects.",
           instr, modeline, selects, unhandled);
 

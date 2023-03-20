@@ -16,6 +16,12 @@ import functools
 import re
 import pprint
 import json
+from nltk.parse.corenlp import CoreNLPDependencyParser
+import nltk
+import Levenshtein
+
+
+
 
 print(fitz.__doc__)
 
@@ -24,6 +30,10 @@ RECT_TO_START = 8
 RECT_SHRINK_WIDTH = 3
 RECT_MIN_SIZE = 10
 POINT_SIZE = 3
+ACTIONS = ['send', 'create', 'complete', 'return']
+
+SERVER_IP = 'http://114.212.83.191'
+SERVER_PORT = '9000'
 
 class Point(fitz.Point):
     def __init__(self, p) -> None:
@@ -387,7 +397,7 @@ class HCIAnalyzer:
                     val = eval(text)
                     dom.append([val, val])
                 except:
-                    print(text)
+                    pass
         return dom
         
     def analyze_data(self):
@@ -458,19 +468,128 @@ class HCIAnalyzer:
                         if pname in self.events[-1]['p'].keys() and self.events[-1]['p'][pname]['size'] == -1:
                             self.events[-1]['p'][pname]['size'] = size if size is not None else 0
                             self.events[-1]['p'][pname]['domain'] = self.analyze_domain(form)
+        self.command_names = [command['name'] for command in self.commands]
 
-    def analyze_model(self):
-        assert len(self.commands) == len(self.event_descs)
-        for i in range(len(self.commands)):
-            event_desc = self.event_descs[i]
-            self.commands[i]['desc'] = event_desc
+
+
+class HCIModelParser:
+    def __init__(self, commands, events) -> None:
+        self.parser = CoreNLPDependencyParser(SERVER_IP + ':' + SERVER_PORT)
+        self.commands = commands
+        self.events = events
+
+    def normalize_names(self, norms, names):
+        normalized_names = []
+        for name in names:
+            distance = [ Levenshtein.distance(norm['name'], name) for norm in norms ]
+            i = distance.index(min(distance))
+            normalized_names.append(norms[i]['name'])
+        return normalized_names
+
+    def get_entity_names(self, nodes, i):
+        entities = []
+        if 'compound' in nodes[i]['deps'].keys():
+            j = nodes[i]['deps']['compound'][0]
+            entities.append(nodes[j]['word'])
+            if 'conj' in nodes[j]['deps']:
+                for k in nodes[j]['deps']['conj']:
+                    entities.append(nodes[k]['word'])
+        elif 'amod' in nodes[i]['deps'].keys():
+            j = nodes[i]['deps']['amod'][0]
+            if '_' in nodes[j]['word']:
+                entities.append(nodes[j]['word'])
+        return entities
+
+
+    def get_hci_entities(self, nodes, i, typename):
+        entities = []
+        neg = False
+        workList = [i]
+        while len(workList) > 0:
+            cur = workList.pop(0)
+            node = nodes[cur]
+            if node['word'] == typename:
+                entities += self.get_entity_names(nodes, cur)
+            if 'neg' in node['deps']:
+                neg = True
+            for key, value in node['deps'].items():
+                if key != 'advcl':
+                    for dep in value:
+                        workList.append(dep)
+        if typename == 'command':
+            entities = self.normalize_names(self.commands, entities)
+        else:
+            entities = self.normalize_names(self.events, entities)
+        return entities, neg
+    
+    def print_ca_rules(self, 
+                       commands_a, commands_neg_a,
+                       events_a, events_neg_a,
+                       commands_c, commands_neg_c, 
+                       events_c, events_neg_c):
+        for command_c in commands_c:
+            cond1 = '' if not commands_neg_c else 'NOT'
+            for event_a in events_a:
+                cond2 = '' if not events_neg_a else 'NOT'
+                print('IF {} {} then {} {}'.format(cond1, command_c, cond2, event_a))
+            for command_a in commands_a:
+                cond2 = '' if not commands_neg_a else 'NOT'
+                print('IF {} {} then {} {}'.format(cond1, command_c, cond2, command_a))
+    
+        for event_c in events_c:
+            cond1 = '' if not events_neg_c else 'NOT'
+            for event_a in events_a:
+                cond2 = '' if not events_neg_a else 'NOT'
+                print('IF {} {} then {} {}'.format(cond1, event_c, cond2, event_a))
+            for command_a in commands_a:
+                cond2 = '' if not commands_neg_a else 'NOT'
+                print('IF {} {} then {} {}'.format(cond1, event_c, cond2, command_a))
+
+
+
+    def parse_event_desc(self, sent):
+        sent_text = nltk.sent_tokenize(sent)
+        sent_parses = self.parser.raw_parse_sents(sentences=sent_text)
+        for i, sent_parse in enumerate(sent_parses):
+            g = next(sent_parse)
+            # open('a.dot', 'w').write(g.to_dot())
+            # return
+            nodes = g.nodes
+            n = len(nodes)
+
+            for i in range(n):
+                if 'advcl' in nodes[i]['deps'].keys():
+                    a ,c = i, nodes[i]['deps']['advcl'][0]
+                    commands_a, commands_neg_a = self.get_hci_entities(nodes, a, 'command')
+                    events_a, events_neg_a = self.get_hci_entities(nodes, a, 'event')
+                    commands_c, commands_neg_c = self.get_hci_entities(nodes, c, 'command')
+                    events_c, events_neg_c = self.get_hci_entities(nodes, c, 'event')
+                    self.print_ca_rules(commands_a, commands_neg_a,
+                                        events_a, events_neg_a,
+                                        commands_c, commands_neg_c,
+                                        events_c, events_neg_c)
+                    return
+            
+
+            
+
+
+
+
+sent = "If the connection is already established by the Baseband, but the BR/EDR Controller has not yet sent the HCI_Connection_Complete event, then the local device shall detach the link and return an HCI_Command_Complete event with the status “Success”."
+
+hci = json.loads(open('hci.json', 'r').read())
+parser = HCIModelParser(hci['commands'], hci['events'])
+for command in parser.commands:
+    parser.parse_event_desc(command['desc'])
+exit(1)
 
 
 ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 2650)
 ha.analyze()
 ha.analyze_data()
 ha.analyze_model()
-pprint.pprint(ha.commands, sort_dicts=False)
-with open("hci.json", 'w') as f:
-    f.write(json.dumps({"commands": ha.commands, "events": ha.events}, indent=2))
+# pprint.pprint(ha.commands, sort_dicts=False)
+# with open("hci.json", 'w') as f:
+#     f.write(json.dumps({"commands": ha.commands, "events": ha.events}, indent=2))
 # pprint.pprint(ha.events, sort_dicts=False)
