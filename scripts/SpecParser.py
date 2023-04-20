@@ -30,7 +30,8 @@ RECT_TO_START = 8
 RECT_SHRINK_WIDTH = 3
 RECT_MIN_SIZE = 10
 POINT_SIZE = 3
-ACTIONS = ['send', 'create', 'complete', 'return']
+ACTIONS = ['send', 'create', 'complete', 'return', 'occur']
+THREASH = 3
 
 SERVER_IP = 'http://114.212.83.191'
 SERVER_PORT = '9000'
@@ -320,11 +321,6 @@ class HCIAnalyzer:
         self.shape.finish(color=(1, 0, 1), width=1.5)       
         self.shape.commit()         
 
-    def analyze(self):
-        for page in self.doc.pages():
-            self.analyze_page_text(page)
-            self.analyze_page_forms(page)
-    
     def analyze_page_text(self, page):
         for i, block in enumerate(page.get_text('blocks', sort=True)):
             text =  block[4]
@@ -347,7 +343,7 @@ class HCIAnalyzer:
                 text = text.replace('-\n', '').replace('\n', ' ')
                 self.event_descs[-1] += text
 
-    def analyze_page_forms(self,  page):
+    def analyze_page_form(self,  page):
         self.pageno += 1
         # print(self.pageno)
         # assert(page.get_contents) == 1
@@ -470,7 +466,47 @@ class HCIAnalyzer:
                             self.events[-1]['p'][pname]['domain'] = self.analyze_domain(form)
         self.command_names = [command['name'] for command in self.commands]
 
+    def normalize(self, typename, name):
+        normalized_name = None
+        norms = self.commands if typename == 'command' else self.events
+        distance = [ Levenshtein.distance(norm['name'], name) for norm in norms ]
+        min_distance = min(distance)
+        if min_distance <= THREASH:
+            normalized_name = norms[distance.index(min_distance)]['name']
+        return normalized_name
 
+    def analyze_rule(self):
+        for i in range(len(self.commands)):
+            events = set()
+            sent = self.event_descs[i].replace('-', '')
+            sent_text = nltk.sent_tokenize(sent)
+            # sent_parses = self.parser.raw_parse_sents(sentences=sent_text)
+            for sent in sent_text:
+                clauses = sent.split(',')
+                for clause in clauses:
+                    if ' remote ' in clause.lower() and ' local ' not in clause.lower():
+                        continue
+                    if 'not' in clause.lower() or 'no' in clause.lower():
+                        continue
+                    p = re.compile(r'HCI_[0-9a-zA-Z_]+')
+                    for packet in p.findall(clause):
+                        cmd = self.normalize('command', packet)
+                        evt = self.normalize('event', packet)
+                        if cmd is  None and evt is None:
+                            pass
+                        elif evt is not None:
+                            if evt == 'HCI_Read_Remote_Extended_Features_Complete':
+                                print(sent_text)
+                            events.add(evt)
+            self.commands[i]['events'] = list(events)
+
+    def analyze(self):
+        for page in self.doc.pages():
+            self.analyze_page_text(page)
+            self.analyze_page_form(page)
+        self.analyze_data()
+        self.analyze_rule()
+    
 
 class HCIModelParser:
     def __init__(self, commands, events) -> None:
@@ -478,13 +514,7 @@ class HCIModelParser:
         self.commands = commands
         self.events = events
 
-    def normalize_names(self, norms, names):
-        normalized_names = []
-        for name in names:
-            distance = [ Levenshtein.distance(norm['name'], name) for norm in norms ]
-            i = distance.index(min(distance))
-            normalized_names.append(norms[i]['name'])
-        return normalized_names
+
 
     def get_entity_names(self, nodes, i):
         entities = []
@@ -522,20 +552,28 @@ class HCIModelParser:
             entities = self.normalize_names(self.events, entities)
         return entities, neg
     
+
     def print_ca_rules(self, 
                        commands_a, commands_neg_a,
                        events_a, events_neg_a,
                        commands_c, commands_neg_c, 
                        events_c, events_neg_c):
-        for command_c in commands_c:
-            cond1 = '' if not commands_neg_c else 'NOT'
+        if len(command_c) == 0:
             for event_a in events_a:
-                cond2 = '' if not events_neg_a else 'NOT'
-                print('IF {} {} then {} {}'.format(cond1, command_c, cond2, event_a))
+                print(event_a)
             for command_a in commands_a:
-                cond2 = '' if not commands_neg_a else 'NOT'
-                print('IF {} {} then {} {}'.format(cond1, command_c, cond2, command_a))
-    
+                print(command_a)
+        else:
+            for command_c in commands_c:
+                cond1 = '' if not commands_neg_c else 'NOT'
+                for event_a in events_a:
+                    cond2 = '' if not events_neg_a else 'NOT'
+                    print('IF {} {} then {} {}'.format(cond1, command_c, cond2, event_a))
+                for command_a in commands_a:
+                    cond2 = '' if not commands_neg_a else 'NOT'
+                    print('IF {} {} then {} {}'.format(cond1, command_c, cond2, command_a))
+        
+
         for event_c in events_c:
             cond1 = '' if not events_neg_c else 'NOT'
             for event_a in events_a:
@@ -546,31 +584,47 @@ class HCIModelParser:
                 print('IF {} {} then {} {}'.format(cond1, event_c, cond2, command_a))
 
 
+    def parse(self):
+        for i in range(len(self.commands)):
+            events = set()
+            sent = self.commands[i]['desc']
+            sent_text = nltk.sent_tokenize(sent)
+            # sent_parses = self.parser.raw_parse_sents(sentences=sent_text)
+            for sent in sent_text:
+                clauses = sent.split(',')
+                for clause in clauses:
+                    if 'remote' in clause.lower() and 'local' not in clause.lower():
+                        continue
+                    p = re.compile(r'[a-zA-Z_]+_[a-zA-Z_]+')
+                    for event in p.findall(clause):
+                        events.add(event)
+            self.commands[i]['events'] = list(events)
 
-    def parse_event_desc(self, sent):
-        sent_text = nltk.sent_tokenize(sent)
-        sent_parses = self.parser.raw_parse_sents(sentences=sent_text)
-        for i, sent_parse in enumerate(sent_parses):
-            g = next(sent_parse)
-            # open('a.dot', 'w').write(g.to_dot())
-            # return
-            nodes = g.nodes
-            n = len(nodes)
+        # for i, sent_parse in enumerate(sent_parses):
+        #     g = next(sent_parse)
+        #     # open('a.dot', 'w').write(g.to_dot())
+        #     # return
+        #     nodes = g.nodes
+        #     n = len(nodes)
 
-            for i in range(n):
-                if 'advcl' in nodes[i]['deps'].keys():
-                    a ,c = i, nodes[i]['deps']['advcl'][0]
-                    commands_a, commands_neg_a = self.get_hci_entities(nodes, a, 'command')
-                    events_a, events_neg_a = self.get_hci_entities(nodes, a, 'event')
-                    commands_c, commands_neg_c = self.get_hci_entities(nodes, c, 'command')
-                    events_c, events_neg_c = self.get_hci_entities(nodes, c, 'event')
-                    self.print_ca_rules(commands_a, commands_neg_a,
-                                        events_a, events_neg_a,
-                                        commands_c, commands_neg_c,
-                                        events_c, events_neg_c)
-                    return
+        #     for i in range(n):
+        #         if 'advcl' in nodes[i]['deps'].keys():
+        #             a ,c = i, nodes[i]['deps']['advcl'][0]
+        #             commands_a, commands_neg_a = self.get_hci_entities(nodes, a, 'command')
+        #             events_a, events_neg_a = self.get_hci_entities(nodes, a, 'event')
+        #             commands_c, commands_neg_c = self.get_hci_entities(nodes, c, 'command')
+        #             events_c, events_neg_c = self.get_hci_entities(nodes, c, 'event')
+        #             self.print_ca_rules(commands_a, commands_neg_a,
+        #                                 events_a, events_neg_a,
+        #                                 commands_c, commands_neg_c,
+        #                                 events_c, events_neg_c)
+        #             return
             
-
+        #     for i in range(n):
+        #         if nodes[i]['lemma'] in ACTIONS:
+        #             events, events_neg = self.get_hci_entities(nodes, i, 'event')
+        #             if not events_neg:
+        #                 print(events)
             
 
 
@@ -578,18 +632,16 @@ class HCIModelParser:
 
 sent = "If the connection is already established by the Baseband, but the BR/EDR Controller has not yet sent the HCI_Connection_Complete event, then the local device shall detach the link and return an HCI_Command_Complete event with the status “Success”."
 
-hci = json.loads(open('hci.json', 'r').read())
-parser = HCIModelParser(hci['commands'], hci['events'])
-for command in parser.commands:
-    parser.parse_event_desc(command['desc'])
-exit(1)
-
 
 ha = HCIAnalyzer("Core_v5.3.pdf", 1846, 2650)
 ha.analyze()
-ha.analyze_data()
-ha.analyze_model()
-# pprint.pprint(ha.commands, sort_dicts=False)
-# with open("hci.json", 'w') as f:
-#     f.write(json.dumps({"commands": ha.commands, "events": ha.events}, indent=2))
-# pprint.pprint(ha.events, sort_dicts=False)
+
+with open("hci.json", 'w') as f:
+    f.write(json.dumps({"commands": ha.commands, "events": ha.events}, indent=2))
+
+
+# hci = json.loads(open('hci.json', 'r').read())
+# parser = HCIModelParser(hci['commands'], hci['events'])
+# parser.parse()
+# hci['commands'] = parser.commands
+# json.dump(open('hci.json', 'w'), hci)

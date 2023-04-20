@@ -6,10 +6,18 @@
 #ifdef __cplusplus
 #include "Item.h"
 #include "Util.h"
+#include <map>
 #include <set>
+#include <string.h>
 #include <vector>
 #include <string>
 #include <iostream>
+
+#define HCI_COMMAND_COMPLETE "HCI_Command_Complete"
+#define HCI_COMMAND_STATUS "HCI_Command_Status"
+#define HCI_PARAMETER_BD_ADDR "BD_ADDR"
+#define HCI_PARAMETER_HCI_HANDLE "Connection_Handle"
+#define HCI_OPCODE(OGF, OCF) ((OCF) | ((OGF) << 10))
 
 extern std::set<u8> sEvt;
 extern std::set<u8> sLeEvt;
@@ -21,81 +29,210 @@ extern std::vector<u8> vLeEvt;
 
 class HCICommand;
 class HCIEvent;
+class HCIManager;
 
 class HCIParameter {
-  std::string name;
-  u32 size;
-  bool isSubField;
-  std::vector<std::vector<u32>> domain;
+  typedef std::vector<std::vector<u32>> DomainTy;
+  friend std::ostream & operator << (std::ostream &out, HCIParameter&);
   friend class HCICommand;
   friend class HCIEvent;
 
 public:
   HCIParameter() {}
-  void setName(char* _name) { 
+
+  void setName(char* _name) 
+  { 
     name = _name;
     isSubField = name.find('[') != std::string::npos; 
   }
-  void setSize(u32 _size) { size = _size; }
-  void addDomain() { domain.push_back(std::vector<u32>()); }
-  void addDomain(u32 l, u32 u) { 
+
+  void setSize(u32 _size) 
+  {
+    size = _size; 
+  }
+  u32 getSize()
+  {
+    return size;
+  }
+
+  void addDomain() 
+  { 
+    domain.push_back(std::vector<u32>()); 
+  }
+  void addDomain(u32 l, u32 h) 
+  { 
     std::vector<u32> temp;
     temp.push_back(l);
-    temp.push_back(u);
+    temp.push_back(h);
     domain.push_back(temp);
   }
 
-  friend std::ostream & operator << (std::ostream &out, HCIParameter&);
+  void serialize(u8* buf);
+
+private:
+  std::string name;
+  u32 size;
+  bool isSubField;
+  DomainTy domain;
 };
 
 class HCIEvent : public Item {
-  std::vector<std::vector<u8>> opc;
-  std::string name;
-  std::vector<HCIParameter> p;
+  typedef vector<std::vector<u8>> OpcodeTy;
+  typedef std::vector<HCIParameter> ParameterVectorTy;
+  typedef std::vector<std::vector<u8>> ArgumentVectorTy;
+  friend class HCIManager;
 
 public:
   HCIEvent() {}
-  void setName(std::string _name) { name = _name; }
-  void addOpcode(u8 c, u8 n) { 
+
+  void setName(std::string _name) 
+  { 
+    name = _name; 
+  }
+
+  void addOpcode(u8 c, u8 n) 
+  { 
     std::vector<u8> temp;
     temp.push_back(c);
     temp.push_back(n);
     opc.push_back(temp);
   }
-  void addParameter(HCIParameter& _p) { p.push_back(_p); }
-  std::vector<HCIParameter>& getParameters() { return p; }
+
+  void addParam(HCIParameter& p) 
+  { 
+    params.push_back(p); 
+  }
+  std::vector<HCIParameter>& getParams() 
+  { 
+    return params; 
+  }
+
+  void addArg(u8* arg, u32 size)
+  {
+    args.push_back(std::vector<u8>());
+    args.back().resize(size);
+    memcpy(args.back().data(), arg, size);
+  }
+
+  void serialize(u8* buf, u8 opc);
+  void deserialize(u8* buf);
+
+private:
+  OpcodeTy opc;
+  std::string name;
+  ParameterVectorTy params;
+  ArgumentVectorTy args;
 };
 
 class HCICommand : public Item {
-  u8 ogf;
-  std::vector<std::vector<u8>> ocf;
-  std::string name;
-  std::vector<HCIParameter> p;
-  std::vector<HCIParameter> rp;
+  typedef vector<std::vector<u8>> OpcodeTy;
+  typedef std::vector<HCIParameter> ParameterVectorTy;
+  typedef std::vector<std::vector<u8>> ArgumentVectorTy;
+  typedef std::vector<HCIEvent*> EventVectorTy;
+  friend std::ostream& operator << (std::ostream &out, HCICommand&);
+  friend class HCIManager;
+
 public: 
   HCICommand() {}
-  void setName(std::string _name) { name = _name; }
-  void setOgf(u8 _ogf) { ogf = _ogf; }
-  void addOcf(u8 c, u8 n1, u8 n2) { 
+
+  void setName(std::string _name) 
+  { 
+    name = _name; 
+  }
+
+  void setOGF(u8 _ogf) 
+  { 
+    OGF = _ogf; 
+  }
+
+  void addOCF(u8 c, u8 n1, u8 n2) 
+  { 
     std::vector<u8> temp;
     temp.push_back(c);
     temp.push_back(n1);
     temp.push_back(n2);
-    ocf.push_back(temp);
+    OCF.push_back(temp);
   }
-  void addParameter(HCIParameter& _p) { p.push_back(_p); }
-  void addRParameter(HCIParameter& _rp) { rp.push_back(_rp); }
-  std::vector<HCIParameter>& getParameters() { return p; }
-  std::vector<HCIParameter>& getRParameters() { return rp; } 
 
-  friend std::ostream& operator << (std::ostream &out, HCICommand&);
+  void addParam(HCIParameter& _p) 
+  { 
+    params.push_back(_p); 
+  }
+  void addReturnParam(HCIParameter& _rp) 
+  { 
+    rparams.push_back(_rp); 
+  }
+  std::vector<HCIParameter>& getParams() 
+  { 
+    return params; 
+  }
+  std::vector<HCIParameter>& getReturnParams() 
+  { 
+    return rparams; 
+  } 
+
+  void addArg(u8* arg, u32 size)
+  {
+    args.push_back(std::vector<u8>());
+    args.back().resize(size);
+    memcpy(args.back().data(), arg, size);
+  }
+  void addReturnArg(u8* rarg, u32 size)
+  {
+    rargs.push_back(std::vector<u8>());
+    rargs.back().resize(size);
+    memcpy(rargs.back().data(), rarg, size);
+  }
+  ArgumentVectorTy& getArgs()
+  {
+    return args;
+  }
+  ArgumentVectorTy& getReturnArgs()
+  {
+    return rargs;
+  }
+
+  void addEvent(HCIEvent* event) 
+  { 
+    events.push_back(event); 
+  }
+  EventVectorTy& getEvents() 
+  { 
+    return events; 
+  }
+
+  enum ResponseTy {NONE, STATUS, COMPLETE};
+  void setResponseType(ResponseTy _rsp)
+  { 
+    rsp = _rsp; 
+  }
+  ResponseTy getResponseType() 
+  { 
+    return rsp; 
+  }
+
+  void serialize(u8* buf, u8 ogf, u8 ocf);
+  void deserialize(u8* buf);
+
+private:
+  u8 OGF;
+  OpcodeTy OCF;
+  std::string name;
+  EventVectorTy events;
+  ParameterVectorTy params;
+  ParameterVectorTy rparams;
+  ArgumentVectorTy args;
+  ArgumentVectorTy rargs;
+  ResponseTy rsp;
 };
 
 class HCIManager {
-  std::vector<HCICommand> commands;
-  std::vector<HCIEvent> events;
-  static HCIManager* manager;
-  HCIManager() {}
+  typedef std::vector<HCICommand> CommandVectorTy;
+  typedef std::vector<HCIEvent> EventVectorTy;
+  typedef std::map<std::string, HCICommand*> NameToCommandMapTy;
+  typedef std::map<std::string, HCIEvent*> NameToEventMapTy;
+  typedef std::map<u16, HCICommand*> OpcodeToCommandMapTy;
+  typedef std::map<u8, HCIEvent*> OpcodeToEventMapTy;
 
 public:
   static HCIManager* get() {
@@ -103,8 +240,43 @@ public:
       manager = new HCIManager;
     return manager;
   }
-  void addCommand(HCICommand& cmd) { commands.push_back(cmd); }
-  void addEvent(HCIEvent& evt) { events.push_back(evt); }
+  void addCommand(HCICommand& cmd)
+  { 
+    commands.push_back(cmd);
+    NameToCommandMap[commands.back().name] = &commands.back();
+    for (auto ocf : cmd.OCF){
+      OpcodeToCommandMap[HCI_OPCODE(cmd.OGF, ocf[0])] = &commands.back();
+    }
+  }
+  void addEvent(HCIEvent& evt) 
+  { 
+    events.push_back(evt); 
+    NameToEventMap[events.back().name] = &events.back();
+    for (auto opc : evt.opc) {
+      OpcodeToEventMap[opc[0]] = &events.back();
+    }
+  }
+  HCICommand* getCommand(string name) 
+  { 
+    return NameToCommandMap[name]; 
+  }
+  HCIEvent* getEvent(string name) 
+  { 
+    return NameToEventMap[name]; 
+  }
+
+private:
+  u16 handle;
+  u8 bd_addr[6];
+
+  CommandVectorTy commands;
+  EventVectorTy events;
+  NameToCommandMapTy NameToCommandMap;
+  NameToEventMapTy NameToEventMap;
+  OpcodeToCommandMapTy OpcodeToCommandMap;
+  OpcodeToEventMapTy OpcodeToEventMap; 
+  static HCIManager* manager;
+  HCIManager() {}
 };
 
 #endif

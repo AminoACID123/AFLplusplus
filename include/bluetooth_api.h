@@ -1,5 +1,7 @@
 #include "types.h"
 
+#define STATUS_SUCC_PROB 90
+
 /*Init*/
 
 void init_stack_hci(const char* bc_file, const char* stack);

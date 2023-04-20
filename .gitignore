@@ -114,3 +114,4 @@ testcases/bluetooth/nimble/afl_build
 !coresight_mode/coresight-trace
 vuln_prog
 testcases/bluetooth/btstack/build
+testcases/bluetooth/btstack_new/build

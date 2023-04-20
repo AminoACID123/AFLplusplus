@@ -10,21 +10,21 @@
 #include "Item.h"
 #include "Util.h"
 
-#define PARAMETER_BYTEARRAY "data"
+#define OP_PARAMETER_BYTEARRAY "data"
 
-#define CORE_PARAMETER_BD_ADDR "bd_addr_t"
-#define CORE_PARAMETER_HCI_HANDLE "hci_con_handle_t"
-#define CORE_PARAMETER_HCI_HANDLE_SIZE 2
-#define CORE_PARAMETER_CID "cid"
-#define CORE_PARAMETER_CID_SIZE 2
-#define CORE_PARAMETER_PSM "psm"
-#define CORE_PARAMETER_PSM_SIZE 2
+#define OP_PARAMETER_BD_ADDR "bd_addr_t"
+#define OP_PARAMETER_HCI_HANDLE "hci_con_handle_t"
+#define OP_PARAMETER_HCI_HANDLE_SIZE 2
+#define OP_PARAMETER_CID "cid"
+#define OP_PARAMETER_CID_SIZE 2
+#define OP_PARAMETER_PSM "psm"
+#define OP_PARAMETER_PSM_SIZE 2
 
-#define CORE_OPERATION_GAP_CONNECT "gap_connect" // bd_addr_t, bd_addr_type_t
-#define CORE_OPERATION_GAP_CONNECT_CANCEL "gap_connect_cancel"
-#define CORE_OPERATION_GAP_DISCONNECT "gap_disconnect"                 // hci_con_handle_t
-#define CORE_OPERATION_L2CAP_CREATE_CHANNEL "l2cap_create_channel"     // bd_addr, psm
-#define CORE_OPERATION_L2CAP_REGISTER_SERVICE "l2cap_register_service" // psm, gap_security_level
+#define OP_GAP_CONNECT "gap_connect" // bd_addr_t, bd_addr_type_t
+#define OP_GAP_CONNECT_CANCEL "gap_connect_cancel"
+#define OP_GAP_DISCONNECT "gap_disconnect"                 // hci_con_handle_t
+#define OP_L2CAP_CREATE_CHANNEL "l2cap_create_channel"     // bd_addr, psm
+#define OP_L2CAP_REGISTER_SERVICE "l2cap_register_service" // psm, gap_security_level
 
 struct Parameter
 {
@@ -103,9 +103,9 @@ class Operation : public Item
     }
     bool core()
     {
-        return name == CORE_OPERATION_GAP_CONNECT || name == CORE_OPERATION_GAP_CONNECT_CANCEL ||
-               name == CORE_OPERATION_GAP_DISCONNECT || name == CORE_OPERATION_L2CAP_CREATE_CHANNEL ||
-               name == CORE_OPERATION_L2CAP_REGISTER_SERVICE;
+        return name == OP_GAP_CONNECT || name == OP_GAP_CONNECT_CANCEL ||
+               name == OP_GAP_DISCONNECT || name == OP_L2CAP_CREATE_CHANNEL ||
+               name == OP_L2CAP_REGISTER_SERVICE;
     }
 
     // bool generate() {

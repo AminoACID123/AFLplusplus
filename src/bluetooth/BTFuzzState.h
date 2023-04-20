@@ -197,7 +197,8 @@ public:
     pdiscon.push_back(handle);
   }
 
-  inline void remove_pending_discon(u16 handle) {
+  inline void remove_pending_discon(u16 handle) 
+  {
     for (auto it = pdiscon.begin(), eit = pdiscon.end(); it != eit; ++it) {
       if (*it == handle) {
         pdiscon.erase(it);

@@ -1,6 +1,7 @@
 #include "BTFuzz.h"
 #include "../../include/afl-fuzz.h"
 #include "../../include/bluetooth.h"
+#include "../../include/bluetooth_api.h"
 #include "../../include/types.h"
 #include "BTFuzzState.h"
 #include "Hci.h"
@@ -57,75 +58,82 @@ u8 bd_addrs[][6] = {{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa},
                     {0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd},
                     {0xee, 0xee, 0xee, 0xee, 0xee, 0xee}};
 
-extern "C" const char* bt_get_op_str() { return BTFuzz::get()->get_op(); }
-
-extern "C" void bt_enable_sema(bool sema) { BTFuzz::get()->enable_sema(sema); }
-
-extern "C" bool bt_sema_enabled() { return BTFuzz::get()->sema_enabled(); }
-
-extern "C" void bt_set_buf(u8 *hci, u8 *rt) {
-  BTFuzz::get()->set_buffers(hci, rt);
+extern "C" const char* bt_get_op_str() 
+{
+  return BTFuzz::get()->getOpStr(); 
 }
 
-extern "C" void bt_rand_init(u32 fd) { rand_init(fd); }
-
-extern "C" void bt_restore_state() { BTFuzz::get()->restore_state(); }
-
-extern "C" void bt_sync_hci() { BTFuzz::get()->sync_hci(); }
-
-extern "C" u32 bt_serialize_state(u8 *buf) {
-  return BTFuzz::get()->serialize_state(buf);
+extern "C" void bt_enable_sema(bool sema) 
+{ 
+  BTFuzz::get()->setSema(sema); 
 }
 
-extern "C" void bt_deserialize_state(u8 *buf) {
-  BTFuzz::get()->deserialize_state(buf);
+extern "C" bool bt_sema_enabled() 
+{ 
+  return BTFuzz::get()->getSema(); 
 }
 
-extern "C" void bt_fuzz_one(u8 *buf) { BTFuzz::get()->fuzz_one(buf); }
+extern "C" void bt_set_buf(u8 *hci, u8 *rt) 
+{
+  BTFuzz::get()->setRuntime(hci, rt);
+}
 
-u32 BTFuzz::serialize_state(u8 *buf) {
+extern "C" void bt_rand_init(u32 fd) 
+{ 
+  rand_init(fd); 
+}
+
+extern "C" void bt_restore_state() 
+{ 
+  BTFuzz::get()->restoreState(); 
+}
+
+extern "C" void bt_sync_hci() 
+{ 
+  BTFuzz::get()->sync_hci(); 
+}
+
+extern "C" u32 bt_serialize_state(u8 *buf) 
+{
+  return BTFuzz::get()->serializeState(buf);
+}
+
+extern "C" void bt_deserialize_state(u8 *buf)
+{
+  BTFuzz::get()->deserializeState(buf);
+}
+
+extern "C" void bt_fuzz_one(u8 *buf) 
+{ 
+  BTFuzz::get()->fuzz_one(buf); 
+}
+
+u32 BTFuzz::serializeState(u8 *buf) 
+{
   BinarySerialize s(buf);
-  s << cur_state;
+  s << curState;
   return s.len();
 }
 
-void BTFuzz::deserialize_state(u8 *buf) {
+void BTFuzz::deserializeState(u8 *buf) 
+{
   if (buf) {
     BinaryDeserialize s(buf);
-    s >> init_state;
-    cur_state = init_state;
+    s >> initState;
+    curState = initState;
   } else {
-    init_state.reset();
-    cur_state = init_state;
+    initState.reset();
+    curState = initState;
   }
+}
 
+void BTFuzz::restoreState() {
+  curState = initState;
   // sync_state();
 }
 
-void BTFuzz::restore_state() {
-  cur_state = init_state;
-  // sync_state();
-}
-
-// void BTFuzz::sync_state() {
-//   Parameter *_handle = get_parameter(CORE_PARAMETER_HCI_HANDLE);
-//   Parameter *_cid = get_parameter(CORE_PARAMETER_CID);
-//   Parameter *_psm = get_parameter(CORE_PARAMETER_PSM);
-
-//   _handle->domain.resize(cur_state.con.size());
-//   for (u32 i = 0, n = cur_state.con.size(); i < n; ++i)
-//     bytes2vec(_handle->domain[i], cur_state.con[i]);
-
-//   _cid->domain.resize(cur_state.cid.size());
-//   for (u32 i = 0, n = cur_state.cid.size(); i < n; ++i)
-//     bytes2vec(_cid->domain[i], cur_state.cid[i]);
-
-//   _psm->domain.resize(cur_state.psm.size());
-//   for (u32 i = 0, n = cur_state.psm.size(); i < n; ++i)
-//     bytes2vec(_psm->domain[i], cur_state.psm[i]);
-// }
-
-u32 BTFuzz::fuzz_one(u8 *buf) {
+u32 BTFuzz::fuzz_one(u8 *buf) 
+{
   if (sema)
     return fuzz_one_sema(buf);
   else
@@ -136,7 +144,7 @@ u32 BTFuzz::handle_cmd(u8* buf, hci_command_t* cmd)
 {
   char str[100];
   u32 s = rand_below(100);
-  s = (s >= 90 ? s % 10 : BT_HCI_ERR_SUCCESS);
+  s = (s >= STATUS_SUCC_PROB ? s % 10 : BT_HCI_ERR_SUCCESS);
   u32 n = rand_below(10);
   sprintf(str, "sema1-cmd0x%04xs%dn%d", cmd->opcode, s, n);
   opStr = str;
@@ -246,7 +254,8 @@ u32 BTFuzz::fuzz_one_sema1(u8 *buf) {
 }
 
 // core operations
-u32 BTFuzz::fuzz_one_sema2(u8 *buf) {
+u32 BTFuzz::fuzz_one_sema2(u8 *buf) 
+{
   u32 r = rand_below(core_operations.size());
   
   Operation *op = core_operations[r]->arrange_bytes(buf);
@@ -291,7 +300,8 @@ u32 BTFuzz::fuzz_one_sema2(u8 *buf) {
 }
 
 // random operations
-u32 BTFuzz::fuzz_one_sema3(u8 *buf) {
+u32 BTFuzz::fuzz_one_sema3(u8 *buf) 
+{
   Operation *op;
   op = &operations[rand_below(operations.size())];
   op->arrange_bytes(buf);
@@ -314,7 +324,8 @@ u32 BTFuzz::fuzz_one_sema3(u8 *buf) {
 }
 
 // random events
-u32 BTFuzz::fuzz_one_sema4(u8 *buf) {
+u32 BTFuzz::fuzz_one_sema4(u8 *buf)
+{
   u8 opcode = vEvt[rand_below(vEvt.size())];
   Event evt(buf, opcode);
   char str[100];
@@ -329,7 +340,8 @@ u32 BTFuzz::fuzz_one_sema4(u8 *buf) {
 }
 
 // Core Events
-u32 BTFuzz::fuzz_one_sema5(u8 *buf) {
+u32 BTFuzz::fuzz_one_sema5(u8 *buf) 
+{
   u32 r = rand_below(3);
   u32 s = rand_below(100);
   u32 n = rand_below(10);

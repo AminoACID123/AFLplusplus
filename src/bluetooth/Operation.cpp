@@ -16,9 +16,9 @@ extern vector<Operation*> core_operations;
 
 set<string> core_parameters = 
 {
-    CORE_PARAMETER_HCI_HANDLE,
-    CORE_PARAMETER_CID,
-    CORE_PARAMETER_PSM
+    OP_PARAMETER_HCI_HANDLE,
+    OP_PARAMETER_CID,
+    OP_PARAMETER_PSM
 };
 
 extern "C" u32 bt_operation_nr()
@@ -96,9 +96,9 @@ Operation* get_operation(u32 id)
 
 void init_parameters()
 {
-    parameters.push_back(Parameter(CORE_PARAMETER_HCI_HANDLE, CORE_PARAMETER_HCI_HANDLE_SIZE));
-    parameters.push_back(Parameter(CORE_PARAMETER_CID, CORE_PARAMETER_CID_SIZE));
-    parameters.push_back(Parameter(CORE_PARAMETER_PSM, CORE_PARAMETER_PSM_SIZE));
+    parameters.push_back(Parameter(OP_PARAMETER_HCI_HANDLE, OP_PARAMETER_HCI_HANDLE_SIZE));
+    parameters.push_back(Parameter(OP_PARAMETER_CID, OP_PARAMETER_CID_SIZE));
+    parameters.push_back(Parameter(OP_PARAMETER_PSM, OP_PARAMETER_PSM_SIZE));
 }
 
 void init_operations()
@@ -142,7 +142,7 @@ bool Parameter::generate()
         memcpy(data, v.data(), bytes);
     }else{
         rand_fill(data, bytes);
-        res = (name == PARAMETER_BYTEARRAY);
+        res = (name == OP_PARAMETER_BYTEARRAY);
     }
     return res;
 }
