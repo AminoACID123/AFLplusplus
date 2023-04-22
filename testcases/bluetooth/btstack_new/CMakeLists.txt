@@ -196,3 +196,7 @@ foreach(EXAMPLE_FILE ${EXAMPLES_C})
 	add_executable(${EXAMPLE} ${SOURCES_EXAMPLE} )
 	target_link_libraries(${EXAMPLE} btstack)
 endforeach(EXAMPLE_FILE)
+
+
+
+add_executable(fuzz fuzzer/btfuzz_main.c fuzzer/btfuzz.c fuzzer/btfuzz_util.c)
