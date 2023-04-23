@@ -115,3 +115,5 @@ testcases/bluetooth/nimble/afl_build
 vuln_prog
 testcases/bluetooth/btstack/build
 testcases/bluetooth/btstack_new/build
+testcases/bluetooth/btstack_new/fuzzer/*.o
+testcases/bluetooth/btstack_new/fuzzer/fuzzer

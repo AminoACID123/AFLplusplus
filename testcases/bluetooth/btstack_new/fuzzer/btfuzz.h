@@ -39,8 +39,21 @@ typedef struct __attribute__((packed)) {
 } l2cap_hdr ;
 #define HCI_ACL_L2CAP_CID(packet) (((hci_ac*)packet)->handle)
 
+#define ACL_Data_Packet_Length 1021
+#define Synchronous_Data_Packet_Length 96
+#define Total_Num_ACL_Data_Packets 4
+#define Total_Num_Synchronous_Data_Packets 6
+
+#define LE_ACL_Data_Packet_Length 0x1B
+#define Total_Num_LE_ACL_Data_Packets 3
+#define ISO_Data_Packet_Length 244
+#define Total_Num_ISO_Data_Packets 8
+
+#define Filter_Accept_List_Size 4
+
 
 void hci_packet_handler(u8* buf, u32 len);
 
+#define cast_define(type, to, from) type to = (type)from
 
 #endif

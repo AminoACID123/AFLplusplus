@@ -75,6 +75,15 @@
 #include "hci_transport.h"
 #include "hci_transport_fuzz.h"
 
+#define TLV_DB_PATH_PREFIX "/tmp/btfuzz_"
+#define TLV_DB_PATH_POSTFIX ".tlv"
+static char tlv_db_path[100];
+static const btstack_tlv_t * tlv_impl;
+static btstack_tlv_posix_t   tlv_context;
+
+static btstack_packet_callback_registration_t hci_event_callback_registration;
+
+
 int btstack_main(int argc, const char * argv[]);
 
 void hal_led_toggle(void){ }
@@ -83,6 +92,33 @@ static void trigger_shutdown(void) {
   printf("CTRL-C - SIGINT received, shutting down..\n");
   exit(0);
 }
+
+static void packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+    bd_addr_t addr;
+    if (packet_type != HCI_EVENT_PACKET) return;
+    switch (hci_event_packet_get_type(packet)){
+        case BTSTACK_EVENT_STATE:
+            if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING) break;
+            gap_local_bd_addr(addr);
+            printf("BTstack up and running at %s\n",  bd_addr_to_str(addr));
+            // setup TLV
+            btstack_strcpy(tlv_db_path, sizeof(tlv_db_path), TLV_DB_PATH_PREFIX);
+            btstack_strcat(tlv_db_path, sizeof(tlv_db_path), bd_addr_to_str(addr));
+            btstack_strcat(tlv_db_path, sizeof(tlv_db_path), TLV_DB_PATH_POSTFIX);
+            tlv_impl = btstack_tlv_posix_init_instance(&tlv_context, tlv_db_path);
+            btstack_tlv_set_instance(tlv_impl, &tlv_context);
+#ifdef ENABLE_CLASSIC
+            hci_set_link_key_db(btstack_link_key_db_tlv_get_instance(tlv_impl, &tlv_context));
+#endif    
+#ifdef ENABLE_BLE
+            le_device_db_tlv_configure(tlv_impl, &tlv_context);
+#endif
+            break;
+        default:
+            break;
+    }
+}
+
 
 int main(int argc, const char *argv[]) {
   /// GET STARTED with BTstack ///
@@ -94,6 +130,10 @@ int main(int argc, const char *argv[]) {
 
   // register callback for CTRL-c
   btstack_signal_register_callback(SIGINT, &trigger_shutdown);
+
+      hci_event_callback_registration.callback = &packet_handler;
+    hci_add_event_handler(&hci_event_callback_registration);
+
 
   // setup app
   btstack_main(argc, argv);

@@ -108,7 +108,8 @@ void run()
     fd_set fd_set_read;
     struct timeval tv;
     FD_SET(hci_sock_fd, &fd_set_read);
-    tv.tv_sec = tv.tv_usec = 0;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1000 * 20;
     while (1)
     {
         int n = select(hci_sock_fd + 1, &fd_set_read, NULL, NULL, &tv);
@@ -128,12 +129,12 @@ void controller_callback(int fd, uint32_t events, void *user_data)
 
 static void signal_callback(int signum, void *user_data)
 {
-	switch (signum) {
-	case SIGINT:
-	case SIGTERM:
-		mainloop_quit();
-		break;
-	}
+	// switch (signum) {
+	// case SIGINT:
+	// case SIGTERM:
+	// 	mainloop_quit();
+	// 	break;
+	// }
 }
 
 int main(int argc, char** argv)
@@ -157,7 +158,7 @@ int main(int argc, char** argv)
 	listen(sock_fd, 5);
 	hci_sock_fd = accept(sock_fd, 0, 0);
 
-	mainloop_add_fd(hci_sock_fd, EPOLLIN, controller_callback, NULL, NULL);
-    mainloop_add_timeout()
-	return mainloop_run_with_signal(signal_callback, NULL);
+    run();
+    return 0;
+
 }

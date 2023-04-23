@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "btfuzz_bluetooth.h"
+#include "btfuzz_rand.h"
 #include "btfuzz_util.h"
 #include "btfuzz.h"
 
@@ -106,9 +107,111 @@ void hci_command_handler(u8 *packet, u32 len) {
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
       break;
     }
-
-    default:
+    case BT_HCI_CMD_READ_BUFFER_SIZE : {
+      struct bt_hci_rsp_read_buffer_size rsp = {
+        .status = BT_HCI_ERR_SUCCESS,
+        .acl_mtu = ACL_Data_Packet_Length,
+        .sco_mtu = Synchronous_Data_Packet_Length,
+        .acl_max_pkt = Total_Num_ACL_Data_Packets,
+        .sco_max_pkt = Total_Num_Synchronous_Data_Packets
+      };
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
       break;
+    }
+    case BT_HCI_CMD_READ_LOCAL_FEATURES: {
+      struct bt_hci_rsp_read_local_features rsp;
+      memset(&rsp, 0xFF, sizeof(rsp));
+      rsp.status = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;
+    }
+    case BT_HCI_CMD_SET_EVENT_MASK: {
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;
+    }
+    case BT_HCI_CMD_SET_EVENT_MASK_PAGE2: {
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;
+    }
+    case BT_HCI_CMD_LE_READ_BUFFER_SIZE_V2: {
+      struct bt_hci_rsp_le_read_buffer_size_v2 rsp = {
+        .status = BT_HCI_ERR_SUCCESS,
+        .acl_mtu = LE_ACL_Data_Packet_Length,
+        .acl_max_pkt = Total_Num_LE_ACL_Data_Packets,
+        .iso_mtu = ISO_Data_Packet_Length,
+        .iso_max_pkt = Total_Num_ISO_Data_Packets
+      }; 
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;
+    }
+    case BT_HCI_CMD_WRITE_LE_HOST_SUPPORTED: {
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;
+    }
+    case BT_HCI_CMD_LE_SET_EVENT_MASK: {
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;
+    }
+    case BT_HCI_CMD_LE_READ_MAX_DATA_LENGTH: {
+      struct bt_hci_rsp_le_read_max_data_length rsp = {
+        .status = BT_HCI_ERR_SUCCESS,
+        .max_tx_len = 0xFB,
+        .max_tx_time = 0x4290,
+        .max_rx_len = 0xFB,
+        .max_rx_time = 0x4290
+      };
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;
+    }
+    case BT_HCI_CMD_LE_WRITE_DEFAULT_DATA_LENGTH: {
+      cast_define(struct bt_hci_cmd_le_write_default_data_length*, cmd, c->param);
+      printf("Host suggest data length %d\n", cmd->tx_len);
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break; 
+    }
+    case BT_HCI_CMD_LE_READ_ACCEPT_LIST_SIZE: {
+      struct bt_hci_rsp_le_read_accept_list_size rsp = {
+        .status = BT_HCI_ERR_SUCCESS,
+        .size = Filter_Accept_List_Size
+      };
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break; 
+    }
+    case BT_HCI_CMD_LE_SET_SCAN_PARAMETERS: {
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break; 
+    }
+    case BT_HCI_CMD_LE_RAND:{
+      struct bt_hci_rsp_le_rand rsp;
+      rsp.status = BT_HCI_ERR_SUCCESS;
+      //rand_fill(rsp.number, 8);
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break; 
+    }
+    case BT_HCI_CMD_LE_SET_ADV_PARAMETERS: {
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;       
+    }
+    case BT_HCI_CMD_LE_SET_ADV_DATA: {
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      cast_define(struct bt_hci_cmd_le_set_adv_data*, cmd, c->param);
+      printf("Adv Data: %s\n", cmd->data);
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;   
+    }
+
+    default:{
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      break;     
+    }
   }
 }
 
