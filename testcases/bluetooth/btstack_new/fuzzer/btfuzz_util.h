@@ -261,6 +261,23 @@ uint8_t btstack_crc8_calc(uint8_t * data, uint16_t len);
  */
 uint16_t btstack_next_cid_ignoring_zero(uint16_t current_cid);
 
+#define cast_define(type, to, from) type to = (type)from
+
+#define btfuzz_alloc_event(evt, code, param_size) \
+	u8* buf = alloca(sizeof(hci_event_t) + param_size); \
+	cast_define(hci_event_t*, evt, buf); \
+	evt->opcode = code; \
+	evt->len = param_size;
+
+#define btfuzz_alloc_le_event(evt, code, param_size) \
+	u8* buf = alloca(sizeof(hci_event_t) + 1 + param_size); \
+	cast_define(hci_event_t*, evt, buf); \
+	evt->opcode = BT_HCI_EVT_LE_META_EVENT; \
+	evt->len = param_size + 1; \
+	evt->param[0] = code;
+
+#define btfuzz_alloc_smp(smp, code, param_size)
+	
 
 /* API_END */
 

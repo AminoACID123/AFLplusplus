@@ -13,17 +13,12 @@ typedef struct __attribute__((packed)) {
   u8 len;
   u8 param[];
 } hci_event_t;
-#define HCI_EVENT_OPCODE(packet) (((hci_event_t*)packet)->opcode)
-#define HCI_EVENT_PARAM(packet, evt)
 
 typedef struct  __attribute__((packed)){
   u16 opcode;
   u8 len;
   u8 param[];
 } hci_command_t ;
-#define HCI_COMMAND_HEADER 
-#define HCI_COMMAND_OPCODE(packet) (((hci_command_t*)packet)->opcode)
-#define HCI_COMMAND_PARAM(packet, type, p) type* p = (type*)(((hci_command_t*)packet)->param)
 
 typedef struct __attribute__((packed)){
   u16 handle;
@@ -37,7 +32,6 @@ typedef struct __attribute__((packed)) {
   u16 cid;
   u8 data[];
 } l2cap_hdr ;
-#define HCI_ACL_L2CAP_CID(packet) (((hci_ac*)packet)->handle)
 
 #define ACL_Data_Packet_Length 1021
 #define Synchronous_Data_Packet_Length 96
@@ -51,9 +45,11 @@ typedef struct __attribute__((packed)) {
 
 #define Filter_Accept_List_Size 4
 
+#define LINK_TYPE_ACL 1
+#define LINK_TYPE_SCO 0
 
 void hci_packet_handler(u8* buf, u32 len);
 
-#define cast_define(type, to, from) type to = (type)from
+
 
 #endif

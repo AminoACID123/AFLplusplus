@@ -32,9 +32,8 @@ void send_packet(u8 type, void *packet, u32 len) {
   dump_packet("sent", type, packet, len);
   struct iovec iov[2] = {{.iov_base = &type, .iov_len = 1},
                          {.iov_base = packet, .iov_len = len}};
-  printf("%02x %ld\n",type, writev(hci_sock_fd, iov, 2));
+  writev(hci_sock_fd, iov, 2);
 }
-
 
 void send_command_complete_event(u16 opcode, u8 ncmd, void *data, u32 len) {
   u32 packet_size =
@@ -66,7 +65,28 @@ void send_command_status_event(u16 opcode, u8 ncmd, u8 status) {
   send_packet(HCI_EVENT_PACKET, packet, e->len + sizeof(hci_event_t));
 }
 
+void send_connection_request_event(bd_addr_t addr)
+{
+  btfuzz_alloc_event(e, BT_HCI_EVT_CONN_REQUEST, sizeof(struct bt_hci_evt_conn_request))
+  cast_define(struct bt_hci_evt_conn_request*, cr, e->param);
 
+  memcpy(cr->bdaddr, addr, 6);
+  cr->link_type = LINK_TYPE_ACL;
+  send_packet(HCI_EVENT_PACKET, (u8*)e, e->len + sizeof(hci_event_t));
+}
+
+void send_le_connection_complete_event()
+{
+  btfuzz_alloc_le_event(e, BT_HCI_EVT_LE_CONN_COMPLETE, sizeof(struct bt_hci_evt_le_conn_complete))
+  cast_define(struct bt_hci_evt_le_conn_complete*, lcc, &e->param[1]);
+
+  lcc->status = BT_HCI_ERR_SUCCESS;
+  bd_addr_t remote_addr = {0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB};
+  memcpy(lcc->peer_addr, remote_addr, BD_ADDR_LEN);
+  lcc->peer_addr_type = 0;
+  lcc->handle = 1;
+  send_packet(HCI_EVENT_PACKET, (u8*)e, e->len + sizeof(hci_event_t));
+}
 
 void hci_command_handler(u8 *packet, u32 len) {
   hci_command_t *c = (hci_command_t *)packet;
@@ -205,6 +225,14 @@ void hci_command_handler(u8 *packet, u32 len) {
       printf("Adv Data: %s\n", cmd->data);
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
       break;   
+    }
+    case BT_HCI_CMD_LE_SET_ADV_ENABLE: {
+      cast_define(struct bt_hci_cmd_le_set_adv_enable*, cmd, c->param);
+      printf("ADV enabled: %d\n", cmd->enable);
+      u8 rsp = BT_HCI_ERR_SUCCESS;
+      send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
+      send_le_connection_complete_event();
+      break;
     }
 
     default:{
