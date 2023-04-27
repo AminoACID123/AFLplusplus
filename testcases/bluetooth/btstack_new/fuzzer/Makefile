@@ -1,10 +1,24 @@
 
+SRC = $(wildcard src/*) 
 
-all: fuzz
+OBJ := $(SRC:.c=.o)
 
-fuzz: btfuzz_main.c btfuzz.c btfuzz_util.c
-	gcc -g  btfuzz_main.c btfuzz.c btfuzz_util.c -o fuzzer
+CFLAGS = -g -Iinclude
+
+LIBS := $(NIMBLE_LDFLAGS) -lrt -lpthread -lstdc++
+
+.PHONY: all clean
+.DEFAULT: all
+
+all: btfuzz
 
 clean:
-	rm fuzz
-	rm *.o
+	rm $(OBJ) -f
+	rm btfuzz -f
+
+%.o: %.c
+	gcc -c $(CFLAGS) -o $@ $<
+
+btfuzz: $(OBJ)
+	gcc -static -o $@ $^ 
+	size $@

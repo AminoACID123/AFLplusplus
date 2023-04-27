@@ -1,5 +1,5 @@
 #include "btfuzz.h"
-#include "btfuzz_bluetooth.h"
+#include "common/bluetooth.h"
 #include <aio.h>
 
 typedef struct btfuzz_hci_entry {

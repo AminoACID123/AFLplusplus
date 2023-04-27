@@ -13,7 +13,6 @@
 #include <aio.h>
 
 #include "btfuzz.h"
-#include "mainloop/mainloop.h"
 
 #define MAX_BUFFER_SIZE 1024*1024*4
 uint8_t data[MAX_BUFFER_SIZE];

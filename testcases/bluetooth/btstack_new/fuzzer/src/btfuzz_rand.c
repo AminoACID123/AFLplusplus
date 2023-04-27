@@ -1,7 +1,7 @@
-#include "btfuzz_rand.h"
+#include "common/random.h"
+#include "common/type.h"
 
-#include <vector>
-#include <sys/types.h>
+
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>

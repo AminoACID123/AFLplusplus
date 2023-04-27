@@ -1,7 +1,7 @@
 #ifndef BTFUZZ_FUZZ_H
 #define BTFUZZ_FUZZ_H
 
-#include "type.h"
+#include "common/type.h"
 
 extern char* hci_sock_path;
 extern int hci_sock_fd;

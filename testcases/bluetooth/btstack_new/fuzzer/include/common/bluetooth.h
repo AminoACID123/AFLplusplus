@@ -1,5 +1,5 @@
-#ifndef BTFUZZ_COMMON_BLUETOOTH_H
-#define BTFUZZ_COMMON_BLUETOOTH_H
+#ifndef D9164AF1_4E22_4376_82E6_9C574FB08463
+#define D9164AF1_4E22_4376_82E6_9C574FB08463
 
 #include "type.h"
 
@@ -17,7 +17,7 @@
 #define L2CAP_CID_SIGNALING_LE 0x0005
 #define L2CAP_CID_SECURITY_MANAGER_PROTOCOL 0x0006
 #define L2CAP_CID_BR_EDR_SECURITY_MANAGER 0x0007
-#define FIXED_CID(cid) \
+#define FIXED_CID(cid)                                                         \
   (cid >= L2CAP_CID_SIGNALING && cid <= L2CAP_CID_BR_EDR_SECURITY_MANAGER)
 
 #define BLUETOOTH_PSM_SDP 0x0001
@@ -36,9 +36,9 @@
 #define BLUETOOTH_PSM_3DSP 0x0021
 #define BLUETOOTH_PSM_LE_PSM_IPSP 0x0023
 #define BLUETOOTH_PSM_OTS 0x0025
-#define FIXED_PSM(psm)                         \
-  ((psm % 2 == 1) &&                           \
-   ((psm <= BLUETOOTH_PSM_TCS_BIN_CORDLESS) || \
+#define FIXED_PSM(psm)                                                         \
+  ((psm % 2 == 1) &&                                                           \
+   ((psm <= BLUETOOTH_PSM_TCS_BIN_CORDLESS) ||                                 \
     (psm >= BLUETOOTH_PSM_BNEP && psm <= BLUETOOTH_PSM_OTS)))
 
 #define CLASSIC 0
@@ -52,23 +52,24 @@ typedef enum {
   BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM = 3,
   BD_ADDR_TYPE_SCO = 0xfc,
   BD_ADDR_TYPE_ACL = 0xfd,
-  BD_ADDR_TYPE_UNKNOWN = 0xfe,  // also used as 'invalid'
+  BD_ADDR_TYPE_UNKNOWN = 0xfe, // also used as 'invalid'
 } bd_addr_type_t;
 
 #define BD_ADDR_LEN 6
 typedef uint8_t bd_addr_t[BD_ADDR_LEN];
 typedef uint8_t sm_key_t[16];
 
+
 #define BT_HCI_CMD_BIT(_byte, _bit) ((8 * _byte) + _bit)
 
 typedef struct __attribute__((packed)) {
-  u8  preamble;
+  u8 preamble;
   u32 access_addr;
 } bt_ll_hdr;
 
 #define BT_LL_CONN_UPDATE_REQ 0x00
 typedef struct __attribute__((packed)) {
-  u8  win_size;
+  u8 win_size;
   u16 win_offset;
   u16 interval;
   u16 latency;
@@ -78,7 +79,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_LL_CHANNEL_MAP_REQ 0x01
 typedef struct __attribute__((packed)) {
-  u8  map[5];
+  u8 map[5];
   u16 instant;
 } bt_ll_channel_map_req;
 
@@ -126,7 +127,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_LL_VERSION_IND 0x0c
 typedef struct __attribute__((packed)) {
-  u8  version;
+  u8 version;
   u16 company;
   u16 subversion;
 } bt_ll_version_ind;
@@ -175,8 +176,8 @@ typedef struct __attribute__((packed)) {
 
 #define BT_LL_PHY_UPDATE_IND 0x18
 typedef struct __attribute__((packed)) {
-  u8  c_phy;
-  u8  p_phy;
+  u8 c_phy;
+  u8 p_phy;
   u16 instant;
 } bt_ll_phy_update_ind;
 
@@ -196,12 +197,12 @@ typedef struct __attribute__((packed)) {
 #define BT_LL_PERIODIC_SYNC_IND 0x1c
 typedef struct __attribute__((packed)) {
   u16 id;
-  u8  info[18];
+  u8 info[18];
   u16 event_count;
   u16 last_counter;
-  u8  adv_info;
-  u8  phy;
-  u8  adv_addr[6];
+  u8 adv_info;
+  u8 phy;
+  u8 adv_addr[6];
   u16 sync_counter;
 } bt_ll_periodic_sync_ind;
 
@@ -214,40 +215,40 @@ typedef struct __attribute__((packed)) {
 
 #define BT_LL_CIS_REQ 0x1f
 typedef struct __attribute__((packed)) {
-  u8  cig;
-  u8  cis;
-  u8  c_phy;
-  u8  p_phy;
+  u8 cig;
+  u8 cis;
+  u8 c_phy;
+  u8 p_phy;
   u16 c_sdu;
   u16 p_sdu;
-  u8  c_interval[3];
-  u8  p_interval[3];
-  u8  c_pdu;
-  u8  p_pdu;
-  u8  nse;
-  u8  sub_interval[3];
-  u8  bn;
-  u8  c_ft;
-  u8  p_ft;
+  u8 c_interval[3];
+  u8 p_interval[3];
+  u8 c_pdu;
+  u8 p_pdu;
+  u8 nse;
+  u8 sub_interval[3];
+  u8 bn;
+  u8 c_ft;
+  u8 p_ft;
   u16 iso_interval;
-  u8  offset_min[3];
-  u8  offset_max[3];
+  u8 offset_min[3];
+  u8 offset_max[3];
   u16 conn_event_count;
 } bt_ll_cis_req;
 
 #define BT_LL_CIS_RSP 0x20
 typedef struct __attribute__((packed)) {
-  u8  offset_min[3];
-  u8  offset_max[3];
+  u8 offset_min[3];
+  u8 offset_max[3];
   u16 conn_event_count;
 } bt_ll_cis_rsp;
 
 #define BT_LL_CIS_IND 0x21
 typedef struct __attribute__((packed)) {
   u32 addr;
-  u8  cis_offset[3];
-  u8  cig_sync_delay[3];
-  u8  cis_sync_delay[3];
+  u8 cis_offset[3];
+  u8 cig_sync_delay[3];
+  u8 cis_sync_delay[3];
   u16 conn_event_count;
 } bt_ll_cis_ind;
 
@@ -342,14 +343,14 @@ typedef struct __attribute__((packed)) {
 
 #define BT_LMP_VERSION_REQ 37
 typedef struct __attribute__((packed)) {
-  u8  version;
+  u8 version;
   u16 company;
   u16 subversion;
 } bt_lmp_version_req;
 
 #define BT_LMP_VERSION_RES 38
 typedef struct __attribute__((packed)) {
-  u8  version;
+  u8 version;
   u16 company;
   u16 subversion;
 } bt_lmp_version_res;
@@ -391,7 +392,7 @@ typedef struct __attribute__((packed)) {
 #define BT_LMP_SLOT_OFFSET 52
 typedef struct __attribute__((packed)) {
   u16 offset;
-  u8  bdaddr[6];
+  u8 bdaddr[6];
 } bt_lmp_slot_offset;
 
 #define BT_LMP_PAGE_SCAN_MODE_REQ 54
@@ -407,8 +408,8 @@ typedef struct __attribute__((packed)) {
 #define BT_LMP_SET_AFH 60
 typedef struct __attribute__((packed)) {
   u32 instant;
-  u8  mode;
-  u8  map[10];
+  u8 mode;
+  u8 map[10];
 } bt_lmp_set_afh;
 
 #define BT_LMP_ENCAPSULATED_HEADER 61
@@ -474,7 +475,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_LMP_CHANNEL_CLASSIFICATION_REQ LMP_ESC4(16)
 typedef struct __attribute__((packed)) {
-  u8  mode;
+  u8 mode;
   u16 min_interval;
   u16 max_interval;
 } bt_lmp_channel_classification_req;
@@ -528,89 +529,89 @@ typedef struct __attribute__((packed)) {
 #define BT_H4_EVT_PKT 0x04
 #define BT_H4_ISO_PKT 0x05
 
-typedef struct __attribute__((packed)) {
+typedef struct  __attribute__((packed)){
   u16 opcode;
-  u8  plen;
-  u8  param[];
+  u8 plen;
+  u8 param[];
 } bt_hci_cmd_hdr;
 
-typedef struct bt_hci_acl_hdr {
+typedef struct __attribute__((packed)) {
   u16 handle;
   u16 dlen;
-  u8  data[];
-} bt_lmp_power_control_res;
+  u8 data[];
+} bt_hci_acl_hdr;
 
-typedef struct bt_hci_sco_hdr {
+typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  dlen;
-} bt_lmp_power_control_res;
+  u8 dlen;
+} bt_hci_sco_hdr;
 
-typedef struct bt_hci_iso_hdr {
+typedef struct __attribute__((packed)) {
   u16 handle;
   u16 dlen;
-  u8  data[];
-} bt_lmp_power_control_res;
+  u8 data[];
+} bt_hci_iso_hdr;
 
-typedef struct bt_hci_iso_data_start {
+typedef struct __attribute__((packed)) {
   u16 sn;
   u16 slen;
-  u8  data[];
-} bt_lmp_power_control_res;
+  u8 data[];
+} bt_hci_iso_data_start;
 
-typedef struct bt_hci_evt_hdr {
+typedef struct __attribute__((packed)) {
   u8 evt;
   u8 plen;
   u8 param[];
-} bt_lmp_power_control_res;
+} bt_hci_evt_hdr;
 
 #define BT_HCI_CMD_NOP 0x0000
 
 #define BT_HCI_CMD_INQUIRY 0x0401
-typedef struct bt_hci_cmd_inquiry {
+typedef struct __attribute__((packed)) {
   u8 lap[3];
   u8 length;
   u8 num_resp;
-} bt_lmp_power_control_res;
+} bt_hci_cmd_inquiry;
 
 #define BT_HCI_CMD_INQUIRY_CANCEL 0x0402
 
 #define BT_HCI_CMD_PERIODIC_INQUIRY 0x0403
-typedef struct bt_hci_cmd_periodic_inquiry {
+typedef struct __attribute__((packed)) {
   u16 max_period;
   u16 min_period;
-  u8  lap[3];
-  u8  length;
-  u8  num_resp;
-} bt_lmp_power_control_res;
+  u8 lap[3];
+  u8 length;
+  u8 num_resp;
+} bt_hci_cmd_periodic_inquiry;
 
 #define BT_HCI_CMD_EXIT_PERIODIC_INQUIRY 0x0404
 
 #define BT_HCI_CMD_CREATE_CONN 0x0405
-typedef struct bt_hci_cmd_create_conn {
-  u8  bdaddr[6];
+typedef struct __attribute__((packed)) {
+  u8 bdaddr[6];
   u16 pkt_type;
-  u8  pscan_rep_mode;
-  u8  pscan_mode;
+  u8 pscan_rep_mode;
+  u8 pscan_mode;
   u16 clock_offset;
-  u8  role_switch;
-} bt_lmp_power_control_res;
+  u8 role_switch;
+} bt_hci_cmd_create_conn;
 
 #define BT_HCI_CMD_DISCONNECT 0x0406
-typedef struct bt_hci_cmd_disconnect {
+typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  reason;
-} bt_lmp_power_control_res;
+  u8 reason;
+} bt_hci_cmd_disconnect;
 
 #define BT_HCI_CMD_ADD_SCO_CONN 0x0407
-typedef struct bt_hci_cmd_add_sco_conn {
+typedef struct __attribute__((packed)) {
   u16 handle;
   u16 pkt_type;
-} bt_lmp_power_control_res;
+} bt_hci_cmd_add_sco_conn;
 
 #define BT_HCI_CMD_CREATE_CONN_CANCEL 0x0408
-typedef struct bt_hci_cmd_create_conn_cancel {
+typedef struct __attribute__((packed)) {
   u8 bdaddr[6];
-} bt_lmp_power_control_res;
+} bt_hci_cmd_create_conn_cancel;
 
 #define BT_HCI_CMD_ACCEPT_CONN_REQUEST 0x0409
 typedef struct __attribute__((packed)) {
@@ -673,7 +674,7 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_SET_CONN_ENCRYPT 0x0413
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  encr_mode;
+  u8 encr_mode;
 } bt_hci_cmd_set_conn_encrypt;
 
 #define BT_HCI_CMD_CHANGE_CONN_LINK_KEY 0x0415
@@ -688,9 +689,9 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_REMOTE_NAME_REQUEST 0x0419
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
-  u8  pscan_rep_mode;
-  u8  pscan_mode;
+  u8 bdaddr[6];
+  u8 pscan_rep_mode;
+  u8 pscan_mode;
   u16 clock_offset;
 } bt_hci_cmd_remote_name_request;
 
@@ -711,7 +712,7 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_READ_REMOTE_EXT_FEATURES 0x041c
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  page;
+  u8 page;
 } bt_hci_cmd_read_remote_ext_features;
 
 #define BT_HCI_CMD_READ_REMOTE_VERSION 0x041d
@@ -729,9 +730,9 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_lmp_handle;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  lmp_handle;
+  u8 lmp_handle;
   u32 reserved;
 } bt_hci_rsp_read_lmp_handle;
 
@@ -742,18 +743,18 @@ typedef struct __attribute__((packed)) {
   u32 rx_bandwidth;
   u16 max_latency;
   u16 voice_setting;
-  u8  retrans_effort;
+  u8 retrans_effort;
   u16 pkt_type;
 } bt_hci_cmd_setup_sync_conn;
 
 #define BT_HCI_CMD_ACCEPT_SYNC_CONN_REQUEST 0x0429
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
+  u8 bdaddr[6];
   u32 tx_bandwidth;
   u32 rx_bandwidth;
   u16 max_latency;
   u16 voice_setting;
-  u8  retrans_effort;
+  u8 retrans_effort;
   u16 pkt_type;
 } bt_hci_cmd_accept_sync_conn_request;
 
@@ -795,7 +796,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_USER_PASSKEY_REQUEST_REPLY 0x042e
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
+  u8 bdaddr[6];
   u32 passkey;
 } bt_hci_cmd_user_passkey_request_reply;
 
@@ -879,8 +880,8 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_FLOW_SPEC_MODIFY 0x043c
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  tx_flow_spec[16];
-  u8  rx_flow_spec[16];
+  u8 tx_flow_spec[16];
+  u8 rx_flow_spec[16];
 } bt_hci_cmd_flow_spec_modify;
 
 #define BT_HCI_CMD_ENHANCED_SETUP_SYNC_CONN 0x043d
@@ -888,61 +889,61 @@ typedef struct __attribute__((packed)) {
   u16 handle;
   u32 tx_bandwidth;
   u32 rx_bandwidth;
-  u8  tx_coding_format[5];
-  u8  rx_coding_format[5];
+  u8 tx_coding_format[5];
+  u8 rx_coding_format[5];
   u16 tx_codec_frame_size;
   u16 rx_codec_frame_size;
   u32 input_bandwidth;
   u32 output_bandwidth;
-  u8  input_coding_format[5];
-  u8  output_coding_format[5];
+  u8 input_coding_format[5];
+  u8 output_coding_format[5];
   u16 input_coded_data_size;
   u16 output_coded_data_size;
-  u8  input_pcm_data_format;
-  u8  output_pcm_data_format;
-  u8  input_pcm_msb_position;
-  u8  output_pcm_msb_position;
-  u8  input_data_path;
-  u8  output_data_path;
-  u8  input_unit_size;
-  u8  output_unit_size;
+  u8 input_pcm_data_format;
+  u8 output_pcm_data_format;
+  u8 input_pcm_msb_position;
+  u8 output_pcm_msb_position;
+  u8 input_data_path;
+  u8 output_data_path;
+  u8 input_unit_size;
+  u8 output_unit_size;
   u16 max_latency;
   u16 pkt_type;
-  u8  retrans_effort;
+  u8 retrans_effort;
 } bt_hci_cmd_enhanced_setup_sync_conn;
 
 #define BT_HCI_CMD_ENHANCED_ACCEPT_SYNC_CONN_REQUEST 0x043e
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
+  u8 bdaddr[6];
   u32 tx_bandwidth;
   u32 rx_bandwidth;
-  u8  tx_coding_format[5];
-  u8  rx_coding_format[5];
+  u8 tx_coding_format[5];
+  u8 rx_coding_format[5];
   u16 tx_codec_frame_size;
   u16 rx_codec_frame_size;
   u32 input_bandwidth;
   u32 output_bandwidth;
-  u8  input_coding_format[5];
-  u8  output_coding_format[5];
+  u8 input_coding_format[5];
+  u8 output_coding_format[5];
   u16 input_coded_data_size;
   u16 output_coded_data_size;
-  u8  input_pcm_data_format;
-  u8  output_pcm_data_format;
-  u8  input_pcm_msb_position;
-  u8  output_pcm_msb_position;
-  u8  input_data_path;
-  u8  output_data_path;
-  u8  input_unit_size;
-  u8  output_unit_size;
+  u8 input_pcm_data_format;
+  u8 output_pcm_data_format;
+  u8 input_pcm_msb_position;
+  u8 output_pcm_msb_position;
+  u8 input_data_path;
+  u8 output_data_path;
+  u8 input_unit_size;
+  u8 output_unit_size;
   u16 max_latency;
   u16 pkt_type;
-  u8  retrans_effort;
+  u8 retrans_effort;
 } bt_hci_cmd_enhanced_accept_sync_conn_request;
 
 #define BT_HCI_CMD_TRUNCATED_PAGE 0x043f
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
-  u8  pscan_rep_mode;
+  u8 bdaddr[6];
+  u8 pscan_rep_mode;
   u16 clock_offset;
 } bt_hci_cmd_truncated_page;
 
@@ -953,33 +954,33 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_SET_PERIPHERAL_BROADCAST 0x0441
 typedef struct __attribute__((packed)) {
-  u8  enable;
-  u8  lt_addr;
-  u8  lpo_allowed;
+  u8 enable;
+  u8 lt_addr;
+  u8 lpo_allowed;
   u16 pkt_type;
   u16 min_interval;
   u16 max_interval;
   u16 timeout;
 } bt_hci_cmd_set_peripheral_broadcast;
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  lt_addr;
+  u8 status;
+  u8 lt_addr;
   u16 interval;
 } bt_hci_rsp_set_peripheral_broadcast;
 
 #define BT_HCI_CMD_SET_PERIPHERAL_BROADCAST_RECEIVE 0x0442
 typedef struct __attribute__((packed)) {
-  u8  enable;
-  u8  bdaddr[6];
-  u8  lt_addr;
+  u8 enable;
+  u8 bdaddr[6];
+  u8 lt_addr;
   u16 interval;
   u32 offset;
   u32 instant;
   u16 timeout;
-  u8  accuracy;
-  u8  skip;
+  u8 accuracy;
+  u8 skip;
   u16 pkt_type;
-  u8  map[10];
+  u8 map[10];
 } bt_hci_cmd_set_peripheral_broadcast_receive;
 typedef struct __attribute__((packed)) {
   u8 status;
@@ -991,7 +992,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_RECEIVE_SYNC_TRAIN 0x0444
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
+  u8 bdaddr[6];
   u16 timeout;
   u16 window;
   u16 interval;
@@ -1042,8 +1043,8 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_QOS_SETUP 0x0807
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  flags;
-  u8  service_type;
+  u8 flags;
+  u8 service_type;
   u32 token_rate;
   u32 peak_bandwidth;
   u32 latency;
@@ -1055,9 +1056,9 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_role_discovery;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  role;
+  u8 role;
 } bt_hci_rsp_role_discovery;
 
 #define BT_HCI_CMD_SWITCH_ROLE 0x080b
@@ -1071,7 +1072,7 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_link_policy;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 policy;
 } bt_hci_rsp_read_link_policy;
@@ -1082,13 +1083,13 @@ typedef struct __attribute__((packed)) {
   u16 policy;
 } bt_hci_cmd_write_link_policy;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_write_link_policy;
 
 #define BT_HCI_CMD_READ_DEFAULT_LINK_POLICY 0x080e
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 policy;
 } bt_hci_rsp_read_default_link_policy;
 
@@ -1100,9 +1101,9 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_FLOW_SPEC 0x0810
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  flags;
-  u8  direction;
-  u8  service_type;
+  u8 flags;
+  u8 direction;
+  u8 service_type;
   u32 token_rate;
   u32 token_bucket_size;
   u32 peak_bandwidth;
@@ -1117,7 +1118,7 @@ typedef struct __attribute__((packed)) {
   u16 min_local_timeout;
 } bt_hci_cmd_sniff_subrating;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_sniff_subrating;
 
@@ -1140,7 +1141,7 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_flush;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_flush;
 
@@ -1163,7 +1164,7 @@ typedef struct __attribute__((packed)) {
   u8 read_all;
 } bt_hci_cmd_read_stored_link_key;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 max_num_keys;
   u16 num_keys;
 } bt_hci_rsp_read_stored_link_key;
@@ -1183,7 +1184,7 @@ typedef struct __attribute__((packed)) {
   u8 delete_all;
 } bt_hci_cmd_delete_stored_link_key;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 num_keys;
 } bt_hci_rsp_delete_stored_link_key;
 
@@ -1194,13 +1195,13 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_LOCAL_NAME 0x0c14
 typedef struct __attribute__((packed)) {
-  u8   status;
+  u8 status;
   char name[248];
 } bt_hci_rsp_read_local_name;
 
 #define BT_HCI_CMD_READ_CONN_ACCEPT_TIMEOUT 0x0c15
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 timeout;
 } bt_hci_rsp_read_conn_accept_timeout;
 
@@ -1211,7 +1212,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_PAGE_TIMEOUT 0x0c17
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 timeout;
 } bt_hci_rsp_read_page_timeout;
 
@@ -1233,7 +1234,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_PAGE_SCAN_ACTIVITY 0x0c1b
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 interval;
   u16 window;
 } bt_hci_rsp_read_page_scan_activity;
@@ -1246,7 +1247,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_INQUIRY_SCAN_ACTIVITY 0x0c1d
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 interval;
   u16 window;
 } bt_hci_rsp_read_inquiry_scan_activity;
@@ -1292,7 +1293,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_VOICE_SETTING 0x0c25
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 setting;
 } bt_hci_rsp_read_voice_setting;
 
@@ -1306,7 +1307,7 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_auto_flush_timeout;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 timeout;
 } bt_hci_rsp_read_auto_flush_timeout;
@@ -1317,7 +1318,7 @@ typedef struct __attribute__((packed)) {
   u16 timeout;
 } bt_hci_cmd_write_auto_flush_timeout;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_write_auto_flush_timeout;
 
@@ -1346,11 +1347,11 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_READ_TX_POWER 0x0c2d
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  type;
+  u8 type;
 } bt_hci_cmd_read_tx_power;
 typedef struct __attribute__((packed)) {
-  u8     status;
-  u16    handle;
+  u8 status;
+  u16 handle;
   int8_t level;
 } bt_hci_rsp_read_tx_power;
 
@@ -1373,14 +1374,14 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_HOST_BUFFER_SIZE 0x0c33
 typedef struct __attribute__((packed)) {
   u16 acl_mtu;
-  u8  sco_mtu;
+  u8 sco_mtu;
   u16 acl_max_pkt;
   u16 sco_max_pkt;
 } bt_hci_cmd_host_buffer_size;
 
 #define BT_HCI_CMD_HOST_NUM_COMPLETED_PACKETS 0x0c35
 typedef struct __attribute__((packed)) {
-  u8  num_handles;
+  u8 num_handles;
   u16 handle;
   u16 count;
 } bt_hci_cmd_host_num_completed_packets;
@@ -1390,7 +1391,7 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_link_supv_timeout;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 timeout;
 } bt_hci_rsp_read_link_supv_timeout;
@@ -1401,7 +1402,7 @@ typedef struct __attribute__((packed)) {
   u16 timeout;
 } bt_hci_cmd_write_link_supv_timeout;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_write_link_supv_timeout;
 
@@ -1533,7 +1534,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_INQUIRY_RESP_TX_POWER 0x0c58
 typedef struct __attribute__((packed)) {
-  u8     status;
+  u8 status;
   int8_t level;
 } bt_hci_rsp_read_inquiry_resp_tx_power;
 
@@ -1556,7 +1557,7 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_ENHANCED_FLUSH 0x0c5f
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  type;
+  u8 type;
 } bt_hci_cmd_enhanced_flush;
 
 #define BT_HCI_CMD_SEND_KEYPRESS_NOTIFY 0x0c60
@@ -1605,11 +1606,11 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_READ_ENHANCED_TX_POWER 0x0c68
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  type;
+  u8 type;
 } bt_hci_cmd_read_enhanced_tx_power;
 typedef struct __attribute__((packed)) {
-  u8     status;
-  u16    handle;
+  u8 status;
+  u16 handle;
   int8_t level_gfsk;
   int8_t level_dqpsk;
   int8_t level_8dpsk;
@@ -1665,10 +1666,10 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_SYNC_TRAIN_PARAMS 0x0c77
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 interval;
   u32 timeout;
-  u8  service_data;
+  u8 service_data;
 } bt_hci_rsp_read_sync_train_params;
 
 #define BT_HCI_CMD_WRITE_SYNC_TRAIN_PARAMS 0x0c78
@@ -1676,10 +1677,10 @@ typedef struct __attribute__((packed)) {
   u16 min_interval;
   u16 max_interval;
   u32 timeout;
-  u8  service_data;
+  u8 service_data;
 } bt_hci_cmd_write_sync_train_params;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 interval;
 } bt_hci_rsp_write_sync_train_params;
 
@@ -1699,7 +1700,7 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_auth_payload_timeout;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 timeout;
 } bt_hci_rsp_read_auth_payload_timeout;
@@ -1710,7 +1711,7 @@ typedef struct __attribute__((packed)) {
   u16 timeout;
 } bt_hci_cmd_write_auth_payload_timeout;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_write_auth_payload_timeout;
 
@@ -1725,7 +1726,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_EXT_PAGE_TIMEOUT 0x0c7e
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 timeout;
 } bt_hci_rsp_read_ext_page_timeout;
 
@@ -1736,7 +1737,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_EXT_INQUIRY_LENGTH 0x0c80
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 interval;
 } bt_hci_rsp_read_ext_inquiry_length;
 
@@ -1756,10 +1757,10 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_LOCAL_VERSION 0x1001
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  hci_ver;
+  u8 status;
+  u8 hci_ver;
   u16 hci_rev;
-  u8  lmp_ver;
+  u8 lmp_ver;
   u16 manufacturer;
   u16 lmp_subver;
 } bt_hci_rsp_read_local_version;
@@ -1789,9 +1790,9 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_BUFFER_SIZE 0x1005
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 acl_mtu;
-  u8  sco_mtu;
+  u8 sco_mtu;
   u16 acl_max_pkt;
   u16 sco_max_pkt;
 } bt_hci_rsp_read_buffer_size;
@@ -1810,7 +1811,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_DATA_BLOCK_SIZE 0x100a
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 max_acl_len;
   u16 block_len;
   u16 num_blocks;
@@ -1838,10 +1839,10 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_LOCAL_CODEC_LE_BIS BIT(3)
 
 typedef struct __attribute__((packed)) {
-  u8  id;
+  u8 id;
   u16 cid;
   u16 vid;
-  u8  transport;
+  u8 transport;
 } bt_hci_vnd_codec;
 
 typedef struct __attribute__((packed)) {
@@ -1850,8 +1851,8 @@ typedef struct __attribute__((packed)) {
 } bt_hci_codec;
 
 typedef struct __attribute__((packed)) {
-  u8                  status;
-  u8                  num_codecs;
+  u8 status;
+  u8 num_codecs;
   bt_hci_codec codec[0];
 } bt_hci_rsp_read_local_codecs_v2;
 
@@ -1859,7 +1860,7 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_BIT_READ_LOCAL_CODEC_CAPS BT_HCI_CMD_BIT(45, 3)
 typedef struct __attribute__((packed)) {
   bt_hci_vnd_codec codec;
-  u8                      dir;
+  u8 dir;
 } bt_hci_cmd_read_local_codec_caps;
 
 typedef struct __attribute__((packed)) {
@@ -1868,8 +1869,8 @@ typedef struct __attribute__((packed)) {
 } bt_hci_codec_caps;
 
 typedef struct __attribute__((packed)) {
-  u8                       status;
-  u8                       num;
+  u8 status;
+  u8 num;
   bt_hci_codec_caps caps[0];
 } bt_hci_rsp_read_local_codec_caps;
 
@@ -1877,9 +1878,9 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_BIT_READ_LOCAL_CTRL_DELAY BT_HCI_CMD_BIT(45, 4)
 typedef struct __attribute__((packed)) {
   bt_hci_vnd_codec codec;
-  u8                      dir;
-  u8                      codec_cfg_len;
-  u8                      codec_cfg[0];
+  u8 dir;
+  u8 codec_cfg_len;
+  u8 codec_cfg[0];
 } bt_hci_cmd_read_local_ctrl_delay;
 
 typedef struct __attribute__((packed)) {
@@ -1893,7 +1894,7 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_failed_contact_counter;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 counter;
 } bt_hci_rsp_read_failed_contact_counter;
@@ -1903,7 +1904,7 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_reset_failed_contact_counter;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_reset_failed_contact_counter;
 
@@ -1912,9 +1913,9 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_link_quality;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  link_quality;
+  u8 link_quality;
 } bt_hci_rsp_read_link_quality;
 
 #define BT_HCI_CMD_READ_RSSI 0x1405
@@ -1922,8 +1923,8 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_rssi;
 typedef struct __attribute__((packed)) {
-  u8     status;
-  u16    handle;
+  u8 status;
+  u16 handle;
   int8_t rssi;
 } bt_hci_rsp_read_rssi;
 
@@ -1932,19 +1933,19 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_afh_channel_map;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  mode;
-  u8  map[10];
+  u8 mode;
+  u8 map[10];
 } bt_hci_rsp_read_afh_channel_map;
 
 #define BT_HCI_CMD_READ_CLOCK 0x1407
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  type;
+  u8 type;
 } bt_hci_cmd_read_clock;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u32 clock;
   u16 accuracy;
@@ -1955,20 +1956,20 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_read_encrypt_key_size;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  key_size;
+  u8 key_size;
 } bt_hci_rsp_read_encrypt_key_size;
 
 #define BT_HCI_CMD_READ_LOCAL_AMP_INFO 0x1409
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  amp_status;
+  u8 status;
+  u8 amp_status;
   u32 total_bw;
   u32 max_bw;
   u32 min_latency;
   u32 max_pdu;
-  u8  amp_type;
+  u8 amp_type;
   u16 pal_cap;
   u16 max_assoc_len;
   u32 max_flush_to;
@@ -1977,23 +1978,23 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_READ_LOCAL_AMP_ASSOC 0x140a
 typedef struct __attribute__((packed)) {
-  u8  phy_handle;
+  u8 phy_handle;
   u16 len_so_far;
   u16 max_assoc_len;
 } bt_hci_cmd_read_local_amp_assoc;
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  phy_handle;
+  u8 status;
+  u8 phy_handle;
   u16 remain_assoc_len;
-  u8  assoc_fragment[248];
+  u8 assoc_fragment[248];
 } bt_hci_rsp_read_local_amp_assoc;
 
 #define BT_HCI_CMD_WRITE_REMOTE_AMP_ASSOC 0x140b
 typedef struct __attribute__((packed)) {
-  u8  phy_handle;
+  u8 phy_handle;
   u16 len_so_far;
   u16 remain_assoc_len;
-  u8  assoc_fragment[248];
+  u8 assoc_fragment[248];
 } bt_hci_cmd_write_remote_amp_assoc;
 typedef struct __attribute__((packed)) {
   u8 status;
@@ -2010,10 +2011,10 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_SET_TRIGGERED_CLOCK_CAPTURE 0x140d
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  enable;
-  u8  type;
-  u8  lpo_allowed;
-  u8  num_filter;
+  u8 enable;
+  u8 type;
+  u8 lpo_allowed;
+  u8 num_filter;
 } bt_hci_cmd_set_triggered_clock_capture;
 
 #define BT_HCI_CMD_READ_LOOPBACK_MODE 0x1801
@@ -2041,9 +2042,9 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_READ_BUFFER_SIZE 0x2002
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 le_mtu;
-  u8  le_max_pkt;
+  u8 le_max_pkt;
 } bt_hci_rsp_le_read_buffer_size;
 
 #define BT_HCI_CMD_LE_READ_LOCAL_FEATURES 0x2003
@@ -2061,17 +2062,17 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   u16 min_interval;
   u16 max_interval;
-  u8  type;
-  u8  own_addr_type;
-  u8  direct_addr_type;
-  u8  direct_addr[6];
-  u8  channel_map;
-  u8  filter_policy;
+  u8 type;
+  u8 own_addr_type;
+  u8 direct_addr_type;
+  u8 direct_addr[6];
+  u8 channel_map;
+  u8 filter_policy;
 } bt_hci_cmd_le_set_adv_parameters;
 
 #define BT_HCI_CMD_LE_READ_ADV_TX_POWER 0x2007
 typedef struct __attribute__((packed)) {
-  u8     status;
+  u8 status;
   int8_t level;
 } bt_hci_rsp_le_read_adv_tx_power;
 
@@ -2094,11 +2095,11 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_SET_SCAN_PARAMETERS 0x200b
 typedef struct __attribute__((packed)) {
-  u8  type;
+  u8 type;
   u16 interval;
   u16 window;
-  u8  own_addr_type;
-  u8  filter_policy;
+  u8 own_addr_type;
+  u8 filter_policy;
 } bt_hci_cmd_le_set_scan_parameters;
 
 #define BT_HCI_CMD_LE_SET_SCAN_ENABLE 0x200c
@@ -2111,10 +2112,10 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   u16 scan_interval;
   u16 scan_window;
-  u8  filter_policy;
-  u8  peer_addr_type;
-  u8  peer_addr[6];
-  u8  own_addr_type;
+  u8 filter_policy;
+  u8 peer_addr_type;
+  u8 peer_addr[6];
+  u8 own_addr_type;
   u16 min_interval;
   u16 max_interval;
   u16 latency;
@@ -2166,9 +2167,9 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_le_read_channel_map;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  map[5];
+  u8 map[5];
 } bt_hci_rsp_le_read_channel_map;
 
 #define BT_HCI_CMD_LE_READ_REMOTE_FEATURES 0x2016
@@ -2188,7 +2189,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_RAND 0x2018
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u64 number;
 } bt_hci_rsp_le_rand;
 
@@ -2197,16 +2198,16 @@ typedef struct __attribute__((packed)) {
   u16 handle;
   u64 rand;
   u16 ediv;
-  u8  ltk[16];
+  u8 ltk[16];
 } bt_hci_cmd_le_start_encrypt;
 
 #define BT_HCI_CMD_LE_LTK_REQ_REPLY 0x201a
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  ltk[16];
+  u8 ltk[16];
 } bt_hci_cmd_le_ltk_req_reply;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_le_ltk_req_reply;
 
@@ -2215,7 +2216,7 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_le_ltk_req_neg_reply;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_le_ltk_req_neg_reply;
 
@@ -2239,7 +2240,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_TEST_END 0x201f
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 num_packets;
 } bt_hci_rsp_le_test_end;
 
@@ -2254,17 +2255,17 @@ typedef struct __attribute__((packed)) {
   u16 max_length;
 } bt_hci_cmd_le_conn_param_req_reply;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_le_conn_param_req_reply;
 
 #define BT_HCI_CMD_LE_CONN_PARAM_REQ_NEG_REPLY 0x2021
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  reason;
+  u8 reason;
 } bt_hci_cmd_le_conn_param_req_neg_reply;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_le_conn_param_req_neg_reply;
 
@@ -2275,13 +2276,13 @@ typedef struct __attribute__((packed)) {
   u16 tx_time;
 } bt_hci_cmd_le_set_data_length;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_le_set_data_length;
 
 #define BT_HCI_CMD_LE_READ_DEFAULT_DATA_LENGTH 0x2023
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 tx_len;
   u16 tx_time;
 } bt_hci_rsp_le_read_default_data_length;
@@ -2353,7 +2354,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_READ_MAX_DATA_LENGTH 0x202f
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 max_tx_len;
   u16 max_tx_time;
   u16 max_rx_len;
@@ -2365,10 +2366,10 @@ typedef struct __attribute__((packed)) {
   u16 handle;
 } bt_hci_cmd_le_read_phy;
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  tx_phy;
-  u8  rx_phy;
+  u8 tx_phy;
+  u8 rx_phy;
 } bt_hci_rsp_le_read_phy;
 
 #define BT_HCI_CMD_LE_SET_DEFAULT_PHY 0x2031
@@ -2381,9 +2382,9 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_LE_SET_PHY 0x2032
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  all_phys;
-  u8  tx_phys;
-  u8  rx_phys;
+  u8 all_phys;
+  u8 tx_phys;
+  u8 rx_phys;
   u16 phy_opts;
 } bt_hci_cmd_le_set_phy;
 
@@ -2410,21 +2411,21 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_SET_EXT_ADV_PARAMS 0x2036
 typedef struct __attribute__((packed)) {
-  u8  handle;
+  u8 handle;
   u16 evt_properties;
-  u8  min_interval[3];
-  u8  max_interval[3];
-  u8  channel_map;
-  u8  own_addr_type;
-  u8  peer_addr_type;
-  u8  peer_addr[6];
-  u8  filter_policy;
-  u8  tx_power;
-  u8  primary_phy;
-  u8  secondary_max_skip;
-  u8  secondary_phy;
-  u8  sid;
-  u8  notif_enable;
+  u8 min_interval[3];
+  u8 max_interval[3];
+  u8 channel_map;
+  u8 own_addr_type;
+  u8 peer_addr_type;
+  u8 peer_addr[6];
+  u8 filter_policy;
+  u8 tx_power;
+  u8 primary_phy;
+  u8 secondary_max_skip;
+  u8 secondary_phy;
+  u8 sid;
+  u8 notif_enable;
 } bt_hci_cmd_le_set_ext_adv_params;
 typedef struct __attribute__((packed)) {
   u8 status;
@@ -2455,14 +2456,14 @@ typedef struct __attribute__((packed)) {
   u8 num_of_sets;
 } bt_hci_cmd_le_set_ext_adv_enable;
 typedef struct __attribute__((packed)) {
-  u8  handle;
+  u8 handle;
   u16 duration;
-  u8  max_events;
+  u8 max_events;
 } bt_hci_cmd_ext_adv_set;
 
 #define BT_HCI_CMD_LE_READ_MAX_ADV_DATA_LEN 0x203a
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 max_len;
 } bt_hci_rsp_le_read_max_adv_data_len;
 
@@ -2481,7 +2482,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_SET_PA_PARAMS 0x203e
 typedef struct __attribute__((packed)) {
-  u8  handle;
+  u8 handle;
   u16 min_interval;
   u16 max_interval;
   u16 properties;
@@ -2509,15 +2510,15 @@ typedef struct __attribute__((packed)) {
   u8 data[0];
 } bt_hci_cmd_le_set_ext_scan_params;
 typedef struct __attribute__((packed)) {
-  u8  type;
+  u8 type;
   u16 interval;
   u16 window;
 } bt_hci_le_scan_phy;
 
 #define BT_HCI_CMD_LE_SET_EXT_SCAN_ENABLE 0x2042
 typedef struct __attribute__((packed)) {
-  u8  enable;
-  u8  filter_dup;
+  u8 enable;
+  u8 filter_dup;
   u16 duration;
   u16 period;
 } bt_hci_cmd_le_set_ext_scan_enable;
@@ -2544,13 +2545,13 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_PA_CREATE_SYNC 0x2044
 typedef struct __attribute__((packed)) {
-  u8  options;
-  u8  sid;
-  u8  addr_type;
-  u8  addr[6];
+  u8 options;
+  u8 sid;
+  u8 addr_type;
+  u8 addr[6];
   u16 skip;
   u16 sync_timeout;
-  u8  sync_cte_type;
+  u8 sync_cte_type;
 } bt_hci_cmd_le_pa_create_sync;
 
 #define BT_HCI_CMD_LE_PA_CREATE_SYNC_CANCEL 0x2045
@@ -2584,14 +2585,14 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_CMD_LE_READ_TX_POWER 0x204b
 typedef struct __attribute__((packed)) {
-  u8     status;
+  u8 status;
   int8_t min_tx_power;
   int8_t max_tx_power;
 } bt_hci_rsp_le_read_tx_power;
 
 #define BT_HCI_CMD_LE_READ_RF_PATH_COMPENSATION 0x204c
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 rf_tx_path_comp;
   u16 rf_rx_path_comp;
 } bt_hci_rsp_le_read_rf_path_comp;
@@ -2637,7 +2638,7 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_SET_PA_REC_ENABLE 0x2059
 typedef struct __attribute__((packed)) {
   u16 sync_handle;
-  u8  enable;
+  u8 enable;
 } bt_hci_cmd_set_pa_rec_enable;
 
 #define BT_HCI_CMD_PERIODIC_SYNC_TRANS 0x205a
@@ -2657,28 +2658,28 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_CMD_PA_SYNC_TRANS_PARAMS 0x205c
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  mode;
+  u8 mode;
   u16 skip;
   u16 sync_timeout;
-  u8  cte_type;
+  u8 cte_type;
 } bt_hci_cmd_pa_sync_trans_params;
 
 #define BT_HCI_CMD_DEFAULT_PA_SYNC_TRANS_PARAMS 0x205d
 typedef struct __attribute__((packed)) {
-  u8  mode;
+  u8 mode;
   u16 skip;
   u16 sync_timeout;
-  u8  cte_type;
+  u8 cte_type;
 } bt_hci_cmd_default_pa_sync_trans_params;
 
 #define BT_HCI_CMD_LE_READ_BUFFER_SIZE_V2 0x2060
 #define BT_HCI_BIT_LE_READ_BUFFER_SIZE_V2 BT_HCI_CMD_BIT(41, 5)
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 acl_mtu;
-  u8  acl_max_pkt;
+  u8 acl_max_pkt;
   u16 iso_mtu;
-  u8  iso_max_pkt;
+  u8 iso_max_pkt;
 } bt_hci_rsp_le_read_buffer_size_v2;
 
 #define BT_HCI_CMD_LE_READ_ISO_TX_SYNC 0x2061
@@ -2688,71 +2689,71 @@ typedef struct __attribute__((packed)) {
 } bt_hci_cmd_le_read_iso_tx_sync;
 
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 seq;
   u32 timestamp;
-  u8  offset[3];
+  u8 offset[3];
 } bt_hci_rsp_le_read_iso_tx_sync;
 
 #define BT_HCI_CMD_LE_SET_CIG_PARAMS 0x2062
 #define BT_HCI_BIT_LE_SET_CIG_PARAMS BT_HCI_CMD_BIT(41, 7)
 typedef struct __attribute__((packed)) {
-  u8  cis_id;
+  u8 cis_id;
   u16 c_sdu;
   u16 p_sdu;
-  u8  c_phy;
-  u8  p_phy;
-  u8  c_rtn;
-  u8  p_rtn;
+  u8 c_phy;
+  u8 p_phy;
+  u8 c_rtn;
+  u8 p_rtn;
 } bt_hci_cis_params;
 
 typedef struct __attribute__((packed)) {
-  u8                       cig_id;
-  u8                       c_interval[3];
-  u8                       p_interval[3];
-  u8                       sca;
-  u8                       packing;
-  u8                       framing;
-  u16                      c_latency;
-  u16                      p_latency;
-  u8                       num_cis;
+  u8 cig_id;
+  u8 c_interval[3];
+  u8 p_interval[3];
+  u8 sca;
+  u8 packing;
+  u8 framing;
+  u16 c_latency;
+  u16 p_latency;
+  u8 num_cis;
   bt_hci_cis_params cis[0];
 } bt_hci_cmd_le_set_cig_params;
 
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  cig_id;
-  u8  num_handles;
+  u8 status;
+  u8 cig_id;
+  u8 num_handles;
   u16 handle[0];
 } bt_hci_rsp_le_set_cig_params;
 
 #define BT_HCI_CMD_LE_SET_CIG_PARAMS_TEST 0x2063
 #define BT_HCI_BIT_LE_SET_CIG_PARAMS_TEST BT_HCI_CMD_BIT(42, 0)
 typedef struct __attribute__((packed)) {
-  u8  cis_id;
-  u8  nse;
+  u8 cis_id;
+  u8 nse;
   u16 c_sdu;
   u16 p_sdu;
   u16 c_pdu;
   u16 p_pdu;
-  u8  c_phy;
-  u8  p_phy;
-  u8  c_bn;
-  u8  p_bn;
+  u8 c_phy;
+  u8 p_phy;
+  u8 c_bn;
+  u8 p_bn;
 } bt_hci_cis_params_test;
 
 typedef struct __attribute__((packed)) {
-  u8                            cig_id;
-  u8                            c_interval[3];
-  u8                            p_interval[3];
-  u8                            c_ft;
-  u8                            p_ft;
-  u16                           iso_interval;
-  u8                            sca;
-  u8                            packing;
-  u8                            framing;
-  u8                            num_cis;
+  u8 cig_id;
+  u8 c_interval[3];
+  u8 p_interval[3];
+  u8 c_ft;
+  u8 p_ft;
+  u16 iso_interval;
+  u8 sca;
+  u8 packing;
+  u8 framing;
+  u8 num_cis;
   bt_hci_cis_params_test cis[0];
 } bt_hci_cmd_le_set_cig_params_test;
 
@@ -2764,7 +2765,7 @@ typedef struct __attribute__((packed)) {
 } bt_hci_cis;
 
 typedef struct __attribute__((packed)) {
-  u8                num_cis;
+  u8 num_cis;
   bt_hci_cis cis[0];
 } bt_hci_cmd_le_create_cis;
 
@@ -2789,53 +2790,53 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_BIT_LE_REJECT_CIS BT_HCI_CMD_BIT(42, 4)
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  reason;
+  u8 reason;
 } bt_hci_cmd_le_reject_cis;
 
 #define BT_HCI_CMD_LE_CREATE_BIG 0x2068
 #define BT_HCI_BIT_LE_CREATE_BIG BT_HCI_CMD_BIT(42, 5)
 typedef struct __attribute__((packed)) {
-  u8  sdu_interval[3];
+  u8 sdu_interval[3];
   u16 sdu;
   u16 latency;
-  u8  rtn;
-  u8  phy;
-  u8  packing;
-  u8  framing;
-  u8  encryption;
-  u8  bcode[16];
+  u8 rtn;
+  u8 phy;
+  u8 packing;
+  u8 framing;
+  u8 encryption;
+  u8 bcode[16];
 } bt_hci_bis;
 
 typedef struct __attribute__((packed)) {
-  u8                handle;
-  u8                adv_handle;
-  u8                num_bis;
+  u8 handle;
+  u8 adv_handle;
+  u8 num_bis;
   bt_hci_bis bis;
 } bt_hci_cmd_le_create_big;
 
 #define BT_HCI_CMD_LE_CREATE_BIG_TEST 0x2069
 #define BT_HCI_BIT_LE_CREATE_BIG_TEST BT_HCI_CMD_BIT(42, 6)
 typedef struct __attribute__((packed)) {
-  u8  sdu_interval[3];
+  u8 sdu_interval[3];
   u16 iso_interval;
-  u8  nse;
+  u8 nse;
   u16 sdu;
-  u8  pdu;
-  u8  phy;
-  u8  packing;
-  u8  framing;
-  u8  bn;
-  u8  irc;
-  u8  pto;
-  u8  adv_handle;
-  u8  encryption;
-  u8  bcode[16];
+  u8 pdu;
+  u8 phy;
+  u8 packing;
+  u8 framing;
+  u8 bn;
+  u8 irc;
+  u8 pto;
+  u8 adv_handle;
+  u8 encryption;
+  u8 bcode[16];
 } bt_hci_bis_test;
 
 typedef struct __attribute__((packed)) {
-  u8                     big_id;
-  u8                     adv_handle;
-  u8                     num_bis;
+  u8 big_id;
+  u8 adv_handle;
+  u8 num_bis;
   bt_hci_bis_test bis[0];
 } bt_hci_cmd_le_create_big_test;
 
@@ -2853,13 +2854,13 @@ typedef struct __attribute__((packed)) {
 } bt_hci_bis_sync;
 
 typedef struct __attribute__((packed)) {
-  u8                     handle;
-  u16                    sync_handle;
-  u8                     encryption;
-  u8                     bcode[16];
-  u8                     mse;
-  u16                    timeout;
-  u8                     num_bis;
+  u8 handle;
+  u16 sync_handle;
+  u8 encryption;
+  u8 bcode[16];
+  u8 mse;
+  u16 timeout;
+  u8 num_bis;
   bt_hci_bis_sync bis[0];
 } bt_hci_cmd_le_big_create_sync;
 
@@ -2884,18 +2885,18 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_BIT_LE_SETUP_ISO_PATH BT_HCI_CMD_BIT(43, 3)
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  direction;
-  u8  path;
-  u8  codec;
+  u8 direction;
+  u8 path;
+  u8 codec;
   u16 codec_cid;
   u16 codec_vid;
-  u8  delay[3];
-  u8  codec_cfg_len;
-  u8  codec_cfg[0];
+  u8 delay[3];
+  u8 codec_cfg_len;
+  u8 codec_cfg[0];
 } bt_hci_cmd_le_setup_iso_path;
 
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_rsp_le_setup_iso_path;
 
@@ -2903,7 +2904,7 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_BIT_LE_REMOVE_ISO_PATH BT_HCI_CMD_BIT(43, 4)
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  direction;
+  u8 direction;
 } bt_hci_cmd_le_remove_iso_path;
 
 #define BT_HCI_CMD_LE_ISO_TX_TEST 0x2070
@@ -2932,22 +2933,22 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_INQUIRY_RESULT 0x02
 typedef struct __attribute__((packed)) {
-  u8  num_resp;
-  u8  bdaddr[6];
-  u8  pscan_rep_mode;
-  u8  pscan_period_mode;
-  u8  pscan_mode;
-  u8  dev_class[3];
+  u8 num_resp;
+  u8 bdaddr[6];
+  u8 pscan_rep_mode;
+  u8 pscan_period_mode;
+  u8 pscan_mode;
+  u8 dev_class[3];
   u16 clock_offset;
 } bt_hci_evt_inquiry_result;
 
 #define BT_HCI_EVT_CONN_COMPLETE 0x03
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  bdaddr[6];
-  u8  link_type;
-  u8  encr_mode;
+  u8 bdaddr[6];
+  u8 link_type;
+  u8 encr_mode;
 } bt_hci_evt_conn_complete;
 
 #define BT_HCI_EVT_CONN_REQUEST 0x04
@@ -2959,14 +2960,14 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_DISCONNECT_COMPLETE 0x05
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  reason;
+  u8 reason;
 } bt_hci_evt_disconnect_complete;
 
 #define BT_HCI_EVT_AUTH_COMPLETE 0x06
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_evt_auth_complete;
 
@@ -2979,46 +2980,46 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_ENCRYPT_CHANGE 0x08
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  encr_mode;
+  u8 encr_mode;
 } bt_hci_evt_encrypt_change;
 
 #define BT_HCI_EVT_CHANGE_CONN_LINK_KEY_COMPLETE 0x09
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_evt_change_conn_link_key_complete;
 
 #define BT_HCI_EVT_LINK_KEY_TYPE_CHANGED 0x0a
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  key_flag;
+  u8 key_flag;
 } bt_hci_evt_link_key_type_changed;
 
 #define BT_HCI_EVT_REMOTE_FEATURES_COMPLETE 0x0b
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  features[8];
+  u8 features[8];
 } bt_hci_evt_remote_features_complete;
 
 #define BT_HCI_EVT_REMOTE_VERSION_COMPLETE 0x0c
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  lmp_ver;
+  u8 lmp_ver;
   u16 manufacturer;
   u16 lmp_subver;
 } bt_hci_evt_remote_version_complete;
 
 #define BT_HCI_EVT_QOS_SETUP_COMPLETE 0x0d
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  flags;
-  u8  service_type;
+  u8 flags;
+  u8 service_type;
   u32 token_rate;
   u32 peak_bandwidth;
   u32 latency;
@@ -3027,15 +3028,15 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_CMD_COMPLETE 0x0e
 typedef struct __attribute__((packed)) {
-  u8  ncmd;
+  u8 ncmd;
   u16 opcode;
-  u8  param[0];
+  u8 param[0];
 } bt_hci_evt_cmd_complete;
 
 #define BT_HCI_EVT_CMD_STATUS 0x0f
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  ncmd;
+  u8 status;
+  u8 ncmd;
   u16 opcode;
 } bt_hci_evt_cmd_status;
 
@@ -3058,16 +3059,16 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_NUM_COMPLETED_PACKETS 0x13
 typedef struct __attribute__((packed)) {
-  u8  num_handles;
+  u8 num_handles;
   u16 handle;
   u16 count;
 } bt_hci_evt_num_completed_packets;
 
 #define BT_HCI_EVT_MODE_CHANGE 0x14
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  mode;
+  u8 mode;
   u16 interval;
 } bt_hci_evt_mode_change;
 
@@ -3104,19 +3105,19 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_EVT_MAX_SLOTS_CHANGE 0x1b
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  max_slots;
+  u8 max_slots;
 } bt_hci_evt_max_slots_change;
 
 #define BT_HCI_EVT_CLOCK_OFFSET_COMPLETE 0x1c
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 clock_offset;
 } bt_hci_evt_clock_offset_complete;
 
 #define BT_HCI_EVT_CONN_PKT_TYPE_CHANGED 0x1d
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 pkt_type;
 } bt_hci_evt_conn_pkt_type_changed;
@@ -3140,11 +3141,11 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_FLOW_SPEC_COMPLETE 0x21
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  flags;
-  u8  direction;
-  u8  service_type;
+  u8 flags;
+  u8 direction;
+  u8 service_type;
   u32 token_rate;
   u32 token_bucket_size;
   u32 peak_bandwidth;
@@ -3153,50 +3154,50 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_INQUIRY_RESULT_WITH_RSSI 0x22
 typedef struct __attribute__((packed)) {
-  u8     num_resp;
-  u8     bdaddr[6];
-  u8     pscan_rep_mode;
-  u8     pscan_period_mode;
-  u8     dev_class[3];
-  u16    clock_offset;
+  u8 num_resp;
+  u8 bdaddr[6];
+  u8 pscan_rep_mode;
+  u8 pscan_period_mode;
+  u8 dev_class[3];
+  u16 clock_offset;
   int8_t rssi;
 } bt_hci_evt_inquiry_result_with_rssi;
 
 #define BT_HCI_EVT_REMOTE_EXT_FEATURES_COMPLETE 0x23
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  page;
-  u8  max_page;
-  u8  features[8];
+  u8 page;
+  u8 max_page;
+  u8 features[8];
 } bt_hci_evt_remote_ext_features_complete;
 
 #define BT_HCI_EVT_SYNC_CONN_COMPLETE 0x2c
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  bdaddr[6];
-  u8  link_type;
-  u8  tx_interval;
-  u8  retrans_window;
+  u8 bdaddr[6];
+  u8 link_type;
+  u8 tx_interval;
+  u8 retrans_window;
   u16 rx_pkt_len;
   u16 tx_pkt_len;
-  u8  air_mode;
+  u8 air_mode;
 } bt_hci_evt_sync_conn_complete;
 
 #define BT_HCI_EVT_SYNC_CONN_CHANGED 0x2d
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  tx_interval;
-  u8  retrans_window;
+  u8 tx_interval;
+  u8 retrans_window;
   u16 rx_pkt_len;
   u16 tx_pkt_len;
 } bt_hci_evt_sync_conn_changed;
 
 #define BT_HCI_EVT_SNIFF_SUBRATING 0x2e
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 max_tx_latency;
   u16 max_rx_latency;
@@ -3206,19 +3207,19 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_EXT_INQUIRY_RESULT 0x2f
 typedef struct __attribute__((packed)) {
-  u8     num_resp;
-  u8     bdaddr[6];
-  u8     pscan_rep_mode;
-  u8     pscan_period_mode;
-  u8     dev_class[3];
-  u16    clock_offset;
+  u8 num_resp;
+  u8 bdaddr[6];
+  u8 pscan_rep_mode;
+  u8 pscan_period_mode;
+  u8 dev_class[3];
+  u16 clock_offset;
   int8_t rssi;
-  u8     data[240];
+  u8 data[240];
 } bt_hci_evt_ext_inquiry_result;
 
 #define BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE 0x30
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_evt_encrypt_key_refresh_complete;
 
@@ -3237,7 +3238,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_USER_CONFIRM_REQUEST 0x33
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
+  u8 bdaddr[6];
   u32 passkey;
 } bt_hci_evt_user_confirm_request;
 
@@ -3270,7 +3271,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_USER_PASSKEY_NOTIFY 0x3b
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
+  u8 bdaddr[6];
   u32 passkey;
 } bt_hci_evt_user_passkey_notify;
 
@@ -3319,29 +3320,29 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_LOGIC_LINK_COMPLETE 0x45
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  phy_handle;
-  u8  flow_spec;
+  u8 phy_handle;
+  u8 flow_spec;
 } bt_hci_evt_logic_link_complete;
 
 #define BT_HCI_EVT_DISCONN_LOGIC_LINK_COMPLETE 0x46
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  reason;
+  u8 reason;
 } bt_hci_evt_disconn_logic_link_complete;
 
 #define BT_HCI_EVT_FLOW_SPEC_MODIFY_COMPLETE 0x47
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_evt_flow_spec_modify_complete;
 
 #define BT_HCI_EVT_NUM_COMPLETED_DATA_BLOCKS 0x48
 typedef struct __attribute__((packed)) {
   u16 total_num_blocks;
-  u8  num_handles;
+  u8 num_handles;
   u16 handle;
   u16 num_packets;
   u16 num_blocks;
@@ -3363,7 +3364,7 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_EVT_TRIGGERED_CLOCK_CAPTURE 0x4e
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  type;
+  u8 type;
   u32 clock;
   u16 clock_offset;
 } bt_hci_evt_triggered_clock_capture;
@@ -3375,25 +3376,25 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_SYNC_TRAIN_RECEIVED 0x50
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  bdaddr[6];
+  u8 status;
+  u8 bdaddr[6];
   u32 offset;
-  u8  map[10];
-  u8  lt_addr;
+  u8 map[10];
+  u8 lt_addr;
   u32 instant;
   u16 interval;
-  u8  service_data;
+  u8 service_data;
 } bt_hci_evt_sync_train_received;
 
 #define BT_HCI_EVT_PERIPHERAL_BROADCAST_RECEIVE 0x51
 typedef struct __attribute__((packed)) {
-  u8  bdaddr[6];
-  u8  lt_addr;
+  u8 bdaddr[6];
+  u8 lt_addr;
   u32 clock;
   u32 offset;
-  u8  status;
-  u8  fragment;
-  u8  length;
+  u8 status;
+  u8 fragment;
+  u8 length;
 } bt_hci_evt_peripheral_broadcast_receive;
 
 #define BT_HCI_EVT_PERIPHERAL_BROADCAST_TIMEOUT 0x52
@@ -3417,7 +3418,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_INQUIRY_RESPONSE_NOTIFY 0x56
 typedef struct __attribute__((packed)) {
-  u8     lap[3];
+  u8 lap[3];
   int8_t rssi;
 } bt_hci_evt_inquiry_response_notify;
 
@@ -3428,15 +3429,15 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_LE_CONN_COMPLETE 0x01
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  role;
-  u8  peer_addr_type;
-  u8  peer_addr[6];
+  u8 role;
+  u8 peer_addr_type;
+  u8 peer_addr[6];
   u16 interval;
   u16 latency;
   u16 supv_timeout;
-  u8  clock_accuracy;
+  u8 clock_accuracy;
 } bt_hci_evt_le_conn_complete;
 
 #define BT_HCI_EVT_LE_ADV_REPORT 0x02
@@ -3451,7 +3452,7 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_LE_CONN_UPDATE_COMPLETE 0x03
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 interval;
   u16 latency;
@@ -3460,9 +3461,9 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_LE_REMOTE_FEATURES_COMPLETE 0x04
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  features[8];
+  u8 features[8];
 } bt_hci_evt_le_remote_features_complete;
 
 #define BT_HCI_EVT_LE_LONG_TERM_KEY_REQUEST 0x05
@@ -3504,36 +3505,36 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_LE_ENHANCED_CONN_COMPLETE 0x0a
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  role;
-  u8  peer_addr_type;
-  u8  peer_addr[6];
-  u8  local_rpa[6];
-  u8  peer_rpa[6];
+  u8 role;
+  u8 peer_addr_type;
+  u8 peer_addr[6];
+  u8 local_rpa[6];
+  u8 peer_rpa[6];
   u16 interval;
   u16 latency;
   u16 supv_timeout;
-  u8  clock_accuracy;
+  u8 clock_accuracy;
 } bt_hci_evt_le_enhanced_conn_complete;
 
 #define BT_HCI_EVT_LE_DIRECT_ADV_REPORT 0x0b
 typedef struct __attribute__((packed)) {
-  u8     num_reports;
-  u8     event_type;
-  u8     addr_type;
-  u8     addr[6];
-  u8     direct_addr_type;
-  u8     direct_addr[6];
+  u8 num_reports;
+  u8 event_type;
+  u8 addr_type;
+  u8 addr[6];
+  u8 direct_addr_type;
+  u8 direct_addr[6];
   int8_t rssi;
 } bt_hci_evt_le_direct_adv_report;
 
 #define BT_HCI_EVT_LE_PHY_UPDATE_COMPLETE 0x0c
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  tx_phy;
-  u8  rx_phy;
+  u8 tx_phy;
+  u8 rx_phy;
 } bt_hci_evt_le_phy_update_complete;
 
 #define BT_HCI_EVT_LE_EXT_ADV_REPORT 0x0d
@@ -3541,42 +3542,42 @@ typedef struct __attribute__((packed)) {
   u8 num_reports;
 } bt_hci_evt_le_ext_adv_report;
 typedef struct __attribute__((packed)) {
-  u16    event_type;
-  u8     addr_type;
-  u8     addr[6];
-  u8     primary_phy;
-  u8     secondary_phy;
-  u8     sid;
-  u8     tx_power;
+  u16 event_type;
+  u8 addr_type;
+  u8 addr[6];
+  u8 primary_phy;
+  u8 secondary_phy;
+  u8 sid;
+  u8 tx_power;
   int8_t rssi;
-  u16    interval;
-  u8     direct_addr_type;
-  u8     direct_addr[6];
-  u8     data_len;
-  u8     data[0];
+  u16 interval;
+  u8 direct_addr_type;
+  u8 direct_addr[6];
+  u8 data_len;
+  u8 data[0];
 } bt_hci_le_ext_adv_report;
 
 #define BT_HCI_EVT_LE_PA_SYNC_ESTABLISHED 0x0e
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  sid;
-  u8  addr_type;
-  u8  addr[6];
-  u8  phy;
+  u8 sid;
+  u8 addr_type;
+  u8 addr[6];
+  u8 phy;
   u16 interval;
-  u8  clock_accuracy;
+  u8 clock_accuracy;
 } bt_hci_evt_le_per_sync_established;
 
 #define BT_HCI_EVT_LE_PA_REPORT 0x0f
 typedef struct __attribute__((packed)) {
-  u16    handle;
-  u8     tx_power;
+  u16 handle;
+  u8 tx_power;
   int8_t rssi;
-  u8     cte_type;
-  u8     data_status;
-  u8     data_len;
-  u8     data[0];
+  u8 cte_type;
+  u8 data_status;
+  u8 data_len;
+  u8 data[0];
 } bt_hci_le_pa_report;
 
 #define BT_HCI_EVT_LE_PA_SYNC_LOST 0x10
@@ -3586,10 +3587,10 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_LE_ADV_SET_TERM 0x12
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  handle;
+  u8 status;
+  u8 handle;
   u16 conn_handle;
-  u8  num_evts;
+  u8 num_evts;
 } bt_hci_evt_le_adv_set_term;
 
 #define BT_HCI_EVT_LE_SCAN_REQ_RECEIVED 0x13
@@ -3602,44 +3603,44 @@ typedef struct __attribute__((packed)) {
 #define BT_HCI_EVT_LE_CHAN_SELECT_ALG 0x14
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  algorithm;
+  u8 algorithm;
 } bt_hci_evt_le_chan_select_alg;
 
 #define BT_HCI_EVT_LE_CTE_REQUEST_FAILED 0x17
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
 } bt_hci_evt_le_cte_request_failed;
 
 #define BT_HCI_EVT_LE_PA_SYNC_TRANS_REC 0x18
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
   u16 service_data;
   u16 sync_handle;
-  u8  sid;
-  u8  addr_type;
-  u8  addr[6];
-  u8  phy;
+  u8 sid;
+  u8 addr_type;
+  u8 addr[6];
+  u8 phy;
   u16 interval;
-  u8  clock_accuracy;
+  u8 clock_accuracy;
 } bt_hci_evt_le_pa_sync_trans_rec;
 
 #define BT_HCI_EVT_LE_CIS_ESTABLISHED 0x19
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 conn_handle;
-  u8  cig_sync_delay[3];
-  u8  cis_sync_delay[3];
-  u8  c_latency[3];
-  u8  p_latency[3];
-  u8  c_phy;
-  u8  p_phy;
-  u8  nse;
-  u8  c_bn;
-  u8  p_bn;
-  u8  c_ft;
-  u8  p_ft;
+  u8 cig_sync_delay[3];
+  u8 cis_sync_delay[3];
+  u8 c_latency[3];
+  u8 p_latency[3];
+  u8 c_phy;
+  u8 p_phy;
+  u8 nse;
+  u8 c_bn;
+  u8 p_bn;
+  u8 c_ft;
+  u8 p_ft;
   u16 c_mtu;
   u16 p_mtu;
   u16 interval;
@@ -3649,24 +3650,24 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   u16 acl_handle;
   u16 cis_handle;
-  u8  cig_id;
-  u8  cis_id;
+  u8 cig_id;
+  u8 cis_id;
 } bt_hci_evt_le_cis_req;
 
 #define BT_HCI_EVT_LE_BIG_COMPLETE 0x1b
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  handle;
-  u8  sync_delay[3];
-  u8  latency[3];
-  u8  phy;
-  u8  nse;
-  u8  bn;
-  u8  pto;
-  u8  irc;
+  u8 status;
+  u8 handle;
+  u8 sync_delay[3];
+  u8 latency[3];
+  u8 phy;
+  u8 nse;
+  u8 bn;
+  u8 pto;
+  u8 irc;
   u16 max_pdu;
   u16 interval;
-  u8  num_bis;
+  u8 num_bis;
   u16 bis_handle[0];
 } bt_hci_evt_le_big_complete;
 
@@ -3678,16 +3679,16 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_LE_BIG_SYNC_ESTABILISHED 0x1d
 typedef struct __attribute__((packed)) {
-  u8  status;
-  u8  handle;
-  u8  latency[3];
-  u8  nse;
-  u8  bn;
-  u8  pto;
-  u8  irc;
+  u8 status;
+  u8 handle;
+  u8 latency[3];
+  u8 nse;
+  u8 bn;
+  u8 pto;
+  u8 irc;
   u16 max_pdu;
   u16 interval;
-  u8  num_bis;
+  u8 num_bis;
   u16 bis[0];
 } bt_hci_evt_le_big_sync_estabilished;
 
@@ -3699,9 +3700,9 @@ typedef struct __attribute__((packed)) {
 
 #define BT_HCI_EVT_LE_REQ_PEER_SCA_COMPLETE 0x1f
 typedef struct __attribute__((packed)) {
-  u8  status;
+  u8 status;
   u16 handle;
-  u8  sca;
+  u8 sca;
 } bt_hci_evt_le_req_peer_sca_complete;
 
 #define BT_HCI_ERR_SUCCESS 0x00
@@ -3724,12 +3725,12 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   u16 len;
   u16 cid;
-  u8  data[];
+  u8 data[];
 } bt_l2cap_hdr;
 
 typedef struct __attribute__((packed)) {
-  u8  code;
-  u8  ident;
+  u8 code;
+  u8 ident;
   u16 len;
 } bt_l2cap_hdr_sig;
 
@@ -3790,14 +3791,14 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   u16 type;
   u16 result;
-  u8  data[0];
+  u8 data[0];
 } bt_l2cap_pdu_info_rsp;
 
 #define BT_L2CAP_PDU_CREATE_CHAN_REQ 0x0c
 typedef struct __attribute__((packed)) {
   u16 psm;
   u16 scid;
-  u8  ctrlid;
+  u8 ctrlid;
 } bt_l2cap_pdu_create_chan_req;
 
 #define BT_L2CAP_PDU_CREATE_CHAN_RSP 0x0d
@@ -3811,7 +3812,7 @@ typedef struct __attribute__((packed)) {
 #define BT_L2CAP_PDU_MOVE_CHAN_REQ 0x0e
 typedef struct __attribute__((packed)) {
   u16 icid;
-  u8  ctrlid;
+  u8 ctrlid;
 } bt_l2cap_pdu_move_chan_req;
 
 #define BT_L2CAP_PDU_MOVE_CHAN_RSP 0x0f
@@ -3903,8 +3904,8 @@ typedef struct __attribute__((packed)) {
 } bt_l2cap_hdr_connless;
 
 typedef struct __attribute__((packed)) {
-  u8  code;
-  u8  ident;
+  u8 code;
+  u8 ident;
   u16 len;
 } bt_l2cap_hdr_amp;
 
@@ -3936,8 +3937,8 @@ typedef struct __attribute__((packed)) {
 
 #define BT_L2CAP_AMP_GET_INFO_RSP 0x07
 typedef struct __attribute__((packed)) {
-  u8  ctrlid;
-  u8  status;
+  u8 ctrlid;
+  u8 status;
   u32 total_bw;
   u32 max_bw;
   u32 min_latency;
@@ -3989,9 +3990,9 @@ typedef struct __attribute__((packed)) {
 
 #define BT_L2CAP_ATT_ERROR_RESPONSE 0x01
 typedef struct __attribute__((packed)) {
-  u8  request;
+  u8 request;
   u16 handle;
-  u8  error;
+  u8 error;
 } bt_l2cap_att_error_response;
 
 #define BT_L2CAP_ATT_EXCHANGE_MTU_REQ 0x02
@@ -4021,7 +4022,7 @@ typedef struct __attribute__((packed)) {
   u16 start_handle;
   u16 end_handle;
   u16 type;
-  u8  value[0];
+  u8 value[0];
 } bt_l2cap_att_find_type_value_req;
 
 #define BT_L2CAP_ATT_FIND_TYPE_VALUE_RSP 0x07
@@ -4033,7 +4034,7 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   u16 start_handle;
   u16 end_handle;
-  u8  type[16];
+  u8 type[16];
 } bt_l2cap_att_read_type_req;
 
 #define BT_L2CAP_ATT_READ_TYPE_RSP 0x09
@@ -4077,7 +4078,7 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
   u16 start_handle;
   u16 end_handle;
-  u8  type[16];
+  u8 type[16];
 } bt_l2cap_att_read_group_type_req;
 
 #define BT_L2CAP_ATT_READ_GROUP_TYPE_RSP 0x11
@@ -4099,7 +4100,7 @@ typedef struct __attribute__((packed)) {
 #define BT_L2CAP_ATT_WRITE_REQ 0x12
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  data[0];
+  u8 data[0];
 } bt_l2cap_att_write_req;
 
 #define BT_L2CAP_ATT_WRITE_RSP 0x13
@@ -4109,27 +4110,27 @@ typedef struct __attribute__((packed)) {
 #define BT_L2CAP_ATT_WRITE_CMD 0x52
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  data[0];
+  u8 data[0];
 } bt_l2cap_att_write_cmd;
 
 #define BT_L2CAP_ATT_SIGNED_WRITE_CMD 0xd2
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  data[0];
+  u8 data[0];
 } bt_l2cap_att_signed_write_cmd;
 
 #define BT_L2CAP_ATT_PREPARE_WRITE_REQ 0x16
 typedef struct __attribute__((packed)) {
   u16 handle;
   u16 offset;
-  u8  data[0];
+  u8 data[0];
 } bt_l2cap_att_prepare_write_req;
 
 #define BT_L2CAP_ATT_PREPARE_WRITE_RSP 0x17
 typedef struct __attribute__((packed)) {
   u16 handle;
   u16 offset;
-  u8  data[0];
+  u8 data[0];
 } bt_l2cap_att_prepare_write_rsp;
 
 #define BT_L2CAP_ATT_EXECUTE_WRITE_REQ 0x18
@@ -4144,7 +4145,7 @@ typedef struct __attribute__((packed)) {
 #define BT_L2CAP_ATT_HANDLE_VALUE_NOTIFY 0x1b
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u8  data[0];
+  u8 data[0];
 } bt_l2cap_att_handle_value_notify;
 
 #define BT_L2CAP_ATT_HANDLE_VALUE_IND 0x1d
@@ -4249,7 +4250,7 @@ typedef struct __attribute__((packed)) {
 } bt_l2cap_smp_keypress_notify;
 
 typedef struct __attribute__((packed)) {
-  u8  pdu;
+  u8 pdu;
   u16 tid;
   u16 plen;
 } bt_sdp_hdr;
@@ -4306,4 +4307,5 @@ typedef struct __attribute__((packed)) {
 #define ATT_PROPERTY_READ_PERMISSION_SC 0x0020u
 #define ATT_PROPERTY_WRITE_PERMISSION_SC 0x0080u
 
-#endif 
+
+#endif /* D9164AF1_4E22_4376_82E6_9C574FB08463 */

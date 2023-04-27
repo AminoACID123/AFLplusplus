@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "btfuzz_bluetooth.h"
-#include "btfuzz_rand.h"
+#include "common/bluetooth.h"
+#include "common/random.h"
 #include "btfuzz_util.h"
 #include "btfuzz.h"
 
@@ -37,14 +37,14 @@ void send_packet(u8 type, void *packet, u32 len) {
 
 void send_command_complete_event(u16 opcode, u8 ncmd, void *data, u32 len) {
   u32 packet_size =
-      sizeof(hci_event_t) + sizeof(struct bt_hci_evt_cmd_complete) + len;
+      sizeof(hci_event_t) + sizeof(bt_hci_evt_cmd_complete) + len;
   u8 *packet = alloca(packet_size);
   hci_event_t *e = (hci_event_t *)packet;
-  struct bt_hci_evt_cmd_complete *cc =
-      (struct bt_hci_evt_cmd_complete *)e->param;
+  bt_hci_evt_cmd_complete *cc =
+      (bt_hci_evt_cmd_complete *)e->param;
 
   e->opcode = BT_HCI_EVT_CMD_COMPLETE;
-  e->len = sizeof(struct bt_hci_evt_cmd_complete) + len;
+  e->len = sizeof(bt_hci_evt_cmd_complete) + len;
   cc->ncmd = ncmd;
   cc->opcode = opcode;
   memcpy(cc->param, data, len);
@@ -52,13 +52,13 @@ void send_command_complete_event(u16 opcode, u8 ncmd, void *data, u32 len) {
 }
 
 void send_command_status_event(u16 opcode, u8 ncmd, u8 status) {
-  u32 packet_size = sizeof(hci_event_t) + sizeof(struct bt_hci_evt_cmd_status);
+  u32 packet_size = sizeof(hci_event_t) + sizeof(bt_hci_evt_cmd_status);
   u8 *packet = alloca(packet_size);
   hci_event_t *e = (hci_event_t *)packet;
-  struct bt_hci_evt_cmd_status *cs = (struct bt_hci_evt_cmd_status *)e->param;
+  bt_hci_evt_cmd_status *cs = (bt_hci_evt_cmd_status *)e->param;
 
   e->opcode = BT_HCI_EVT_CMD_STATUS;
-  e->len = sizeof(struct bt_hci_evt_cmd_status);
+  e->len = sizeof(bt_hci_evt_cmd_status);
   cs->ncmd = ncmd;
   cs->opcode = opcode;
   cs->status = status;
@@ -67,8 +67,8 @@ void send_command_status_event(u16 opcode, u8 ncmd, u8 status) {
 
 void send_connection_request_event(bd_addr_t addr)
 {
-  btfuzz_alloc_event(e, BT_HCI_EVT_CONN_REQUEST, sizeof(struct bt_hci_evt_conn_request))
-  cast_define(struct bt_hci_evt_conn_request*, cr, e->param);
+  btfuzz_alloc_event(e, BT_HCI_EVT_CONN_REQUEST, sizeof(bt_hci_evt_conn_request))
+  cast_define(bt_hci_evt_conn_request*, cr, e->param);
 
   memcpy(cr->bdaddr, addr, 6);
   cr->link_type = LINK_TYPE_ACL;
@@ -77,8 +77,8 @@ void send_connection_request_event(bd_addr_t addr)
 
 void send_le_connection_complete_event()
 {
-  btfuzz_alloc_le_event(e, BT_HCI_EVT_LE_CONN_COMPLETE, sizeof(struct bt_hci_evt_le_conn_complete))
-  cast_define(struct bt_hci_evt_le_conn_complete*, lcc, &e->param[1]);
+  btfuzz_alloc_le_event(e, BT_HCI_EVT_LE_CONN_COMPLETE, sizeof(bt_hci_evt_le_conn_complete))
+  cast_define(bt_hci_evt_le_conn_complete*, lcc, &e->param[1]);
 
   lcc->status = BT_HCI_ERR_SUCCESS;
   bd_addr_t remote_addr = {0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB};
@@ -97,7 +97,7 @@ void hci_command_handler(u8 *packet, u32 len) {
       break;
     }
     case BT_HCI_CMD_READ_LOCAL_VERSION: {
-      struct bt_hci_rsp_read_local_version rsp = {.status = BT_HCI_ERR_SUCCESS,
+      bt_hci_rsp_read_local_version rsp = {.status = BT_HCI_ERR_SUCCESS,
                                                   .hci_ver = 0x0C,
                                                   .hci_rev = 0xFF,
                                                   .lmp_ver = 0x0C,
@@ -107,20 +107,20 @@ void hci_command_handler(u8 *packet, u32 len) {
       break;
     }
     case BT_HCI_CMD_READ_LOCAL_NAME: {
-      struct bt_hci_rsp_read_local_name rsp = {.status = BT_HCI_ERR_SUCCESS,
+      bt_hci_rsp_read_local_name rsp = {.status = BT_HCI_ERR_SUCCESS,
                                                .name = "BTFuzz"};
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
       break;
     }
     case BT_HCI_CMD_READ_LOCAL_COMMANDS: {
-      struct bt_hci_rsp_read_local_commands rsp;
+      bt_hci_rsp_read_local_commands rsp;
       memset(&rsp, 0xFF, sizeof(rsp));
       rsp.status = BT_HCI_ERR_SUCCESS;
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
       break;
     }
     case BT_HCI_CMD_READ_BD_ADDR: {
-      struct bt_hci_rsp_read_bd_addr rsp = {
+      bt_hci_rsp_read_bd_addr rsp = {
         .status = BT_HCI_ERR_SUCCESS,
         .bdaddr = {0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA}
       };
@@ -128,7 +128,7 @@ void hci_command_handler(u8 *packet, u32 len) {
       break;
     }
     case BT_HCI_CMD_READ_BUFFER_SIZE : {
-      struct bt_hci_rsp_read_buffer_size rsp = {
+      bt_hci_rsp_read_buffer_size rsp = {
         .status = BT_HCI_ERR_SUCCESS,
         .acl_mtu = ACL_Data_Packet_Length,
         .sco_mtu = Synchronous_Data_Packet_Length,
@@ -139,7 +139,7 @@ void hci_command_handler(u8 *packet, u32 len) {
       break;
     }
     case BT_HCI_CMD_READ_LOCAL_FEATURES: {
-      struct bt_hci_rsp_read_local_features rsp;
+      bt_hci_rsp_read_local_features rsp;
       memset(&rsp, 0xFF, sizeof(rsp));
       rsp.status = BT_HCI_ERR_SUCCESS;
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
@@ -156,7 +156,7 @@ void hci_command_handler(u8 *packet, u32 len) {
       break;
     }
     case BT_HCI_CMD_LE_READ_BUFFER_SIZE_V2: {
-      struct bt_hci_rsp_le_read_buffer_size_v2 rsp = {
+      bt_hci_rsp_le_read_buffer_size_v2 rsp = {
         .status = BT_HCI_ERR_SUCCESS,
         .acl_mtu = LE_ACL_Data_Packet_Length,
         .acl_max_pkt = Total_Num_LE_ACL_Data_Packets,
@@ -177,7 +177,7 @@ void hci_command_handler(u8 *packet, u32 len) {
       break;
     }
     case BT_HCI_CMD_LE_READ_MAX_DATA_LENGTH: {
-      struct bt_hci_rsp_le_read_max_data_length rsp = {
+      bt_hci_rsp_le_read_max_data_length rsp = {
         .status = BT_HCI_ERR_SUCCESS,
         .max_tx_len = 0xFB,
         .max_tx_time = 0x4290,
@@ -188,14 +188,14 @@ void hci_command_handler(u8 *packet, u32 len) {
       break;
     }
     case BT_HCI_CMD_LE_WRITE_DEFAULT_DATA_LENGTH: {
-      cast_define(struct bt_hci_cmd_le_write_default_data_length*, cmd, c->param);
+      cast_define(bt_hci_cmd_le_write_default_data_length*, cmd, c->param);
       printf("Host suggest data length %d\n", cmd->tx_len);
       u8 rsp = BT_HCI_ERR_SUCCESS;
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
       break; 
     }
     case BT_HCI_CMD_LE_READ_ACCEPT_LIST_SIZE: {
-      struct bt_hci_rsp_le_read_accept_list_size rsp = {
+      bt_hci_rsp_le_read_accept_list_size rsp = {
         .status = BT_HCI_ERR_SUCCESS,
         .size = Filter_Accept_List_Size
       };
@@ -208,7 +208,7 @@ void hci_command_handler(u8 *packet, u32 len) {
       break; 
     }
     case BT_HCI_CMD_LE_RAND:{
-      struct bt_hci_rsp_le_rand rsp;
+      bt_hci_rsp_le_rand rsp;
       rsp.status = BT_HCI_ERR_SUCCESS;
       //rand_fill(rsp.number, 8);
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
@@ -221,13 +221,13 @@ void hci_command_handler(u8 *packet, u32 len) {
     }
     case BT_HCI_CMD_LE_SET_ADV_DATA: {
       u8 rsp = BT_HCI_ERR_SUCCESS;
-      cast_define(struct bt_hci_cmd_le_set_adv_data*, cmd, c->param);
+      cast_define(bt_hci_cmd_le_set_adv_data*, cmd, c->param);
       printf("Adv Data: %s\n", cmd->data);
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
       break;   
     }
     case BT_HCI_CMD_LE_SET_ADV_ENABLE: {
-      cast_define(struct bt_hci_cmd_le_set_adv_enable*, cmd, c->param);
+      cast_define(bt_hci_cmd_le_set_adv_enable*, cmd, c->param);
       printf("ADV enabled: %d\n", cmd->enable);
       u8 rsp = BT_HCI_ERR_SUCCESS;
       send_command_complete_event(c->opcode, 1, &rsp, sizeof(rsp));
