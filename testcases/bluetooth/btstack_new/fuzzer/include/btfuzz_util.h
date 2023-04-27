@@ -3,7 +3,7 @@
 #define BTFUZZ_UTIL_H
 
 
-#include "btfuzz_bluetooth.h"
+#include "bluetooth.h"
 #include <stdint.h>
 #include <string.h>
 

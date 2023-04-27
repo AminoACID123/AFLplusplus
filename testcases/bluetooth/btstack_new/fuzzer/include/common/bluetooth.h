@@ -529,43 +529,45 @@ struct bt_lmp_power_control_res {
 #define BT_H4_EVT_PKT 0x04
 #define BT_H4_ISO_PKT 0x05
 
-struct bt_hci_cmd_hdr {
+typedef struct  __attribute__((packed)){
   u16 opcode;
   u8 plen;
-} __attribute__((packed));
+  u8 param[];
+} bt_hci_cmd_hdr;
 
-struct bt_hci_acl_hdr {
+typedef struct bt_hci_acl_hdr {
   u16 handle;
   u16 dlen;
   u8 data[];
 } __attribute__((packed));
 
-struct bt_hci_sco_hdr {
+typedef struct bt_hci_sco_hdr {
   u16 handle;
   u8 dlen;
 } __attribute__((packed));
 
-struct bt_hci_iso_hdr {
+typedef struct bt_hci_iso_hdr {
   u16 handle;
   u16 dlen;
   u8 data[];
 } __attribute__((packed));
 
-struct bt_hci_iso_data_start {
+typedef struct bt_hci_iso_data_start {
   u16 sn;
   u16 slen;
   u8 data[];
 } __attribute__((packed));
 
-struct bt_hci_evt_hdr {
+typedef struct bt_hci_evt_hdr {
   u8 evt;
   u8 plen;
+  u8 param[];
 } __attribute__((packed));
 
 #define BT_HCI_CMD_NOP 0x0000
 
 #define BT_HCI_CMD_INQUIRY 0x0401
-struct bt_hci_cmd_inquiry {
+typedef struct bt_hci_cmd_inquiry {
   u8 lap[3];
   u8 length;
   u8 num_resp;
@@ -574,7 +576,7 @@ struct bt_hci_cmd_inquiry {
 #define BT_HCI_CMD_INQUIRY_CANCEL 0x0402
 
 #define BT_HCI_CMD_PERIODIC_INQUIRY 0x0403
-struct bt_hci_cmd_periodic_inquiry {
+typedef struct bt_hci_cmd_periodic_inquiry {
   u16 max_period;
   u16 min_period;
   u8 lap[3];
@@ -585,7 +587,7 @@ struct bt_hci_cmd_periodic_inquiry {
 #define BT_HCI_CMD_EXIT_PERIODIC_INQUIRY 0x0404
 
 #define BT_HCI_CMD_CREATE_CONN 0x0405
-struct bt_hci_cmd_create_conn {
+typedef struct bt_hci_cmd_create_conn {
   u8 bdaddr[6];
   u16 pkt_type;
   u8 pscan_rep_mode;
@@ -595,19 +597,19 @@ struct bt_hci_cmd_create_conn {
 } __attribute__((packed));
 
 #define BT_HCI_CMD_DISCONNECT 0x0406
-struct bt_hci_cmd_disconnect {
+typedef struct bt_hci_cmd_disconnect {
   u16 handle;
   u8 reason;
 } __attribute__((packed));
 
 #define BT_HCI_CMD_ADD_SCO_CONN 0x0407
-struct bt_hci_cmd_add_sco_conn {
+typedef struct bt_hci_cmd_add_sco_conn {
   u16 handle;
   u16 pkt_type;
 } __attribute__((packed));
 
 #define BT_HCI_CMD_CREATE_CONN_CANCEL 0x0408
-struct bt_hci_cmd_create_conn_cancel {
+typedef struct bt_hci_cmd_create_conn_cancel {
   u8 bdaddr[6];
 } __attribute__((packed));
 
