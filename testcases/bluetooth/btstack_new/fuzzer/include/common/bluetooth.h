@@ -11,6 +11,22 @@
 #define HCI_EVENT_PACKET 0x04
 #define HCI_ISO_DATA_PACKET 0x05
 
+#define BD_ADDR_LEN 6
+typedef uint8_t bd_addr_t[BD_ADDR_LEN];
+typedef enum {
+  BD_ADDR_TYPE_LE_PUBLIC = 0,
+  BD_ADDR_TYPE_LE_RANDOM = 1,
+  BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC = 2,
+  BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM = 3,
+  BD_ADDR_TYPE_SCO = 0xfc,
+  BD_ADDR_TYPE_ACL = 0xfd,
+  BD_ADDR_TYPE_UNKNOWN = 0xfe, // also used as 'invalid'
+} bd_addr_type_t;
+
+typedef uint8_t sm_key_t[16];
+
+
+
 #define L2CAP_CID_SIGNALING 0x0001
 #define L2CAP_CID_CONNECTIONLESS_CHANNEL 0x0002
 #define L2CAP_CID_ATTRIBUTE_PROTOCOL 0x0004
@@ -45,19 +61,8 @@
 #define LE 1
 #define DUAL 2
 
-typedef enum {
-  BD_ADDR_TYPE_LE_PUBLIC = 0,
-  BD_ADDR_TYPE_LE_RANDOM = 1,
-  BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_PUBLIC = 2,
-  BD_ADDR_TYPE_LE_PRIVAT_FALLBACK_RANDOM = 3,
-  BD_ADDR_TYPE_SCO = 0xfc,
-  BD_ADDR_TYPE_ACL = 0xfd,
-  BD_ADDR_TYPE_UNKNOWN = 0xfe, // also used as 'invalid'
-} bd_addr_type_t;
 
-#define BD_ADDR_LEN 6
-typedef uint8_t bd_addr_t[BD_ADDR_LEN];
-typedef uint8_t sm_key_t[16];
+
 
 
 #define BT_HCI_CMD_BIT(_byte, _bit) ((8 * _byte) + _bit)
@@ -531,15 +536,19 @@ typedef struct __attribute__((packed)) {
 
 typedef struct  __attribute__((packed)){
   u16 opcode;
-  u8 plen;
+  u8 len;
   u8 param[];
 } bt_hci_cmd_hdr;
 
 typedef struct __attribute__((packed)) {
   u16 handle;
-  u16 dlen;
+  u16 len;
   u8 data[];
 } bt_hci_acl_hdr;
+
+#define ACL_PB_MASK 0x03u
+#define ACL_PB_CONT (0x01u << 12)
+#define ACL_PB_FIRST (0x02u << 12)
 
 typedef struct __attribute__((packed)) {
   u16 handle;
@@ -554,13 +563,13 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
   u16 sn;
-  u16 slen;
+  u16 len;
   u8 data[];
 } bt_hci_iso_data_start;
 
 typedef struct __attribute__((packed)) {
-  u8 evt;
-  u8 plen;
+  u8 opcode;
+  u8 len;
   u8 param[];
 } bt_hci_evt_hdr;
 
@@ -4255,10 +4264,19 @@ typedef struct __attribute__((packed)) {
   u16 plen;
 } bt_sdp_hdr;
 
+typedef struct __attribute__((packed)) {
+  u8 opcode;
+  u8 param[];
+} bt_l2cap_att_hdr;
+
 // MARK: Attribute PDU Opcodes
 #define ATT_ERROR_RESPONSE 0x01u
 
 #define ATT_EXCHANGE_MTU_REQUEST 0x02u
+typedef struct __attribute__((packed)) {
+  u16 mtu;
+}att_exchange_mtu_request;
+
 #define ATT_EXCHANGE_MTU_RESPONSE 0x03u
 
 #define ATT_FIND_INFORMATION_REQUEST 0x04u
@@ -4278,6 +4296,12 @@ typedef struct __attribute__((packed)) {
 #define ATT_READ_BY_GROUP_TYPE_RESPONSE 0x11u
 
 #define ATT_WRITE_REQUEST 0x12u
+typedef struct __attribute__((packed)) {
+  u16 handle;
+  u8 data[];
+}att_write_request;
+
+
 #define ATT_WRITE_RESPONSE 0x13u
 
 #define ATT_PREPARE_WRITE_REQUEST 0x16u

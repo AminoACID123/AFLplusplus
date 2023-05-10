@@ -199,4 +199,4 @@ endforeach(EXAMPLE_FILE)
 
 
 
-add_executable(fuzz fuzzer/btfuzz_main.c fuzzer/btfuzz.c fuzzer/btfuzz_util.c)
+# add_executable(fuzz fuzzer/btfuzz_main.c fuzzer/btfuzz.c fuzzer/btfuzz_util.c)

@@ -13,10 +13,11 @@
 #include <aio.h>
 
 #include "btfuzz.h"
+#include "btfuzz_state.h"
+#include "common/random.h"
 
 #define MAX_BUFFER_SIZE 1024*1024*4
 uint8_t data[MAX_BUFFER_SIZE];
-
 
 void send_init_packet(int fd)
 {
@@ -104,25 +105,25 @@ void send_init_packet(int fd)
 
 void run()
 {
-    fd_set fd_set_read;
-    struct timeval tv;
-    FD_SET(hci_sock_fd, &fd_set_read);
-    tv.tv_sec = 0;
-    tv.tv_usec = 1000 * 20;
     while (1)
     {
+        struct timeval tv;
+        fd_set fd_set_read;
+        tv.tv_sec = 0;
+        tv.tv_usec = 1000;
+        FD_SET(hci_sock_fd, &fd_set_read);
+
         int n = select(hci_sock_fd + 1, &fd_set_read, NULL, NULL, &tv);
         if (n > 0){
             int len = read(hci_sock_fd, data, MAX_BUFFER_SIZE);
-            hci_packet_handler(data, len);
+            btfuzz_packet_handler(data, len);
         }
+        else if (n == 0){
+            btfuzz_step_one();
+        }else
+            assert(false && "Select error");
     }
     
-}
-
-void controller_callback(int fd, uint32_t events, void *user_data)
-{
-
 }
 
 
@@ -144,6 +145,8 @@ int main(int argc, char** argv)
 		exit(-1);
 	}
 
+    rand_init();
+
 	int sock_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	struct sockaddr_un sock_addr;
 	memset(&sock_addr, 0, sizeof(sock_addr));
@@ -156,6 +159,8 @@ int main(int argc, char** argv)
 	}
 	listen(sock_fd, 5);
 	hci_sock_fd = accept(sock_fd, 0, 0);
+
+    btfuzz = (btfuzz_state_t*)calloc(1, sizeof(btfuzz_state_t));
 
     run();
     return 0;

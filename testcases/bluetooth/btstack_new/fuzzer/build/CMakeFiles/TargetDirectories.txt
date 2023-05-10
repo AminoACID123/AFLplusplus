@@ -1,0 +1,3 @@
+/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack_new/fuzzer/build/CMakeFiles/btfuzz.dir
+/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack_new/fuzzer/build/CMakeFiles/edit_cache.dir
+/home/xaz/Documents/AFLplusplus/testcases/bluetooth/btstack_new/fuzzer/build/CMakeFiles/rebuild_cache.dir

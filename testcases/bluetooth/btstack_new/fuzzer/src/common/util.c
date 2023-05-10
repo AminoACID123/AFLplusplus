@@ -1,6 +1,8 @@
-#include "btfuzz_util.h"
+#include "common/util.h"
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /**
@@ -115,11 +117,11 @@ void reverse_bd_addr(const bd_addr_t src, bd_addr_t dest){
     reverse_bytes(src, dest, 6);
 }
 
-uint32_t btstack_min(uint32_t a, uint32_t b){
+uint32_t btfuzz_min(uint32_t a, uint32_t b){
     return (a < b) ? a : b;
 }
 
-uint32_t btstack_max(uint32_t a, uint32_t b){
+uint32_t btfuzz_max(uint32_t a, uint32_t b){
     return (a > b) ? a : b;
 }
 
@@ -127,7 +129,7 @@ uint32_t btstack_max(uint32_t a, uint32_t b){
  * @brief Calculate delta between two uint32_t points in time
  * @return time_a - time_b - result > 0 if time_a is newer than time_b
  */
-int32_t btstack_time_delta(uint32_t time_a, uint32_t time_b){
+int32_t btfuzz_time_delta(uint32_t time_a, uint32_t time_b){
     return (int32_t)(time_a - time_b);
 }
 
@@ -135,7 +137,7 @@ int32_t btstack_time_delta(uint32_t time_a, uint32_t time_b){
  * @brief Calculate delta between two uint16_t points in time
  * @return time_a - time_b - result > 0 if time_a is newer than time_b
  */
-int16_t btstack_time16_delta(uint16_t time_a, uint16_t time_b){
+int16_t btfuzz_time16_delta(uint16_t time_a, uint16_t time_b){
     return (int16_t)(time_a - time_b);
 }
 
@@ -303,7 +305,7 @@ char * bd_addr_to_str(const bd_addr_t addr){
     return bd_addr_to_str_with_delimiter(addr, ':');
 }
 
-void btstack_replace_bd_addr_placeholder(uint8_t * buffer, uint16_t size, const bd_addr_t address){
+void btfuzz_replace_bd_addr_placeholder(uint8_t * buffer, uint16_t size, const bd_addr_t address){
     const int bd_addr_string_len = 17;
     uint16_t i = 0;
     while ((i + bd_addr_string_len) <= size){
@@ -353,7 +355,7 @@ int sscanf_bd_addr(const char * addr_string, bd_addr_t addr){
 	return result;
 }
 
-uint32_t btstack_atoi(const char * str){
+uint32_t btfuzz_atoi(const char * str){
     const char * the_string = str;
     uint32_t val = 0;
     while (true){
@@ -387,7 +389,7 @@ int count_set_bits_uint32(uint32_t x){
     return v;
 }
 
-uint8_t btstack_clz(uint32_t value) {
+uint8_t btfuzz_clz(uint32_t value) {
 #if defined(__GNUC__) || defined (__clang__)
     // use gcc/clang intrinsic
     return (uint8_t) __builtin_clz(value);
@@ -464,7 +466,7 @@ static uint8_t crc8(uint8_t *data, uint16_t len){
 }
 
 /*-----------------------------------------------------------------------------------*/
-uint8_t btstack_crc8_check(uint8_t *data, uint16_t len, uint8_t check_sum){
+uint8_t btfuzz_crc8_check(uint8_t *data, uint16_t len, uint8_t check_sum){
     uint8_t crc;
     crc = crc8(data, len);
     crc = crc8table[crc ^ check_sum];
@@ -476,12 +478,12 @@ uint8_t btstack_crc8_check(uint8_t *data, uint16_t len, uint8_t check_sum){
 }
 
 /*-----------------------------------------------------------------------------------*/
-uint8_t btstack_crc8_calc(uint8_t *data, uint16_t len){
+uint8_t btfuzz_crc8_calc(uint8_t *data, uint16_t len){
     /* Ones complement */
     return 0xFFu - crc8(data, len);
 }
 
-uint16_t btstack_next_cid_ignoring_zero(uint16_t current_cid){
+uint16_t btfuzz_next_cid_ignoring_zero(uint16_t current_cid){
     uint16_t next_cid;
     if (current_cid == 0xffff) {
         next_cid = 1;
@@ -491,18 +493,171 @@ uint16_t btstack_next_cid_ignoring_zero(uint16_t current_cid){
     return next_cid;
 }
 
-uint16_t btstack_strcpy(char * dst, uint16_t dst_size, const char * src){
-    uint16_t bytes_to_copy = (uint16_t) btstack_min( dst_size - 1, strlen(src));
+uint16_t btfuzz_strcpy(char * dst, uint16_t dst_size, const char * src){
+    uint16_t bytes_to_copy = (uint16_t) btfuzz_min( dst_size - 1, strlen(src));
     (void) memcpy(dst, src, bytes_to_copy);
     dst[bytes_to_copy] = 0;
     return bytes_to_copy + 1;
 }
 
-void btstack_strcat(char * dst, uint16_t dst_size, const char * src){
+void btfuzz_strcat(char * dst, uint16_t dst_size, const char * src){
     uint16_t src_len = (uint16_t) strlen(src);
     uint16_t dst_len = (uint16_t) strlen(dst);
-    uint16_t bytes_to_copy = btstack_min( src_len, dst_size - dst_len - 1);
+    uint16_t bytes_to_copy = btfuzz_min( src_len, dst_size - dst_len - 1);
     (void) memcpy( &dst[dst_len], src, bytes_to_copy);
     dst[dst_len + bytes_to_copy] = 0;
+}
+
+
+/**
+ * tests if list is empty
+ */
+bool btfuzz_linked_list_empty(btfuzz_linked_list_t * list){
+    return *list == (void *) 0;
+}
+
+btfuzz_linked_item_t * btfuzz_linked_list_get_last_item(btfuzz_linked_list_t * list){        // <-- find the last item in the list
+    btfuzz_linked_item_t *lastItem = NULL;
+    btfuzz_linked_item_t *it;
+    for (it = *list; it != NULL; it = it->next){
+        if (it != NULL) {
+            lastItem = it;
+        }
+    }
+    return lastItem;
+}
+
+bool btfuzz_linked_list_add(btfuzz_linked_list_t * list, btfuzz_linked_item_t *item){        // <-- add item to list
+    // check if already in list
+    btfuzz_linked_item_t *it;
+    for (it = *list; it != NULL; it = it->next){
+        if (it == item) {
+            return false;
+        }
+    }
+    // add first
+    item->next = *list;
+    *list = item;
+    return true;
+}
+
+bool btfuzz_linked_list_add_tail(btfuzz_linked_list_t * list, btfuzz_linked_item_t *item){   // <-- add item to list as last element
+    // check if already in list
+    btfuzz_linked_item_t *it;
+    for (it = (btfuzz_linked_item_t *) list; it->next != NULL ; it = it->next){
+        if (it->next == item) {
+            return false;
+        }
+    }
+    item->next = (btfuzz_linked_item_t*) NULL;
+    it->next = item;
+    return true;
+}
+
+bool  btfuzz_linked_list_remove(btfuzz_linked_list_t * list, btfuzz_linked_item_t *item){    // <-- remove item from list
+    if (!item) return false;
+    btfuzz_linked_item_t *it;
+    for (it = (btfuzz_linked_item_t *) list; it != NULL; it = it->next){
+        if (it->next == item){
+            it->next =  item->next;
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * @return number of items in list
+ */
+ int btfuzz_linked_list_count(btfuzz_linked_list_t * list){
+    btfuzz_linked_item_t *it;
+    int counter = 0;
+    for (it = (btfuzz_linked_item_t *) list; it->next != NULL; it = it->next) {
+        counter++;
+    }
+    return counter; 
+}
+
+// get first element
+btfuzz_linked_item_t * btfuzz_linked_list_get_first_item(btfuzz_linked_list_t * list){
+    return * list;
+}
+
+// pop (get + remove) first element
+btfuzz_linked_item_t * btfuzz_linked_list_pop(btfuzz_linked_list_t * list){
+    btfuzz_linked_item_t * item = *list;
+    if (!item) return NULL;
+    *list = item->next;
+    return item;
+}
+
+
+//
+// Linked List Iterator implementation
+//
+
+void btfuzz_linked_list_iterator_init(btfuzz_linked_list_iterator_t * it, btfuzz_linked_list_t * list){
+    it->advance_on_next = 0;
+    it->prev = (btfuzz_linked_item_t*) list;
+    it->curr = * list;
+}
+
+bool btfuzz_linked_list_iterator_has_next(btfuzz_linked_list_iterator_t * it){
+    if (!it->advance_on_next){
+        return it->curr != NULL;
+    }
+    if (it->prev->next != it->curr){
+        // current item has been removed
+        return it->prev->next != NULL;
+    }
+    // current items has not been removed
+    return it->curr->next != NULL;
+}
+
+btfuzz_linked_item_t * btfuzz_linked_list_iterator_next(btfuzz_linked_list_iterator_t * it){
+    if (it->advance_on_next){
+        if (it->prev->next == it->curr){
+            it->prev = it->curr;
+            it->curr = it->curr->next;
+        } else {
+            // curr was removed from the list, set it again but don't advance prev
+            it->curr = it->prev->next;
+        }
+    } else {
+        it->advance_on_next = 1;
+    }
+    return it->curr;
+}
+
+void btfuzz_linked_list_iterator_remove(btfuzz_linked_list_iterator_t * it){
+    assert(it->prev->next == it->curr);
+    it->curr = it->curr->next;
+    it->prev->next = it->curr;
+    it->advance_on_next = 0;
+}
+
+
+void btfuzz_vector_push_back(btfuzz_vector_t* vec, void* elem)
+{
+
+    if (vec && vec->size < vec->capacity){
+        vec->elements[vec->size++] = elem;
+        return;
+    }
+
+    vec->capacity = vec->capacity * 2 + 4;
+    vec->elements = realloc(vec->elements, sizeof(void*) * vec->capacity);
+    vec->elements[vec->size++] = elem;
+}
+
+void* btfuzz_vector_get(btfuzz_vector_t* vec, u32 i)
+{
+    assert(i < vec->size);
+    return vec->elements[i];
+}
+
+u32 btfuzz_vector_size(btfuzz_vector_t* vec)
+{
+    return vec->size;
 }
 

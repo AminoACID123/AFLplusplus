@@ -2,36 +2,15 @@
 #define BTFUZZ_FUZZ_H
 
 #include "common/type.h"
+#include "btfuzz_state.h"
 
 extern char* hci_sock_path;
 extern int hci_sock_fd;
 
-void hci_packet_handler(u8 *packet_in, u32 len);
+void btfuzz_step_one();
 
-typedef struct __attribute__((packed)) {
-  u8 opcode;
-  u8 len;
-  u8 param[];
-} hci_event_t;
+void btfuzz_packet_handler(u8 *packet_in, u32 len);
 
-typedef struct  __attribute__((packed)){
-  u16 opcode;
-  u8 len;
-  u8 param[];
-} hci_command_t ;
-
-typedef struct __attribute__((packed)){
-  u16 handle;
-  u16 len;
-  u8 data[];
-} hci_acl_t   ;
-#define HCI_ACL_HANDLE(packet) (((hci_acl_t*)packet)->handle)
-
-typedef struct __attribute__((packed)) {
-  u16 len;
-  u16 cid;
-  u8 data[];
-} l2cap_hdr ;
 
 #define ACL_Data_Packet_Length 1021
 #define Synchronous_Data_Packet_Length 96
@@ -47,9 +26,6 @@ typedef struct __attribute__((packed)) {
 
 #define LINK_TYPE_ACL 1
 #define LINK_TYPE_SCO 0
-
-void hci_packet_handler(u8* buf, u32 len);
-
 
 
 #endif

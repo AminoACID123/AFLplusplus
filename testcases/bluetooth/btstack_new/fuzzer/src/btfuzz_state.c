@@ -1,21 +1,13 @@
-#include "btfuzz.h"
-#include "common/bluetooth.h"
-#include <aio.h>
+#include "btfuzz_state.h"
+#include <stdlib.h>
 
-typedef struct btfuzz_hci_entry {
-    u8 enabled;
-}btfuzz_hci_entry;
+btfuzz_state_t* btfuzz;
 
-typedef struct btfuzz_state {
-  u8 packet_in;
-  size_t paket_size;
-}btfuzz_state;
-
-static btfuzz_state state;
-
-void bs_init()
+void btfuzz_state_init()
 {
-
+  if (!btfuzz){
+    btfuzz = calloc(1, sizeof(btfuzz_state_t));
+  }
 }
 
 void bs_set_event_mask(u8* mask)

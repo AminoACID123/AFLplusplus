@@ -38,6 +38,7 @@ static int hci_transport_fuzz_send_packet(uint8_t packet_type, uint8_t *packet, 
     uint32_t buffer_size = size + 1;
     buffer[0] = packet_type;
     write(transport_data_source.source.fd, buffer, buffer_size);
+    printf("Sent packet %d\n", packet_type);
 
     static const uint8_t packet_sent_event[] = {HCI_EVENT_TRANSPORT_PACKET_SENT, 0};
     fuzz_packet_handler(HCI_EVENT_PACKET, (uint8_t *)&packet_sent_event[0], sizeof(packet_sent_event));

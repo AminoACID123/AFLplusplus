@@ -4,6 +4,7 @@
 
 
 #include "common/bluetooth.h"
+#include "common/type.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -23,7 +24,7 @@ typedef uint8_t device_name_t[DEVICE_NAME_LEN+1];
  * @param b
  * @return value
  */
-uint32_t btstack_min(uint32_t a, uint32_t b);
+uint32_t btfuzz_min(uint32_t a, uint32_t b);
 
 /**
  * @brief Maximum function for uint32_t
@@ -31,19 +32,19 @@ uint32_t btstack_min(uint32_t a, uint32_t b);
  * @param b
  * @return value
  */
-uint32_t btstack_max(uint32_t a, uint32_t b);
+uint32_t btfuzz_max(uint32_t a, uint32_t b);
 
 /**
  * @brief Calculate delta between two uint32_t points in time
  * @return time_a - time_b - result > 0 if time_a is newer than time_b
  */
-int32_t btstack_time_delta(uint32_t time_a, uint32_t time_b);
+int32_t btfuzz_time_delta(uint32_t time_a, uint32_t time_b);
 
 /**
  * @brief Calculate delta between two uint16_t points in time
  * @return time_a - time_b - result > 0 if time_a is newer than time_b
  */
-int16_t btstack_time16_delta(uint16_t time_a, uint16_t time_b);
+int16_t btfuzz_time16_delta(uint16_t time_a, uint16_t time_b);
 
 /** 
  * @brief Read 16/24/32 bit little endian value from buffer
@@ -89,7 +90,7 @@ void big_endian_store_32(uint8_t * buffer, uint16_t position, uint32_t value);
 /**
  * @brief Swap bytes in 16 bit integer
  */
-static inline uint16_t btstack_flip_16(uint16_t value){
+static inline uint16_t btfuzz_flip_16(uint16_t value){
     return (uint16_t)((value & 0xffu) << 8) | (value >> 8);
 }
 
@@ -97,7 +98,7 @@ static inline uint16_t btstack_flip_16(uint16_t value){
  * @brief Check for big endian system
  * @return 1 if on big endian
  */
-static inline int btstack_is_big_endian(void){
+static inline int btfuzz_is_big_endian(void){
 	uint16_t sample = 0x0100;
 	return (int) *(uint8_t*) &sample;
 }
@@ -106,7 +107,7 @@ static inline int btstack_is_big_endian(void){
  * @brief Check for little endian system
  * @return 1 if on little endian
  */
-static inline int btstack_is_little_endian(void){
+static inline int btfuzz_is_little_endian(void){
 	uint16_t sample = 0x0001;
 	return (int) *(uint8_t*) &sample;
 }
@@ -192,7 +193,7 @@ char * bd_addr_to_str(const bd_addr_t addr);
  * @param size
  * @param address
  */
-void btstack_replace_bd_addr_placeholder(uint8_t * buffer, uint16_t size, const bd_addr_t address);
+void btfuzz_replace_bd_addr_placeholder(uint8_t * buffer, uint16_t size, const bd_addr_t address);
 
 /** 
  * @brief Parse Bluetooth address
@@ -221,7 +222,7 @@ int  uuid_has_bluetooth_prefix(const uint8_t * uuid128);
  * @param str to parse
  * @return value
  */
-uint32_t btstack_atoi(const char * str);
+uint32_t btfuzz_atoi(const char * str);
 
 /**
  * @brief Return number of digits of a uint32 number
@@ -244,7 +245,7 @@ int count_set_bits_uint32(uint32_t x);
  * @param len
  * @param check_sum
  */
-uint8_t btstack_crc8_check(uint8_t * data, uint16_t len, uint8_t check_sum);
+uint8_t btfuzz_crc8_check(uint8_t * data, uint16_t len, uint8_t check_sum);
 
 /**
  * @brief Calculate CRC8 using ETSI TS 101 369 V6.3.0. 
@@ -252,31 +253,138 @@ uint8_t btstack_crc8_check(uint8_t * data, uint16_t len, uint8_t check_sum);
  * @param data
  * @param len
  */
-uint8_t btstack_crc8_calc(uint8_t * data, uint16_t len);
+uint8_t btfuzz_crc8_calc(uint8_t * data, uint16_t len);
 
 /**
  * @brief Get next cid
  * @param current_cid
  * @return next cid skiping 0
  */
-uint16_t btstack_next_cid_ignoring_zero(uint16_t current_cid);
+uint16_t btfuzz_next_cid_ignoring_zero(uint16_t current_cid);
 
-#define cast_define(type, to, from) type to = (type)from
 
-#define btfuzz_alloc_event(evt, code, param_size) \
-	u8* buf = alloca(sizeof(hci_event_t) + param_size); \
-	cast_define(hci_event_t*, evt, buf); \
-	evt->opcode = code; \
-	evt->len = param_size;
 
-#define btfuzz_alloc_le_event(evt, code, param_size) \
-	u8* buf = alloca(sizeof(hci_event_t) + 1 + param_size); \
-	cast_define(hci_event_t*, evt, buf); \
-	evt->opcode = BT_HCI_EVT_LE_META_EVENT; \
-	evt->len = param_size + 1; \
-	evt->param[0] = code;
+typedef struct {
+	void ** elements;
+	u32 size;
+	u32 capacity;
+}btfuzz_vector_t;
 
-#define btfuzz_alloc_smp(smp, code, param_size)
+void btfuzz_vector_push_back(btfuzz_vector_t* vec, void* elem);
+
+void* btfuzz_vector_get(btfuzz_vector_t* vec, u32 i);
+
+u32 btfuzz_vector_size(btfuzz_vector_t* vec);
+
+
+
+/* Linked List */
+	
+typedef struct btfuzz_linked_item {
+    struct btfuzz_linked_item *next; // <-- next element in list, or NULL
+} btfuzz_linked_item_t;
+
+typedef btfuzz_linked_item_t* btfuzz_linked_list_t;
+
+typedef struct {
+	int advance_on_next;
+    btfuzz_linked_item_t * prev;	// points to the item before the current one
+    btfuzz_linked_item_t * curr;	// points to the current item (to detect item removal)
+} btfuzz_linked_list_iterator_t;
+
+
+/**
+ * @brief Test if list is empty.
+ * @param list
+ * @return true if list is empty
+ */
+bool btfuzz_linked_list_empty(btfuzz_linked_list_t * list);
+
+/**
+ * @brief Add item to list as first element.
+ * @param list
+ * @param item
+ * @return true if item was added, false if item already in list
+ */
+bool btfuzz_linked_list_add(btfuzz_linked_list_t * list, btfuzz_linked_item_t *item);
+
+/**
+ * @brief Add item to list as last element.
+ * @param list
+ * @param item
+ * @return true if item was added, false if item already in list
+ */
+bool btfuzz_linked_list_add_tail(btfuzz_linked_list_t * list, btfuzz_linked_item_t *item);
+
+/**
+ * @brief Pop (get + remove) first element.
+ * @param list
+ * @return first element or NULL if list is empty
+ */
+btfuzz_linked_item_t * btfuzz_linked_list_pop(btfuzz_linked_list_t * list);
+
+/**
+ * @brief Remove item from list
+ * @param list
+ * @param item
+ * @return true if item was removed, false if it is no't in list
+ */
+bool btfuzz_linked_list_remove(btfuzz_linked_list_t * list, btfuzz_linked_item_t *item);
+
+/**
+ * @brief Get first element.
+ * @param list
+ * @return first element or NULL if list is empty
+ */
+btfuzz_linked_item_t * btfuzz_linked_list_get_first_item(btfuzz_linked_list_t * list);
+
+/**
+ * @brief Get last element.
+ * @param list
+ * @return first element or NULL if list is empty
+ */
+btfuzz_linked_item_t * btfuzz_linked_list_get_last_item(btfuzz_linked_list_t * list);   
+
+/**
+ * @brief Counts number of items in list
+ * @return number of items in list
+ */
+int btfuzz_linked_list_count(btfuzz_linked_list_t * list);
+
+
+/**
+ * @brief Initialize Linked List Iterator
+ * @note robust against removal of current element by btfuzz_linked_list_remove
+ * @param it iterator context
+ * @param list
+ */
+void btfuzz_linked_list_iterator_init(btfuzz_linked_list_iterator_t * it, btfuzz_linked_list_t * list);
+
+/**
+ * @brief Has next element
+ * @param it iterator context
+ * @return true if next element is available
+ */
+bool btfuzz_linked_list_iterator_has_next(btfuzz_linked_list_iterator_t * it);
+
+/**
+ * @brief Get next list eleemnt
+ * @param it iterator context
+ * @return list element
+ */
+btfuzz_linked_item_t * btfuzz_linked_list_iterator_next(btfuzz_linked_list_iterator_t * it);
+
+/**
+ * @brief Remove current list element from list
+ * @param it iterator context
+ */
+void btfuzz_linked_list_iterator_remove(btfuzz_linked_list_iterator_t * it);
+
+/* API_END */
+
+#define cast_define(type, to, from) type to = (type)(from)
+
+
 	
 
 /* API_END */
